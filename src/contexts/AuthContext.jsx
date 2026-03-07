@@ -238,6 +238,30 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const resetPassword = async (email) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("[AUTH] Password reset failed:", err);
+      throw err;
+    }
+  };
+
+  const updatePassword = async (newPassword) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      if (error) throw error;
+    } catch (err) {
+      console.error("[AUTH] Password update failed:", err);
+      throw err;
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -245,6 +269,8 @@ export function AuthProvider({ children }) {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
     updateProfile,
     isStudent: profile?.role === "student",
     isProvider: profile?.role === "provider",

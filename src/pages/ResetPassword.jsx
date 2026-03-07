@@ -1,8 +1,6 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import {
-    ShieldCheck,
-    Mail,
     Lock,
     ArrowRight,
     AlertCircle,
@@ -16,7 +14,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
@@ -24,52 +21,61 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
-export default function Login() {
-    const { signIn, resetPassword, user } = useAuth();
-    const [email, setEmail] = useState('');
+export default function ResetPassword() {
+    const { updatePassword, user } = useAuth();
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
-    const [resetSent, setResetSent] = useState(false);
+    const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
 
-    if (user) return <Navigate to="/" replace />;
-
-    const handleForgotPassword = async () => {
-        if (!email) {
-            setError('Please enter your email address first');
-            return;
-        }
-        setError('');
-        setLoading(true);
-        try {
-            await resetPassword(email);
-            setResetSent(true);
-        } catch (err) {
-            setError(err.message || 'Failed to send reset email');
-        } finally {
-            setLoading(false);
-        }
-    };
+    // If no user is present, it means the recovery link didn't work or expired
+    // However, Supabase usually logs the user in automatically when they click the recovery link
+    // We'll check for user in a bit.
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        if (password.length < 6) {
+            return setError('Password must be at least 6 characters');
+        }
+
+        if (password !== confirmPassword) {
+            return setError('Passwords do not match');
+        }
+
         setLoading(true);
         try {
-            await signIn({ email, password });
+            await updatePassword(password);
+            setSuccess(true);
+            setTimeout(() => {
+                navigate('/login');
+            }, 3000);
         } catch (err) {
-            const errorMsg = err.message || 'Login failed';
-            if (errorMsg.includes('Invalid login credentials')) {
-                setError('Invalid email or password');
-            } else if (errorMsg.includes('Email not confirmed')) {
-                setError('Please confirm your email before signing in');
-            } else {
-                setError(errorMsg);
-            }
+            setError(err.message || 'Failed to update password');
         } finally {
             setLoading(false);
         }
     };
+
+    if (success) {
+        return (
+            <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
+                <Card className="w-full max-w-[460px] mx-4 border border-border bg-card shadow-xl relative z-10 rounded-[2.5rem] overflow-hidden text-center p-12">
+                    <div className="flex justify-center mb-6">
+                        <div className="p-4 rounded-3xl bg-green-500/10 text-green-600 border border-green-500/20 shadow-sm">
+                            <CheckCircle2 className="h-10 w-10" />
+                        </div>
+                    </div>
+                    <h2 className="text-3xl font-black mb-4">Password Updated!</h2>
+                    <p className="text-muted-foreground font-medium mb-8">Your security credentials have been successfully reset. Redirecting you to the lab entrance...</p>
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
@@ -86,8 +92,8 @@ export default function Login() {
                         </div>
                     </div>
                     <div className="space-y-2">
-                        <CardTitle className="text-4xl font-black tracking-tight text-foreground">HardwareHub</CardTitle>
-                        <CardDescription className="text-lg font-medium text-muted-foreground">Welcome back to the Lab</CardDescription>
+                        <CardTitle className="text-4xl font-black tracking-tight text-foreground">Secure Reset</CardTitle>
+                        <CardDescription className="text-lg font-medium text-muted-foreground">Set your new laboratory access code</CardDescription>
                     </div>
                 </CardHeader>
 
@@ -95,53 +101,14 @@ export default function Login() {
                     {error && (
                         <Alert variant="destructive" className="mb-8 border-none bg-destructive/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
                             <AlertCircle className="h-5 w-5" />
-                            <AlertTitle className="font-bold tracking-tight text-destructive">Login Error</AlertTitle>
+                            <AlertTitle className="font-bold tracking-tight">System Error</AlertTitle>
                             <AlertDescription className="font-medium text-xs">{error}</AlertDescription>
-                        </Alert>
-                    )}
-
-                    {resetSent && (
-                        <Alert className="mb-8 border-none bg-green-500/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            <AlertTitle className="font-bold tracking-tight text-green-700 uppercase text-[10px] tracking-widest">Signal Sent</AlertTitle>
-                            <AlertDescription className="font-bold text-xs text-green-800">
-                                Check your terminal (inbox) for the recovery link.
-                            </AlertDescription>
                         </Alert>
                     )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div className="space-y-3">
-                            <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Student / Faculty Email</Label>
-                            <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
-                                    <Mail className="h-4 w-4" />
-                                </span>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="you@university.edu"
-                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Password</Label>
-                                <Button
-                                    variant="link"
-                                    className="px-0 font-bold text-xs text-muted-foreground hover:text-primary transition-colors h-auto"
-                                    type="button"
-                                    onClick={handleForgotPassword}
-                                    disabled={loading}
-                                >
-                                    Forgot?
-                                </Button>
-                            </div>
+                            <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">New Access Code</Label>
                             <div className="relative group">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
                                     <Lock className="h-4 w-4" />
@@ -158,6 +125,24 @@ export default function Login() {
                             </div>
                         </div>
 
+                        <div className="space-y-3">
+                            <Label htmlFor="confirmPassword" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Verify Code</Label>
+                            <div className="relative group">
+                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
+                                    <Lock className="h-4 w-4" />
+                                </span>
+                                <Input
+                                    id="confirmPassword"
+                                    type="password"
+                                    placeholder="••••••••"
+                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors tracking-widest"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </div>
+
                         <Button
                             className="w-full mt-4 h-16 rounded-2xl font-black uppercase text-sm tracking-widest shadow-[0_20px_40px_-15px_rgba(var(--primary),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground flex items-center gap-3"
                             disabled={loading}
@@ -166,30 +151,17 @@ export default function Login() {
                             {loading ? (
                                 <>
                                     <Loader2 className="h-5 w-5 animate-spin" />
-                                    Verifying...
+                                    Updating...
                                 </>
                             ) : (
                                 <>
-                                    Enter the Lab
+                                    Update Credentials
                                     <ArrowRight className="h-5 w-5" />
                                 </>
                             )}
                         </Button>
                     </form>
                 </CardContent>
-
-                <CardFooter className="flex flex-col gap-5 border-t border-border bg-muted/5 px-10 py-8">
-                    <p className="text-sm text-center font-medium text-muted-foreground">
-                        New to the lab?{' '}
-                        <Link to="/register" className="font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider ml-2">
-                            Create Account
-                        </Link>
-                    </p>
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] font-black">
-                        <ShieldCheck className="h-4 w-4" />
-                        Secure Encrypted Channel
-                    </div>
-                </CardFooter>
             </Card>
         </div >
     );

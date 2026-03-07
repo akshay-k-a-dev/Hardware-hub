@@ -12,6 +12,7 @@ import MyRequests from './pages/MyRequests';
 import MyPreBooks from './pages/MyPreBooks';
 import ManageRequests from './pages/ManageRequests';
 import AddComponent from './pages/AddComponent';
+import ResetPassword from './pages/ResetPassword';
 import Debug from './pages/Debug';
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
     return (
         <Routes>
             <Route path="/debug" element={<Debug />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route element={<ProtectedRoute />}>
