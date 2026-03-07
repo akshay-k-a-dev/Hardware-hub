@@ -25,7 +25,7 @@ export default function Debug() {
                     user_email: 'test@example.com',
                     user_role: 'student',
                 });
-                
+
                 if (error && error.message.includes('does not exist')) {
                     setRpcStatus('missing');
                 } else {
@@ -39,7 +39,7 @@ export default function Debug() {
                 }
             }
         };
-        
+
         checkRPC();
 
         // Fetch recent profiles
@@ -49,7 +49,7 @@ export default function Debug() {
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(10);
-            
+
             if (error) {
                 console.error('Error fetching profiles:', error);
             } else {
@@ -86,7 +86,7 @@ export default function Debug() {
 
     return (
         <div style={{ padding: '20px', backgroundColor: '#1e1e1e', color: '#e0e0e0', minHeight: '100vh' }}>
-            <h1>🐛 MakerVault Debug Center</h1>
+            <h1>🐛 HardwareHub Debug Center</h1>
 
             {/* RPC Status Alert */}
             {rpcStatus === 'missing' && (
@@ -100,7 +100,7 @@ export default function Debug() {
                 }}>
                     <strong>⚠️ RPC Function Missing</strong>
                     <p style={{ margin: '5px 0 0 0' }}>
-                        The <code>create_user_profile</code> function is not set up. 
+                        The <code>create_user_profile</code> function is not set up.
                         Run the SQL from <code>supabase/003_create_profile_rpc.sql</code> in your Supabase SQL Editor.
                     </p>
                 </div>
@@ -115,7 +115,7 @@ export default function Debug() {
                         <p><strong>Email:</strong> {session.user?.email}</p>
                         <p><strong>Role:</strong> {session.user?.user_metadata?.role || 'N/A'}</p>
                         <p><strong>Logged in at:</strong> {new Date(session.created_at).toLocaleString()}</p>
-                        <button 
+                        <button
                             onClick={async () => {
                                 try {
                                     await supabase.auth.signOut();
