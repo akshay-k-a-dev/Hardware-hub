@@ -7,16 +7,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.error('[SUPABASE] Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    storageKey: 'hardware-hub-auth-token',
-    // Disable multi-tab session locking which can cause hangs in some browser environments
-    lockType: 'cookie'
-  }
-});
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Simplified logging for debugging that doesn't wrap core methods
 export const getDbLogs = () => {
