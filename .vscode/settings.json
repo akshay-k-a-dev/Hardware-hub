@@ -1,0 +1,12 @@
+{
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/package.json",
+                "/jsconfig.json",
+                "/components.json"
+            ],
+            "url": "file:///c:/Users/ASUS/Desktop/aloa/local.schema.json"
+        }
+    ]
+}

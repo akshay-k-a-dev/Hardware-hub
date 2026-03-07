@@ -1,10 +1,11 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     Wrench,
     ClipboardList,
     FileCheck,
     PlusSquare,
+    BookmarkCheck,
     LogOut,
     Bell,
     Search,
@@ -34,16 +35,24 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import NotificationBell from './NotificationBell';
 import { Toaster } from '@/components/ui/toaster';
 
 export default function Layout() {
     const { profile, signOut, isProvider, isAdmin } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
+
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/login', { replace: true });
+    };
 
     const studentLinks = [
         { to: '/', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
         { to: '/components', icon: <Wrench size={18} />, label: 'Hardware Lab' },
         { to: '/my-requests', icon: <ClipboardList size={18} />, label: 'My Requests' },
+        { to: '/my-prebooks', icon: <BookmarkCheck size={18} />, label: 'My Pre-Books' },
     ];
 
     const providerLinks = [
@@ -98,7 +107,7 @@ export default function Layout() {
                                 </span>
                             </div>
                         </div>
-                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={signOut}>
+                        <Button variant="ghost" className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={handleSignOut}>
                             <LogOut size={16} className="mr-3" />
                             Sign Out
                         </Button>
@@ -120,10 +129,7 @@ export default function Layout() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <Button variant="ghost" size="icon" className="relative text-muted-foreground">
-                                <Bell size={20} />
-                                <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-destructive" />
-                            </Button>
+                            <NotificationBell />
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
@@ -141,7 +147,7 @@ export default function Layout() {
                                         <Settings className="mr-2 h-4 w-4" /> Settings
                                     </DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={signOut} className="text-destructive focus:text-destructive">
+                                    <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
                                         <LogOut className="mr-2 h-4 w-4" /> Sign Out
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -150,7 +156,7 @@ export default function Layout() {
                     </header>
 
                     {/* Main Content Area */}
-                    <main className="flex-1 overflow-y-auto bg-muted/20 p-6 md:p-10">
+                    <main className="flex-1 overflow-y-auto bg-muted/20 p-4 md:p-10">
                         <Outlet />
                     </main>
                 </SidebarInset>

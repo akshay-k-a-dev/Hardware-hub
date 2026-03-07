@@ -14,7 +14,9 @@ import {
     TrendingUp,
     LayoutDashboard,
     Zap,
-    History
+    History,
+    Star,
+    MapPin
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -30,14 +32,31 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+
 export default function Dashboard() {
-    const { profile, isProvider, isAdmin } = useAuth();
+    const { profile, isProvider, isAdmin, updateProfile } = useAuth();
+    const { toast } = useToast();
     const [stats, setStats] = useState({ available: 0, pending: 0, active: 0, total: 0 });
     const [recentRequests, setRecentRequests] = useState([]);
+    const [borrowerRatings, setBorrowerRatings] = useState({});
     const [loading, setLoading] = useState(true);
+    const [showLabSettings, setShowLabSettings] = useState(false);
+    const [labName, setLabName] = useState(profile?.lab_name || '');
 
     useEffect(() => {
         loadDashboard();
+        if (profile) setLabName(profile.lab_name || '');
     }, [profile]);
 
     const loadDashboard = async () => {
@@ -69,7 +88,7 @@ export default function Dashboard() {
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).eq('status', 'pending'),
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).in('status', ['issued', 'overdue']),
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id),
-            supabase.from('requests').select('*, hardware:hardware_items(id, name, category)').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
         ]);
 
         setStats({ available: available || 0, pending: pending || 0, active: active || 0, total: total || 0 });
@@ -95,11 +114,31 @@ export default function Dashboard() {
             supabase.from('requests').select('*', { count: 'exact', head: true }).in('hardware_id', hwIds).eq('status', 'pending'),
             supabase.from('requests').select('*', { count: 'exact', head: true }).in('hardware_id', hwIds).in('status', ['issued', 'overdue']),
             supabase.from('requests').select('*', { count: 'exact', head: true }).in('hardware_id', hwIds),
-            supabase.from('requests').select('*, borrower:profiles!user_id(id, name, email), hardware:hardware_items(id, name, category)').in('hardware_id', hwIds).order('created_at', { ascending: false }).limit(5),
+            supabase.from('requests').select('*, borrower:profiles!requests_user_id_fkey(id, name, email), hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').in('hardware_id', hwIds).order('created_at', { ascending: false }).limit(5),
         ]);
 
         setStats({ available: hwIds.length, pending: pending || 0, active: active || 0, total: total || 0 });
         setRecentRequests(recent || []);
+
+        const uniqueBorrowerIds = [...new Set((recent || []).map(r => r.user_id))];
+        if (uniqueBorrowerIds.length > 0) {
+            const { data: ratingsData } = await supabase.rpc('get_multiple_user_ratings', { p_user_ids: uniqueBorrowerIds });
+            if (ratingsData) {
+                const ratingMap = {};
+                ratingsData.forEach(r => ratingMap[r.user_id] = r);
+                setBorrowerRatings(ratingMap);
+            }
+        }
+    };
+
+    const handleUpdateLabName = async () => {
+        try {
+            await updateProfile({ lab_name: labName });
+            toast({ title: 'Profile Updated', description: 'Your lab branding has been set.' });
+            setShowLabSettings(false);
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'Update Failed', description: err.message });
+        }
     };
 
     const studentStats = [
@@ -120,10 +159,10 @@ export default function Dashboard() {
 
     const getColorClasses = (color) => {
         const variants = {
-            blue: "bg-blue-500/10 text-blue-500 border-blue-500/20 shadow-blue-500/5",
-            amber: "bg-amber-500/10 text-amber-500 border-amber-500/20 shadow-amber-500/5",
-            emerald: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shadow-emerald-500/5",
-            indigo: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20 shadow-indigo-500/5",
+            blue: "bg-blue-500/5 text-blue-600 border-blue-500/10 shadow-sm shadow-blue-500/5",
+            amber: "bg-amber-500/5 text-amber-600 border-amber-500/10 shadow-sm shadow-amber-500/5",
+            emerald: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10 shadow-sm shadow-emerald-500/5",
+            indigo: "bg-primary/5 text-primary border-primary/10 shadow-sm shadow-primary/5",
         };
         return variants[color] || variants.blue;
     };
@@ -152,46 +191,51 @@ export default function Dashboard() {
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-7xl mx-auto">
             <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-2">
                 <div className="space-y-1">
-                    <div className="flex items-center gap-3 text-primary mb-1">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                            <LayoutDashboard className="h-6 w-6" />
+                    <div className="flex items-center gap-2 md:gap-3 text-primary mb-1">
+                        <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
+                            <LayoutDashboard className="h-4 w-4 md:h-6 md:h-6" />
                         </div>
-                        <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
+                        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">
                             Welcome, {profile?.name?.split(' ')[0]}
                         </h1>
+                        {isProvider && (
+                            <Badge variant="outline" className="ml-1 md:ml-2 py-0.5 md:py-1 px-2 md:px-3 border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-tighter cursor-pointer hover:bg-primary/10 transition-colors text-[8px] md:text-[10px]" onClick={() => setShowLabSettings(true)}>
+                                {profile.lab_name || 'Set Lab Name'} • Settings
+                            </Badge>
+                        )}
                     </div>
-                    <p className="text-muted-foreground text-lg font-medium">
+                    <p className="text-muted-foreground text-sm md:text-lg font-medium">
                         Insights and activity for your {isProvider ? 'admin' : 'lab'} account
                     </p>
                 </div>
                 {!isProvider && (
-                    <Button asChild size="lg" className="h-14 px-8 rounded-2xl font-bold shadow-md hover:scale-105 transition-transform active:scale-95 bg-primary text-primary-foreground">
+                    <Button asChild size="lg" className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold shadow-md hover:scale-105 transition-transform active:scale-95 bg-primary text-primary-foreground">
                         <Link to="/components">
-                            <Search className="mr-3 h-5 w-5" /> Explore Lab
+                            <Search className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:h-5" /> Explore Lab
                         </Link>
                     </Button>
                 )}
             </header>
 
             {/* Stats Overview */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
                 {displayStats.map((s, idx) => (
                     <Card
                         key={s.label}
                         className={`group border border-border bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden relative animate-in zoom-in-95 fade-in duration-700 delay-${idx * 100}`}
                     >
                         <div className={`absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 rounded-full blur-3xl opacity-5 ${getColorClasses(s.color).split(' ')[0]}`} />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative">
-                            <CardTitle className="text-xs font-black text-muted-foreground uppercase tracking-widest">{s.label}</CardTitle>
-                            <div className={`p-2.5 rounded-xl border ring-1 ring-white/5 ${getColorClasses(s.color)} group-hover:scale-110 transition-transform duration-500`}>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 md:pb-3 relative">
+                            <CardTitle className="text-[9px] md:text-xs font-black text-muted-foreground uppercase tracking-widest">{s.label}</CardTitle>
+                            <div className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl border ring-1 ring-white/5 ${getColorClasses(s.color)} group-hover:scale-110 transition-transform duration-500`}>
                                 {s.icon}
                             </div>
                         </CardHeader>
-                        <CardContent className="relative">
-                            <div className="text-4xl font-black tracking-tighter tabular-nums">{s.value}</div>
-                            <div className="flex items-center gap-1.5 mt-2">
-                                <Badge variant="secondary" className="bg-muted/50 text-[10px] font-bold py-0 h-5">LIVE DATA</Badge>
-                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
+                            <div className="text-2xl md:text-4xl font-black tracking-tighter tabular-nums">{s.value}</div>
+                            <div className="flex items-center gap-1.5 mt-1.5 md:mt-2">
+                                <Badge variant="secondary" className="bg-muted/50 text-[8px] md:text-[10px] font-bold py-0 h-4 md:h-5">LIVE DATA</Badge>
+                                <span className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                             </div>
                         </CardContent>
                     </Card>
@@ -251,6 +295,12 @@ export default function Dashboard() {
                                                             <span className="text-xs font-black text-muted-foreground/40 hidden md:inline">•</span>
                                                             <span className="flex items-center gap-1.5 text-sm font-semibold text-primary/70">
                                                                 <User size={14} className="text-primary/40" /> {req.borrower.name}
+                                                                {borrowerRatings[req.user_id] && (
+                                                                    <span className="flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-black">
+                                                                        <Star size={8} className="fill-amber-500" />
+                                                                        {borrowerRatings[req.user_id].average_rating.toFixed(1)}
+                                                                    </span>
+                                                                )}
                                                             </span>
                                                         </>
                                                     )}
@@ -333,6 +383,33 @@ export default function Dashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog open={showLabSettings} onOpenChange={setShowLabSettings}>
+                <DialogContent className="sm:max-w-md rounded-[2rem]">
+                    <DialogHeader>
+                        <DialogTitle className="text-2xl font-black tracking-tight">Lab Identity</DialogTitle>
+                        <DialogDescription className="text-sm font-medium">
+                            Set your laboratory or community name to brand your hardware listings.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="py-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="labName" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Lab Name</Label>
+                            <Input
+                                id="labName"
+                                placeholder="e.g. Robotics Innovation Lab"
+                                value={labName}
+                                onChange={(e) => setLabName(e.target.value)}
+                                className="h-12 rounded-xl bg-muted/30 border-border"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button variant="ghost" onClick={() => setShowLabSettings(false)} className="rounded-xl font-bold">Cancel</Button>
+                        <Button onClick={handleUpdateLabName} className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">Save Branding</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

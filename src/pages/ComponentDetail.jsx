@@ -15,7 +15,13 @@ import {
     History,
     FileText,
     ArrowRightCircle,
-    Layout
+    Layout,
+    MapPin,
+    Bell,
+    BookmarkCheck,
+    Timer,
+    Hourglass,
+    Users
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -57,15 +63,26 @@ export default function ComponentDetail() {
     const [requestForm, setRequestForm] = useState({ quantity: 1, project_title: '', project_description: '' });
     const [submitting, setSubmitting] = useState(false);
 
+    // Pre-book state
+    const [prebookInfo, setPrebookInfo] = useState(null); // { in_queue, prebook_id, position, status, hold_expires_at }
+    const [prebookCount, setPrebookCount] = useState(0);
+    const [prebooking, setPrebooking] = useState(false);
+
     useEffect(() => {
         loadItem();
     }, [id]);
+
+    useEffect(() => {
+        if (item && profile && isStudent) {
+            loadPrebookInfo();
+        }
+    }, [item, profile]);
 
     const loadItem = async () => {
         try {
             const { data, error } = await supabase
                 .from('hardware_items')
-                .select('*, owner:profiles!owner_id(id, name, email)')
+                .select('*, owner:profiles!hardware_items_owner_id_fkey(id, name, email, lab_name)')
                 .eq('id', id)
                 .single();
 
@@ -76,6 +93,73 @@ export default function ComponentDetail() {
             navigate('/components');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadPrebookInfo = async () => {
+        try {
+            // Get user's queue position
+            const { data: posData } = await supabase.rpc('get_user_prebook_position', {
+                p_hardware_id: id,
+                p_user_id: profile.id,
+            });
+            setPrebookInfo(posData);
+
+            // Get total queue count
+            const { data: countData } = await supabase.rpc('get_prebook_count', {
+                p_hardware_id: id,
+            });
+            setPrebookCount(countData || 0);
+        } catch (err) {
+            console.error('Error loading prebook info:', err);
+        }
+    };
+
+    const handlePrebook = async () => {
+        setPrebooking(true);
+        try {
+            const { data, error } = await supabase.rpc('prebook_item', {
+                p_hardware_id: id,
+            });
+            if (error) throw error;
+            toast({
+                title: "Pre-Book Confirmed!",
+                description: `You are #${data.position} in the waitlist. We'll notify you when it's available.`,
+            });
+            loadPrebookInfo();
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Pre-Book Failed",
+                description: error.message,
+            });
+        } finally {
+            setPrebooking(false);
+        }
+    };
+
+    const handleCancelPrebook = async () => {
+        if (!prebookInfo?.prebook_id) return;
+        setPrebooking(true);
+        try {
+            const { data, error } = await supabase.rpc('cancel_prebook', {
+                p_prebook_id: prebookInfo.prebook_id,
+            });
+            if (error) throw error;
+            toast({
+                title: "Pre-Book Cancelled",
+                description: data?.message || "Your reservation has been removed.",
+            });
+            setPrebookInfo(null);
+            loadPrebookInfo();
+        } catch (error) {
+            toast({
+                variant: "destructive",
+                title: "Cancellation Failed",
+                description: error.message,
+            });
+        } finally {
+            setPrebooking(false);
         }
     };
 
@@ -149,26 +233,58 @@ export default function ComponentDetail() {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
                 <div className="lg:col-span-8 space-y-10">
-                    <section className="bg-card border border-border p-10 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-16 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-                            <Cpu size={180} />
-                        </div>
-
-                        <div className="relative space-y-6">
-                            <div className="flex flex-wrap items-center gap-4">
-                                <Badge variant="outline" className="h-7 px-4 font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
-                                    {item.category}
-                                </Badge>
-                                <StatusBadge status={item.status} className="h-7 px-4 font-black" />
+                    <section className="bg-card border border-border rounded-[2.5rem] shadow-sm overflow-hidden group">
+                        <div className="grid grid-cols-1 md:grid-cols-2">
+                            {/* Image Container */}
+                            <div className="relative h-[300px] md:h-full min-h-[400px] overflow-hidden bg-muted/20">
+                                {item.image_url ? (
+                                    <img
+                                        src={item.image_url}
+                                        alt={item.name}
+                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
+                                        <div className="p-8 rounded-[2rem] bg-primary/5 border border-primary/10 mb-6">
+                                            <Cpu size={64} className="text-primary/20" />
+                                        </div>
+                                        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">Visual reference unavailable</p>
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                             </div>
 
-                            <h1 className="text-5xl font-black tracking-tighter text-foreground leading-[1.1] max-w-2xl">
-                                {item.name}
-                            </h1>
+                            {/* Content Side */}
+                            <div className="p-10 md:p-12 flex flex-col justify-center relative">
+                                <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
+                                    <Zap size={160} />
+                                </div>
 
-                            <p className="text-xl text-muted-foreground/80 font-medium leading-relaxed max-w-3xl border-l-4 border-primary/20 pl-8 ml-1">
-                                {item.description}
-                            </p>
+                                <div className="relative space-y-8">
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <Badge variant="outline" className="h-7 px-4 font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
+                                            {item.category}
+                                        </Badge>
+                                        <StatusBadge status={item.status} className="h-7 px-4 font-black" />
+                                    </div>
+
+                                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.9]">
+                                        {item.name}
+                                    </h1>
+
+                                    <p className="text-lg text-muted-foreground/80 font-medium leading-relaxed max-w-3xl border-l-4 border-primary/20 pl-8 ml-1">
+                                        {item.description || "Experimental hardware reserved for advanced laboratory research and development projects."}
+                                    </p>
+
+                                    <div className="flex items-center gap-4 pt-4">
+                                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/30 border border-border">
+                                            <MapPin size={14} className="text-primary/60" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Location: </span>
+                                            <span className="text-[10px] font-black uppercase text-foreground">{item.owner?.lab_name || 'Main Lab'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </section>
 
@@ -350,6 +466,87 @@ export default function ComponentDetail() {
                                         </form>
                                     </DialogContent>
                                 </Dialog>
+                            ) : isStudent && item.quantity_available === 0 ? (
+                                <div className="w-full space-y-5">
+                                    {/* Out of Stock Label */}
+                                    <div className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
+                                        <AlertCircle size={18} className="text-destructive" />
+                                        <span className="text-sm font-black uppercase tracking-widest text-destructive">Out of Stock</span>
+                                    </div>
+
+                                    {/* Queue Info */}
+                                    {prebookCount > 0 && (
+                                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                            <Users size={14} className="text-primary/60" />
+                                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                                {prebookCount} {prebookCount === 1 ? 'person' : 'people'} in waitlist
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    {/* Pre-Book Actions */}
+                                    {prebookInfo?.in_queue ? (
+                                        <div className="space-y-4">
+                                            <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                                                        <BookmarkCheck size={20} />
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Your Queue Position</span>
+                                                        <span className="font-bold text-foreground text-lg">#{prebookInfo.position}</span>
+                                                    </div>
+                                                </div>
+                                                {prebookInfo.status === 'notified' && prebookInfo.hold_expires_at && (
+                                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 animate-pulse">
+                                                        <Timer size={14} className="text-blue-500" />
+                                                        <span className="text-xs font-bold text-blue-600">
+                                                            Hold active — claim before it expires!
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {prebookInfo.status === 'notified' ? (
+                                                <Button
+                                                    className="w-full h-14 rounded-3xl font-black uppercase text-xs tracking-widest shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground"
+                                                    onClick={() => navigate('/my-prebooks')}
+                                                >
+                                                    <Zap size={16} className="mr-2" />
+                                                    Go Claim Now
+                                                </Button>
+                                            ) : (
+                                                <Button
+                                                    variant="outline"
+                                                    className="w-full h-14 rounded-3xl border-destructive/30 text-destructive hover:bg-destructive/10 font-black uppercase text-[10px] tracking-widest transition-all"
+                                                    onClick={handleCancelPrebook}
+                                                    disabled={prebooking}
+                                                >
+                                                    {prebooking ? 'Cancelling...' : 'Cancel Pre-Book'}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <Button
+                                            className="w-full h-16 text-sm font-black uppercase tracking-widest shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all rounded-3xl bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 hover:from-amber-600 hover:to-orange-600"
+                                            onClick={handlePrebook}
+                                            disabled={prebooking}
+                                        >
+                                            {prebooking ? (
+                                                <>Joining Waitlist...</>
+                                            ) : (
+                                                <>
+                                                    <BookmarkCheck className="mr-3 h-5 w-5" />
+                                                    Pre-Book / Hold Item
+                                                </>
+                                            )}
+                                        </Button>
+                                    )}
+
+                                    <p className="text-[10px] text-center font-black uppercase tracking-tighter text-muted-foreground/40 leading-tight">
+                                        Join the waitlist to get notified when this item becomes available.
+                                    </p>
+                                </div>
                             ) : (
                                 <div className="w-full space-y-4">
                                     <Button variant="secondary" className="w-full h-16 rounded-3xl opacity-40 cursor-not-allowed font-black uppercase text-xs tracking-widest" disabled>

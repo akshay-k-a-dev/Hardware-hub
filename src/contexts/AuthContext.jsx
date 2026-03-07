@@ -1,241 +1,255 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { createContext, useContext, useEffect, useState, useRef } from "react";
+import { supabase } from "../lib/supabase";
 
-const AuthContext = createContext({});
+const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(null);
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    const fetchProfile = async (userId) => {
-        try {
-            console.log('[AUTH] Fetching profile:', { userId });
-            const { data, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single();
+  // Refs to prevent concurrent operations in React Strict Mode
+  const initInProgress = useRef(false);
+  const abortController = useRef(null);
 
-            if (error) {
-                console.error('[AUTH] Profile fetch error:', error);
-                return null;
-            }
+  // Fetch profile from database with abort handling
+  const fetchProfile = async (userId, signal) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-            console.log('[AUTH] Profile fetched:', data);
-            setProfile(data);
-            return data;
-        } catch (err) {
-            console.error('[AUTH] Profile fetch failed:', err);
-            return null;
+      if (signal?.aborted) return null;
+
+      if (error) {
+        // Silently handle common React Strict Mode errors
+        if (error.message?.includes('Lock broken') || error.message?.includes('AbortError')) {
+          console.warn("[AUTH] Profile fetch aborted (likely React Strict Mode)");
+          return null;
         }
+        console.error("[AUTH] Profile fetch error:", error);
+        return null;
+      }
+
+      setProfile(data);
+      return data;
+    } catch (err) {
+      if (signal?.aborted || err.name === 'AbortError') {
+        console.warn("[AUTH] Profile fetch aborted");
+        return null;
+      }
+      console.error("[AUTH] Profile fetch failed:", err);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    let timeoutId;
+
+    const initializeAuth = async () => {
+      if (initInProgress.current) return;
+      initInProgress.current = true;
+      console.log("[AUTH] Initializing session...");
+
+      if (abortController.current) abortController.current.abort();
+      abortController.current = new AbortController();
+
+      try {
+        // Race the session fetch against a 10s timeout
+        const { data, error } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_TIMEOUT')), 10000))
+        ]);
+
+        if (!mounted) return;
+        if (error) throw error;
+
+        const session = data?.session;
+        if (session?.user) {
+          setUser(session.user);
+          // Fetch profile but don't block the critical path for too long
+          Promise.race([
+            fetchProfile(session.user.id, abortController.current?.signal),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('PROFILE_TIMEOUT')), 5000))
+          ]).catch(e => console.warn("[AUTH] Profile fetch delayed:", e.message));
+        } else {
+          setUser(null);
+          setProfile(null);
+        }
+      } catch (err) {
+        if (!mounted || err.name === 'AbortError') return;
+        console.warn("[AUTH] Initialization warning:", err.message);
+        // Don't clear user here if it might have been set by onAuthStateChange
+      } finally {
+        if (mounted) {
+          setLoading(false);
+          initInProgress.current = false;
+        }
+      }
     };
 
-    useEffect(() => {
-        let isMounted = true;
+    // Safety timeout - force loading to false after 10 seconds if everything else fails
+    timeoutId = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("[AUTH] Global initialization timeout reached");
+        setLoading(false);
+        initInProgress.current = false;
+      }
+    }, 10000);
 
-        const initSession = async () => {
-            try {
-                const { data: { session }, error } = await supabase.auth.getSession();
-                if (error) throw error;
+    initializeAuth();
 
-                console.log('[AUTH] Session retrieved:', { hasSession: !!session, session });
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
 
-                if (!isMounted) return;
-                setUser(session?.user ?? null);
+      console.log("[AUTH] State event:", event, session?.user?.id ? "(User found)" : "(No user)");
 
-                if (session?.user) {
-                    await fetchProfile(session.user.id);
-                }
-            } catch (err) {
-                if (err.name !== 'AbortError' && !err.message?.includes('Lock broken')) {
-                    console.error('[AUTH] Session retrieval failed:', err);
-                }
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
-        };
-
-        initSession();
-
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                if (!isMounted) return;
-                console.log('[AUTH] State changed:', { event, hasSession: !!session, session });
-                setUser(session?.user ?? null);
-                if (session?.user) {
-                    try {
-                        await fetchProfile(session.user.id);
-                    } catch (e) {
-                        if (e.name !== 'AbortError' && !e.message?.includes('Lock broken')) {
-                            console.error('[AUTH] Profile fetch on state change failed:', e);
-                        }
-                    }
-                } else {
-                    setProfile(null);
-                }
-                setLoading(false);
-            }
-        );
-
-        return () => {
-            isMounted = false;
-            clearTimeout(timeoutId);
-            subscription.unsubscribe();
-        };
-    }, []);
-
-    const signUp = async ({ email, password, name, role = 'student' }) => {
-        console.log('[AUTH] Starting signup:', { email, name, role });
-
-        try {
-            // Validate inputs
-            if (!email || !password || !name) {
-                throw new Error('Email, password, and name are required');
-            }
-
-            if (password.length < 6) {
-                throw new Error('Password must be at least 6 characters');
-            }
-
-            // Attempt signup with better error details
-            console.log('[AUTH] Calling supabase.auth.signUp...');
-            const { data, error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { name, role },
-                },
-            });
-
-            if (error) {
-                console.error('[AUTH] Supabase signup error:', {
-                    code: error.code,
-                    message: error.message,
-                    status: error.status,
-                    fullError: error,
-                });
-
-                // Provide more helpful error messages
-                if (error.message.includes('rate limit') || error.message.includes('email rate')) {
-                    throw new Error(
-                        'Email service rate limit exceeded. Please wait 1-2 hours before trying again, or contact support if the issue persists.'
-                    );
-                } else if (error.message.includes('Database error saving new user')) {
-                    throw new Error(
-                        'Database error occurred. This may be due to: 1) Email already registered, 2) Server configuration issue. Please try again or contact support.'
-                    );
-                } else if (error.message.includes('User already registered')) {
-                    throw new Error('This email is already registered. Please log in or use a different email.');
-                }
-
-                throw error;
-            }
-
-            if (!data?.user?.id) {
-                throw new Error('User creation returned no user ID');
-            }
-
-            console.log('[AUTH] Signup successful, user created:', { userId: data.user.id, email });
-
-            // Wait for the trigger to create the profile
-            console.log('[AUTH] Waiting for profile creation trigger...');
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Verify profile exists
-            console.log('[AUTH] Verifying profile was created...');
-            const { data: existingProfile, error: fetchError } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', data.user.id)
-                .maybeSingle();
-
-            if (fetchError) {
-                console.error('[AUTH] Error fetching profile:', fetchError);
-                // Don't throw here - the profile might exist despite fetch error
-            } else if (existingProfile) {
-                console.log('[AUTH] Profile verified:', existingProfile);
-                return data;
-            } else {
-                console.warn('[AUTH] Profile not found after trigger, attempting manual creation');
-            }
-
-            // Manually create profile using RPC function if trigger failed
-            console.log('[AUTH] Attempting to create profile via RPC function...');
-            const { data: rpcResult, error: rpcError } = await supabase
-                .rpc('create_user_profile', {
-                    user_id: data.user.id,
-                    user_name: name || 'User',
-                    user_email: email,
-                    user_role: role || 'student',
-                });
-
-            if (rpcError) {
-                console.error('[AUTH] RPC profile creation failed:', rpcError);
-                throw new Error(
-                    `Profile creation failed: ${rpcError.message || 'Unknown error'}. Please contact support.`
-                );
-            }
-
-            if (rpcResult?.success === false) {
-                console.error('[AUTH] RPC returned error:', rpcResult);
-                throw new Error(
-                    `Profile creation failed: ${rpcResult.error || 'Unknown error'}. Please contact support.`
-                );
-            }
-
-            console.log('[AUTH] Profile created successfully via RPC:', rpcResult);
-            return data;
-        } catch (err) {
-            console.error('[AUTH] SignUp failed:', {
-                message: err.message,
-                fullError: err,
-            });
-            throw err;
-        }
-    };
-
-    const signIn = async ({ email, password }) => {
-        console.log('[AUTH] Starting signin:', { email });
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            if (error) {
-                console.error('[AUTH] SignIn error:', error);
-                throw error;
-            }
-            console.log('[AUTH] SignIn successful:', { userId: data?.user?.id, email });
-            return data;
-        } catch (err) {
-            console.error('[AUTH] SignIn failed:', err);
-            throw err;
-        }
-    };
-
-    const signOut = async () => {
-        await supabase.auth.signOut();
+      if (session?.user) {
+        setUser(session.user);
+        // Non-blocking profile fetch for state changes
+        fetchProfile(session.user.id).catch(err => console.error("[AUTH] Profile sync error:", err));
+      } else {
         setUser(null);
         setProfile(null);
-    };
+      }
 
-    const value = {
-        user,
-        profile,
-        loading,
-        signUp,
-        signIn,
-        signOut,
-        isStudent: profile?.role === 'student',
-        isProvider: profile?.role === 'provider',
-        isAdmin: profile?.role === 'admin',
-    };
+      // Always clear loading if we get a state change
+      if (loading) setLoading(false);
+    });
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+      initInProgress.current = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // SIGN UP
+  const signUp = async ({ email, password, name, role = "student" }) => {
+    try {
+      if (!email || !password || !name) {
+        throw new Error("Email, password and name are required");
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name,
+            role,
+          },
+        },
+      });
+
+      if (error) {
+        if (error.message.includes("User already registered")) {
+          throw new Error("Email already registered. Please login.");
+        }
+
+        if (error.message.includes("rate limit")) {
+          throw new Error("Too many signup attempts. Please try later.");
+        }
+
+        throw error;
+      }
+
+      return data;
+    } catch (err) {
+      console.error("[AUTH] Signup failed:", err);
+      throw err;
+    }
+  };
+
+  // SIGN IN
+  const signIn = async ({ email, password }) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      return data;
+    } catch (err) {
+      console.error("[AUTH] SignIn failed:", err);
+      throw err;
+    }
+  };
+
+  // SIGN OUT
+  const signOut = async () => {
+    try {
+      console.log("[AUTH] Signing out...");
+      await supabase.auth.signOut();
+      console.log("[AUTH] Supabase sign out completed");
+
+      // Immediately clear state
+      setUser(null);
+      setProfile(null);
+      setLoading(false);
+
+      console.log("[AUTH] User and profile reset, loading set to false");
+    } catch (err) {
+      if (err.message?.includes('Lock broken') || err.message?.includes('AbortError')) {
+        console.warn("[AUTH] Sign out aborted (likely React Strict Mode), clearing state anyway");
+        // Even if sign out fails due to lock issues, clear the local state
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+      } else {
+        console.error("[AUTH] SignOut failed:", err);
+        // Even if sign out fails, clear the local state
+        setUser(null);
+        setProfile(null);
+        setLoading(false);
+      }
+    }
+  };
+
+  const updateProfile = async (updates) => {
+    try {
+      if (!user) throw new Error("No authenticated user");
+      const { data, error } = await supabase
+        .from("profiles")
+        .update(updates)
+        .eq("id", user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+      return data;
+    } catch (err) {
+      console.error("[AUTH] Profile update failed:", err);
+      throw err;
+    }
+  };
+
+  const value = {
+    user,
+    profile,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+    updateProfile,
+    isStudent: profile?.role === "student",
+    isProvider: profile?.role === "provider",
+    isAdmin: profile?.role === "admin",
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

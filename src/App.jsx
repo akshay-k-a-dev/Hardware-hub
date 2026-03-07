@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import Components from './pages/Components';
 import ComponentDetail from './pages/ComponentDetail';
 import MyRequests from './pages/MyRequests';
+import MyPreBooks from './pages/MyPreBooks';
 import ManageRequests from './pages/ManageRequests';
 import AddComponent from './pages/AddComponent';
 import Debug from './pages/Debug';
@@ -61,6 +62,7 @@ export default function App() {
                     <Route path="/components" element={<Components />} />
                     <Route path="/components/:id" element={<ComponentDetail />} />
                     <Route path="/my-requests" element={<MyRequests />} />
+                    <Route path="/my-prebooks" element={<MyPreBooks />} />
                     <Route path="/manage-requests" element={<ManageRequests />} />
                     <Route path="/add-component" element={<AddComponent />} />
                 </Route>

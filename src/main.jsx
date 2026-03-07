@@ -6,11 +6,12 @@ import App from './App';
 import './index.css';
 
 createRoot(document.getElementById('root')).render(
-    <StrictMode>
+    // Temporarily disabled StrictMode due to Supabase auth conflicts
+    // <StrictMode>
         <BrowserRouter>
             <AuthProvider>
                 <App />
             </AuthProvider>
         </BrowserRouter>
-    </StrictMode>
+    // </StrictMode>
 );

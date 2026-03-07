@@ -71,10 +71,10 @@ export default function Register() {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans py-16">
+        <div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden font-sans py-16">
             <div className="absolute top-0 left-0 w-full h-full">
                 <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[150px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-accent/5 rounded-full blur-[120px]" />
             </div>
 
             <Card className="w-full max-w-[500px] mx-4 border border-border bg-card shadow-xl relative z-10 animate-in fade-in zoom-in-95 duration-700 rounded-[2.5rem] overflow-hidden">

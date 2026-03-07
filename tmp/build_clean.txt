@@ -1,0 +1,2 @@
+﻿npm error Class extends value undefined is not a constructor or null
+npm error A complete log of this run can be found in: C:\Users\ASUS\AppData\Local\npm-cache\_logs\2026-03-06T19_04_57_395Z-debug-0.log
