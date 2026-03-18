@@ -15,6 +15,7 @@ import AddComponent from './pages/AddComponent';
 import ResetPassword from './pages/ResetPassword';
 import Debug from './pages/Debug';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 
 export default function App() {
     const { loading } = useAuth();
@@ -69,6 +70,7 @@ export default function App() {
                     <Route path="/manage-requests" element={<ManageRequests />} />
                     <Route path="/add-component" element={<AddComponent />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/settings" element={<Settings />} />
                 </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />

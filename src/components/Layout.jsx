@@ -224,7 +224,10 @@ function LayoutInner() {
                                     <User className="mr-3 h-4 w-4 text-primary" />
                                     Profile
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="rounded-xl cursor-pointer p-3 hover:bg-primary/5 focus:bg-primary/5">
+                                <DropdownMenuItem
+                                    onClick={() => navigate('/settings')}
+                                    className="rounded-xl cursor-pointer p-3 hover:bg-primary/5 focus:bg-primary/5"
+                                >
                                     <Settings className="mr-3 h-4 w-4 text-primary" />
                                     Settings
                                 </DropdownMenuItem>
