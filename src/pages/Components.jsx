@@ -15,11 +15,11 @@ import {
     Filter,
     ArrowRight,
     SlidersHorizontal,
-    Trash2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import StatusBadge from '@/components/StatusBadge';
 import ComponentCard from '@/components/ComponentCard';
+import { useAuth } from '@/contexts/AuthContext';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,7 @@ const categoryIcons = {
 
 export default function Components() {
     const navigate = useNavigate();
+    const { isStudent } = useAuth();
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -59,6 +60,10 @@ export default function Components() {
             .from('hardware_items')
             .select('*, owner:profiles!hardware_items_owner_id_fkey(id, name, email, lab_name)')
             .order('created_at', { ascending: false });
+
+        if (isStudent) {
+            query = query.eq('is_active', true);
+        }
 
         if (search) {
             query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`);

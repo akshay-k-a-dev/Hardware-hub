@@ -111,6 +111,11 @@ export function AuthProvider({ children }) {
 
       console.log("[AUTH] State event:", event, session?.user?.id ? "(User found)" : "(No user)");
 
+      // Force route to reset password if we detect recovery link flow
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/reset-password';
+      }
+
       if (session?.user) {
         setUser(session.user);
         // Non-blocking profile fetch for state changes

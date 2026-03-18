@@ -21,7 +21,9 @@ import {
     BookmarkCheck,
     Timer,
     Hourglass,
-    Users
+    Users,
+    EyeOff,
+    Eye
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,7 +56,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function ComponentDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { profile, isStudent } = useAuth();
+    const { profile, isStudent, isAdmin } = useAuth();
     const { toast } = useToast();
 
     const [item, setItem] = useState(null);
@@ -163,6 +165,25 @@ export default function ComponentDetail() {
         }
     };
 
+    const handleToggleActive = async () => {
+        try {
+            const newStatus = !item.is_active;
+            const { error } = await supabase
+                .from('hardware_items')
+                .update({ is_active: newStatus })
+                .eq('id', item.id);
+            if (error) throw error;
+            
+            setItem(prev => ({ ...prev, is_active: newStatus }));
+            toast({
+                title: newStatus ? "Component Activated" : "Component Deactivated",
+                description: newStatus ? "Item is now visible to students in search." : "Item is now hidden from student search.",
+            });
+        } catch (error) {
+            toast({ variant: "destructive", title: "Update Failed", description: error.message });
+        }
+    };
+
     const handleRequest = async (e) => {
         e.preventDefault();
         setSubmitting(true);
@@ -224,10 +245,27 @@ export default function ComponentDetail() {
                     Back to Lab
                 </Button>
 
-                <div className="flex items-center gap-3 bg-card border border-border px-5 py-2.5 rounded-2xl shadow-sm">
-                    <History size={16} className="text-primary/60" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">ID: </span>
-                    <span className="text-[10px] font-black uppercase text-primary tabular-nums">{item.id.split('-')[0]}</span>
+                <div className="flex items-center gap-3">
+                    {(profile?.id === item.owner_id || isAdmin) && (
+                        <Button
+                            variant={item.is_active ? "outline" : "default"}
+                            size="sm"
+                            className={`h-12 px-6 rounded-2xl font-black text-xs uppercase tracking-widest ${!item.is_active ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'border-destructive/30 text-destructive hover:bg-destructive/5'}`}
+                            onClick={handleToggleActive}
+                        >
+                            {item.is_active ? (
+                                <><EyeOff className="h-4 w-4 mr-2" /> Deactivate</>
+                            ) : (
+                                <><Eye className="h-4 w-4 mr-2" /> Activate</>
+                            )}
+                        </Button>
+                    )}
+
+                    <div className="flex items-center gap-3 bg-card border border-border px-5 py-2.5 rounded-2xl shadow-sm">
+                        <History size={16} className="text-primary/60" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">ID: </span>
+                        <span className="text-[10px] font-black uppercase text-primary tabular-nums">{item.id.split('-')[0]}</span>
+                    </div>
                 </div>
             </header>
 
@@ -266,6 +304,11 @@ export default function ComponentDetail() {
                                             {item.category}
                                         </Badge>
                                         <StatusBadge status={item.status} className="h-7 px-4 font-black" />
+                                        {item.is_active === false && (
+                                            <Badge variant="destructive" className="h-7 px-4 font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white">
+                                                Deactivated
+                                            </Badge>
+                                        )}
                                     </div>
 
                                     <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.9]">

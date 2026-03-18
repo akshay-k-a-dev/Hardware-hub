@@ -43,6 +43,11 @@ export default function ComponentCard({ item = {} }) {
                         <Badge variant="secondary" className="bg-background/80 backdrop-blur-md text-[8px] md:text-[10px] font-black uppercase tracking-widest border border-border/40 py-1 px-2 md:py-1.5 md:px-3 shadow-sm group-hover/card:bg-primary group-hover/card:text-primary-foreground group-hover/card:border-primary transition-all">
                             {category}
                         </Badge>
+                        {item.is_active === false && (
+                            <Badge variant="destructive" className="bg-amber-500 hover:bg-amber-600 text-[8px] md:text-[10px] font-black uppercase tracking-widest py-1 px-2 md:py-1.5 md:px-3 text-white border-0">
+                                Deactivated
+                            </Badge>
+                        )}
                         {isOutOfStock && (
                             <>
                                 <Badge variant="destructive" className="text-[8px] md:text-[10px] font-black uppercase tracking-widest py-1 px-2 md:py-1.5 md:px-3">

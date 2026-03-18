@@ -14,6 +14,7 @@ import ManageRequests from './pages/ManageRequests';
 import AddComponent from './pages/AddComponent';
 import ResetPassword from './pages/ResetPassword';
 import Debug from './pages/Debug';
+import Profile from './pages/Profile';
 
 export default function App() {
     const { loading } = useAuth();
@@ -67,6 +68,7 @@ export default function App() {
                     <Route path="/my-prebooks" element={<MyPreBooks />} />
                     <Route path="/manage-requests" element={<ManageRequests />} />
                     <Route path="/add-component" element={<AddComponent />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Route>
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
