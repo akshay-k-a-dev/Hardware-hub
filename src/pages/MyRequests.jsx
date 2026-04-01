@@ -141,7 +141,7 @@ export default function MyRequests() {
                         <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
                             <Clock className="h-5 w-5 md:h-6 md:h-6" />
                         </div>
-                        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">My Activity</h1>
+                        <h1 className="text-lg font-bold tracking-tight text-foreground">My Activity</h1>
                     </div>
                     <p className="text-muted-foreground text-sm md:text-lg font-medium">
                         Track your hardware requests, deployments, and return schedules.

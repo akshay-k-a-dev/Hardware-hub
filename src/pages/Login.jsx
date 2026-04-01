@@ -72,56 +72,47 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
-            <div className="absolute top-0 left-0 w-full h-full">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[150px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[120px]" />
-            </div>
-
-            <Card className="w-full max-w-[460px] mx-4 border border-border bg-card shadow-xl relative z-10 animate-in fade-in zoom-in-95 duration-700 rounded-[2.5rem] overflow-hidden">
-                <CardHeader className="space-y-6 pt-12 pb-8 text-center bg-muted/5 border-b border-border relative">
+        <div className="min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden font-sans">
+            <Card className="w-full max-w-sm mx-4 border border-border bg-card shadow-sm rounded-lg overflow-hidden">
+                <CardHeader className="space-y-4 pt-8 pb-6 text-center border-b border-border">
                     <div className="flex justify-center">
-                        <div className="p-4 rounded-3xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
-                            <Cpu className="h-10 w-10" />
+                        <div className="p-2.5 bg-foreground text-background border border-foreground rounded-md">
+                            <Cpu className="h-6 w-6" />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <CardTitle className="text-4xl font-black tracking-tight text-foreground">HardwareHub</CardTitle>
-                        <CardDescription className="text-lg font-medium text-muted-foreground">Welcome back to the Lab</CardDescription>
+                    <div className="space-y-1">
+                        <CardTitle className="text-xl font-bold tracking-tight text-foreground">HardwareHub</CardTitle>
+                        <CardDescription className="text-xs font-medium text-muted-foreground">Sign in to access the lab</CardDescription>
                     </div>
                 </CardHeader>
 
-                <CardContent className="px-10 pb-10 pt-8">
+                <CardContent className="px-6 pb-6 pt-6 bg-card">
                     {error && (
-                        <Alert variant="destructive" className="mb-8 border-none bg-destructive/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                            <AlertCircle className="h-5 w-5" />
-                            <AlertTitle className="font-bold tracking-tight text-destructive">Login Error</AlertTitle>
-                            <AlertDescription className="font-medium text-xs">{error}</AlertDescription>
+                        <Alert variant="destructive" className="mb-4 border border-destructive/20 bg-destructive/5 text-destructive rounded-md animate-in slide-in-from-top-2 duration-200">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription className="text-xs font-medium">{error}</AlertDescription>
                         </Alert>
                     )}
 
                     {resetSent && (
-                        <Alert className="mb-8 border-none bg-green-500/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                            <AlertTitle className="font-bold tracking-tight text-green-700 uppercase text-[10px] tracking-widest">Signal Sent</AlertTitle>
-                            <AlertDescription className="font-bold text-xs text-green-800">
-                                Check your terminal (inbox) for the recovery link.
+                        <Alert className="mb-4 border border-border bg-muted/30 rounded-md animate-in slide-in-from-top-2 duration-200">
+                            <CheckCircle2 className="h-4 w-4 text-foreground" />
+                            <AlertDescription className="text-xs font-medium text-foreground">
+                                Check your inbox for the password reset link.
                             </AlertDescription>
                         </Alert>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-3">
-                            <Label htmlFor="email" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Student / Faculty Email</Label>
-                            <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
-                                    <Mail className="h-4 w-4" />
-                                </span>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email" className="text-xs font-semibold text-foreground">Email</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="email"
                                     type="email"
                                     placeholder="you@university.edu"
-                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors"
+                                    className="pl-10 h-10 bg-background border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
@@ -129,28 +120,26 @@ export default function Login() {
                             </div>
                         </div>
 
-                        <div className="space-y-3">
+                        <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Password</Label>
+                                <Label htmlFor="password" className="text-xs font-semibold text-foreground">Password</Label>
                                 <Button
                                     variant="link"
-                                    className="px-0 font-bold text-xs text-muted-foreground hover:text-primary transition-colors h-auto"
+                                    className="px-0 text-xs font-medium text-muted-foreground hover:text-foreground h-auto"
                                     type="button"
                                     onClick={handleForgotPassword}
                                     disabled={loading}
                                 >
-                                    Forgot?
+                                    Forgot password?
                                 </Button>
                             </div>
-                            <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
-                                    <Lock className="h-4 w-4" />
-                                </span>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     id="password"
                                     type="password"
                                     placeholder="••••••••"
-                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors tracking-widest"
+                                    className="pl-10 h-10 bg-background border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -159,38 +148,32 @@ export default function Login() {
                         </div>
 
                         <Button
-                            className="w-full mt-4 h-16 rounded-2xl font-black uppercase text-sm tracking-widest shadow-[0_20px_40px_-15px_rgba(var(--primary),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground flex items-center gap-3"
+                            className="w-full h-10 rounded-md font-semibold text-sm bg-foreground text-background hover:bg-foreground/90 flex items-center gap-2 mt-2"
                             disabled={loading}
                             type="submit"
                         >
                             {loading ? (
-                                <>
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    Verifying...
-                                </>
+                                <><Loader2 className="h-4 w-4 animate-spin" /> Signing in...</>
                             ) : (
-                                <>
-                                    Enter the Lab
-                                    <ArrowRight className="h-5 w-5" />
-                                </>
+                                <>Sign In <ArrowRight className="h-4 w-4" /></>
                             )}
                         </Button>
                     </form>
                 </CardContent>
 
-                <CardFooter className="flex flex-col gap-5 border-t border-border bg-muted/5 px-10 py-8">
-                    <p className="text-sm text-center font-medium text-muted-foreground">
-                        New to the lab?{' '}
-                        <Link to="/register" className="font-bold text-primary hover:text-primary/80 transition-colors uppercase tracking-wider ml-2">
-                            Create Account
+                <CardFooter className="flex flex-col gap-3 border-t border-border bg-muted/20 px-6 py-5">
+                    <p className="text-xs text-center text-muted-foreground">
+                        Don't have an account?{' '}
+                        <Link to="/register" className="font-semibold text-foreground hover:underline">
+                            Create one
                         </Link>
                     </p>
-                    <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground/60 uppercase tracking-[0.2em] font-black">
-                        <ShieldCheck className="h-4 w-4" />
-                        Secure Encrypted Channel
+                    <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                        <ShieldCheck className="h-3 w-3" />
+                        Secure encrypted connection
                     </div>
                 </CardFooter>
             </Card>
-        </div >
+        </div>
     );
 }

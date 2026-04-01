@@ -20,7 +20,12 @@ export default function Profile() {
         full_name: '',
         bio: '',
         city: '',
-        avatar_url: ''
+        avatar_url: '',
+        community_association: 'No',
+        community_name: '',
+        tinkerhub_id: '',
+        academic_role: 'Student',
+        college_name: ''
     });
 
     useEffect(() => {
@@ -45,7 +50,12 @@ export default function Profile() {
                 full_name: profileData.full_name || profileData.name || '',
                 bio: profileData.bio || '',
                 city: profileData.city || '',
-                avatar_url: profileData.avatar_url || ''
+                avatar_url: profileData.avatar_url || '',
+                community_association: profileData.community_association || 'No',
+                community_name: profileData.community_name || '',
+                tinkerhub_id: profileData.tinkerhub_id || '',
+                academic_role: profileData.academic_role || 'Student',
+                college_name: profileData.college_name || ''
             });
         } catch (error) {
             console.error('Error fetching profile:', error);
@@ -70,6 +80,11 @@ export default function Profile() {
             return;
         }
 
+        if ((editForm.academic_role === 'Student' || editForm.academic_role === 'Teacher') && !editForm.college_name?.trim()) {
+            toast({ title: "Validation Error", description: "College Name is required.", variant: "destructive" });
+            return;
+        }
+
         try {
             setSaving(true);
             const { error } = await supabase.rpc('update_user_profile', {
@@ -77,7 +92,12 @@ export default function Profile() {
                 p_bio: editForm.bio,
                 p_city: editForm.city,
                 p_avatar_url: editForm.avatar_url,
-                p_skills: [] // skills can be expanded later
+                p_skills: [],
+                p_community_association: editForm.community_association,
+                p_community_name: editForm.community_name,
+                p_tinkerhub_id: editForm.tinkerhub_id,
+                p_academic_role: editForm.academic_role,
+                p_college_name: editForm.college_name
             });
 
             if (error) throw error;
@@ -216,19 +236,100 @@ export default function Profile() {
 
                         <div className="pt-2 border-t border-border/40">
                             {isEditing ? (
-                                <div className="space-y-1.5">
-                                    <div className="flex justify-between items-center">
-                                        <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Bio</label>
-                                        <span className={`text-xs ${editForm.bio.length > 160 ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
-                                            {editForm.bio.length}/160
-                                        </span>
+                                <div className="space-y-6">
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between items-center">
+                                            <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Bio</label>
+                                            <span className={`text-xs ${editForm.bio.length > 160 ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
+                                                {editForm.bio.length}/160
+                                            </span>
+                                        </div>
+                                        <Textarea 
+                                            value={editForm.bio} 
+                                            onChange={e => setEditForm({...editForm, bio: e.target.value})}
+                                            placeholder="Engineering student focusing on embedded systems..."
+                                            className="resize-none h-24 bg-background"
+                                        />
                                     </div>
-                                    <Textarea 
-                                        value={editForm.bio} 
-                                        onChange={e => setEditForm({...editForm, bio: e.target.value})}
-                                        placeholder="Engineering student focusing on embedded systems..."
-                                        className="resize-none h-24 bg-background"
-                                    />
+                                    <div className="pt-4 border-t border-border/40 mt-4">
+                                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Community Details</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Associated with community?</label>
+                                                <select 
+                                                    value={editForm.community_association}
+                                                    onChange={e => setEditForm({...editForm, community_association: e.target.value})}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                >
+                                                    <option value="No">No</option>
+                                                    <option value="Yes">Yes</option>
+                                                </select>
+                                            </div>
+                                            
+                                            {editForm.community_association === 'Yes' && (
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Community Name</label>
+                                                    <select 
+                                                        value={editForm.community_name}
+                                                        onChange={e => setEditForm({...editForm, community_name: e.target.value})}
+                                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    >
+                                                        <option value="">Select Community</option>
+                                                        <option value="TinkerHub">TinkerHub</option>
+                                                        <option value="IEEE">IEEE</option>
+                                                        <option value="IEDC">IEDC</option>
+                                                        <option value="GDSC">GDSC</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {editForm.community_association === 'Yes' && editForm.community_name === 'TinkerHub' && (
+                                            <div className="mt-4 space-y-1.5">
+                                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">TinkerHub ID</label>
+                                                <Input 
+                                                    value={editForm.tinkerhub_id}
+                                                    onChange={e => setEditForm({...editForm, tinkerhub_id: e.target.value})}
+                                                    placeholder="TinkerHub ID"
+                                                    className="bg-background"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-4 border-t border-border/40 mt-4">
+                                        <h4 className="text-xs font-bold text-foreground uppercase tracking-wider mb-4">Academic Details</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1.5">
+                                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Role</label>
+                                                <select 
+                                                    value={editForm.academic_role}
+                                                    onChange={e => setEditForm({...editForm, academic_role: e.target.value})}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                >
+                                                    <option value="Student">Student</option>
+                                                    <option value="Teacher">Teacher</option>
+                                                    <option value="Other">Other</option>
+                                                </select>
+                                            </div>
+                                            
+                                            {(editForm.academic_role === 'Student' || editForm.academic_role === 'Teacher') && (
+                                                <div className="space-y-1.5">
+                                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex justify-between">
+                                                        <span>College Name</span>
+                                                        <span className="text-destructive">*</span>
+                                                    </label>
+                                                    <Input 
+                                                        value={editForm.college_name}
+                                                        onChange={e => setEditForm({...editForm, college_name: e.target.value})}
+                                                        placeholder="e.g. Model Engineering College"
+                                                        className="bg-background"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 <div>
@@ -236,6 +337,25 @@ export default function Profile() {
                                     <p className="text-sm leading-relaxed text-foreground/80">
                                         {data.bio || <span className="italic text-muted-foreground">No bio provided.</span>}
                                     </p>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 mt-6 pt-4 border-t border-border/40">
+                                        <div>
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Academic Role</h4>
+                                            <p className="text-sm font-medium">{data.academic_role || 'Not specified'}</p>
+                                        </div>
+                                        {data.college_name && (
+                                            <div>
+                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">College</h4>
+                                                <p className="text-sm font-medium">{data.college_name}</p>
+                                            </div>
+                                        )}
+                                        {data.community_association === 'Yes' && (
+                                            <div>
+                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Community</h4>
+                                                <p className="text-sm font-medium">{data.community_name || 'Associated'} {data.community_name === 'TinkerHub' && data.tinkerhub_id && `(ID: ${data.tinkerhub_id})`}</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

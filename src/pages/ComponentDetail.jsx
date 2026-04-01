@@ -441,21 +441,18 @@ export default function ComponentDetail() {
                                             <ArrowRightCircle className="ml-3 h-5 w-5" />
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[600px] bg-card border border-border rounded-[2.5rem] p-10 shadow-xl animate-in zoom-in-95 duration-300">
-                                        <form onSubmit={handleRequest} className="space-y-10">
-                                            <DialogHeader className="space-y-4">
-                                                <div className="h-16 w-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                                    <Layout size={32} />
-                                                </div>
-                                                <DialogTitle className="text-4xl font-black tracking-tight text-foreground leading-none">Borrow Request</DialogTitle>
-                                                <DialogDescription className="text-lg font-medium text-muted-foreground leading-relaxed">
-                                                    Briefly describe your project to help us approve your request faster.
+                                    <DialogContent className="sm:max-w-[420px] bg-background border border-border rounded-none p-6 shadow-none animate-in zoom-in-95 duration-200">
+                                        <form onSubmit={handleRequest} className="space-y-6">
+                                            <DialogHeader className="space-y-2">
+                                                <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Borrow Request</DialogTitle>
+                                                <DialogDescription className="text-sm text-muted-foreground">
+                                                    Briefly describe your project for quick approval.
                                                 </DialogDescription>
                                             </DialogHeader>
 
-                                            <div className="grid gap-8">
-                                                <div className="space-y-3">
-                                                    <Label htmlFor="quantity" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Quantity Needed (Max: {item.quantity_available})</Label>
+                                            <div className="grid gap-4">
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="quantity" className="text-xs font-semibold text-foreground">Quantity Needed (Max: {item.quantity_available})</Label>
                                                     <Input
                                                         id="quantity"
                                                         type="number"
@@ -464,46 +461,42 @@ export default function ComponentDetail() {
                                                         value={requestForm.quantity}
                                                         onChange={(e) => setRequestForm({ ...requestForm, quantity: e.target.value })}
                                                         required
-                                                        className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold px-6 tabular-nums"
+                                                        className="h-9 bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 tabular-nums"
                                                     />
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <Label htmlFor="title" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Project Name</Label>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="title" className="text-xs font-semibold text-foreground">Project Name</Label>
                                                     <Input
                                                         id="title"
                                                         placeholder="e.g. Robotics Controller"
                                                         value={requestForm.project_title}
                                                         onChange={(e) => setRequestForm({ ...requestForm, project_title: e.target.value })}
                                                         required
-                                                        className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold px-6"
+                                                        className="h-9 bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3"
                                                     />
                                                 </div>
-                                                <div className="space-y-3">
-                                                    <Label htmlFor="description" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Project Description</Label>
+                                                <div className="space-y-1.5">
+                                                    <Label htmlFor="description" className="text-xs font-semibold text-foreground">Project Description</Label>
                                                     <Textarea
                                                         id="description"
-                                                        placeholder="Briefly explain how you'll use this for your project."
-                                                        className="min-h-[150px] bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold p-6 leading-relaxed"
+                                                        placeholder="Briefly explain your use case."
+                                                        className="min-h-[80px] bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm p-3 resize-none"
                                                         value={requestForm.project_description}
                                                         onChange={(e) => setRequestForm({ ...requestForm, project_description: e.target.value })}
                                                     />
                                                 </div>
                                             </div>
 
-                                            <DialogFooter className="gap-4">
-                                                <Button type="button" variant="ghost" className="h-14 flex-1 rounded-2xl font-black uppercase text-xs border border-border hover:bg-muted/30" onClick={() => setShowRequestForm(false)}>
+                                            <DialogFooter className="gap-2 sm:space-x-0">
+                                                <Button type="button" variant="outline" className="h-9 w-full rounded-none font-semibold text-xs border border-border hover:bg-accent" onClick={() => setShowRequestForm(false)}>
                                                     Cancel
                                                 </Button>
                                                 <Button
                                                     type="submit"
                                                     disabled={submitting}
-                                                    className="h-14 px-10 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center gap-3"
+                                                    className="h-9 w-full rounded-none font-semibold text-xs bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2"
                                                 >
-                                                    {submitting ? (
-                                                        <>Processing...</>
-                                                    ) : (
-                                                        <>Submit Request <ArrowRightCircle size={18} /></>
-                                                    )}
+                                                    {submitting ? 'Processing...' : 'Submit Request'}
                                                 </Button>
                                             </DialogFooter>
                                         </form>

@@ -22,32 +22,16 @@ export default function App() {
 
     if (loading) {
         return (
-            <div className="min-h-screen w-full flex flex-col items-center justify-center bg-slate-50 font-sans p-6 overflow-hidden relative">
-                <div className="absolute inset-0 overflow-hidden">
-                    <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[150px]" />
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[120px]" />
-                </div>
-
-                <div className="relative z-10 space-y-8 flex flex-col items-center">
-                    <div className="relative">
-                        <div className="absolute inset-0 bg-primary/20 rounded-[2.5rem] blur-2xl animate-pulse scale-150" />
-                        <div className="relative bg-card border border-border/60 p-8 rounded-[2.5rem] shadow-2xl animate-in zoom-in duration-1000 ring-1 ring-border/20">
-                            <div className="p-4 rounded-3xl bg-primary/10 text-primary ring-1 ring-primary/30">
-                                <Cpu className="h-16 w-16" />
-                            </div>
-                        </div>
+            <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background font-sans">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="p-3 border border-border bg-foreground text-background">
+                        <Cpu className="h-8 w-8" />
                     </div>
-
-                    <div className="space-y-3 text-center">
-                        <h1 className="text-4xl font-black tracking-tight text-foreground animate-in slide-in-from-bottom-4 duration-1000">HardwareHub</h1>
-                        <div className="flex flex-col items-center gap-4">
-                            <p className="text-muted-foreground font-semibold text-lg tracking-tight">Initializing Laboratory Systems</p>
-                            <div className="flex items-center gap-2.5">
-                                <div className="h-2 w-2 rounded-full bg-primary/40 animate-bounce [animation-delay:-0.3s]" />
-                                <div className="h-2 w-2 rounded-full bg-primary/60 animate-bounce [animation-delay:-0.15s]" />
-                                <div className="h-2 w-2 rounded-full bg-primary animate-bounce" />
-                            </div>
-                        </div>
+                    <h1 className="text-base font-bold tracking-tight text-foreground">HardwareHub</h1>
+                    <div className="flex items-center gap-1.5">
+                        <div className="h-1.5 w-1.5 rounded-full bg-foreground/40 animate-bounce [animation-delay:-0.3s]" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-foreground/60 animate-bounce [animation-delay:-0.15s]" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-foreground animate-bounce" />
                     </div>
                 </div>
             </div>
@@ -62,7 +46,9 @@ export default function App() {
             <Route path="/register" element={<Register />} />
             <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
-                    <Route path="/" element={<Dashboard />} />
+                    {/* Hardware Lab is now the default landing page */}
+                    <Route path="/" element={<Components />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/components" element={<Components />} />
                     <Route path="/components/:id" element={<ComponentDetail />} />
                     <Route path="/my-requests" element={<MyRequests />} />

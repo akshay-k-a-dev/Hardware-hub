@@ -212,32 +212,23 @@ export default function ManageRequests() {
     }
 
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-7xl mx-auto">
-            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between px-1">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-3 text-primary mb-1">
-                        <div className="p-2 rounded-xl bg-primary/10">
-                            <Layers className="h-6 w-6" />
-                        </div>
-                        <h1 className="text-4xl font-extrabold tracking-tight text-foreground">Manage Requests</h1>
-                    </div>
-                    <p className="text-muted-foreground text-lg font-medium max-w-2xl">
-                        Review and approve student hardware requests.
+        <div className="space-y-6 max-w-7xl mx-auto">
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+                <div>
+                    <h1 className="text-lg font-bold tracking-tight text-foreground">Manage Requests</h1>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        Review and approve student hardware requests
                     </p>
                 </div>
             </header>
 
-            <div className="flex flex-col gap-6 bg-card border border-border p-6 rounded-3xl shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-125 transition-transform duration-1000">
-                    <SlidersHorizontal size={120} />
-                </div>
-
-                <div className="flex flex-col lg:flex-row lg:items-center gap-6 relative">
-                    <div className="relative flex-1 group">
-                        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
+            <div className="flex flex-col gap-2.5">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-2 relative">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Find borrower, project, or hardware..."
-                            className="h-14 pl-12 bg-muted/30 border-border rounded-2xl text-base focus-visible:ring-primary/20 focus-visible:border-primary/40 transition-all shadow-sm"
+                            className="h-9 pl-10 bg-card border-border rounded-md text-sm font-medium focus-visible:ring-1 focus-visible:ring-foreground"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -245,47 +236,44 @@ export default function ManageRequests() {
 
                     <ScrollArea className="w-full lg:w-auto overflow-hidden">
                         <Tabs value={filter} onValueChange={setFilter} className="w-full">
-                            <TabsList className="bg-muted/30 p-1.5 rounded-2xl h-14 border border-border">
+                            <TabsList className="bg-muted/40 p-1 border border-border rounded-md h-9">
                                 {FILTERS.map((f) => (
                                     <TabsTrigger
                                         key={f}
                                         value={f}
-                                        className="capitalize h-full px-6 rounded-xl font-bold text-sm tracking-tight data-[state=active]:bg-primary data-[state=active]:text-primary-foreground transition-all"
+                                        className="capitalize h-full px-3 rounded-sm font-medium text-xs tracking-wide data-[state=active]:bg-foreground data-[state=active]:text-background"
                                     >
                                         {f}
                                     </TabsTrigger>
                                 ))}
                             </TabsList>
                         </Tabs>
-                        <ScrollBar orientation="horizontal" className="h-2" />
+                        <ScrollBar orientation="horizontal" className="h-1.5" />
                     </ScrollArea>
                 </div>
             </div>
 
-            <Card className="border border-border bg-card shadow-sm rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-700">
-                <CardHeader className="py-8 px-10 border-b border-border bg-muted/20">
+            <Card className="border border-border bg-background shadow-none rounded-none overflow-hidden animate-in zoom-in-95 duration-700">
+                <CardHeader className="py-4 px-6 md:py-6 md:px-8 border-b border-border bg-background">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-2xl font-black flex items-center gap-2">
+                        <CardTitle className="text-xl md:text-2xl font-black flex items-center gap-2 text-foreground">
                             Request Inbox
                         </CardTitle>
                         <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="font-bold border-primary/20 bg-primary/5 text-primary h-7">
-                                {filteredRequests.length} TOTAL REQUESTS
+                            <Badge variant="outline" className="font-black uppercase tracking-widest border border-border bg-background text-foreground h-6 text-[8px] md:text-[10px] rounded-none">
+                                {filteredRequests.length} TOTAL
                             </Badge>
                         </div>
                     </div>
-                    <CardDescription className="text-sm font-medium mt-1">
-                        Review student borrow requests and update their lab status.
-                    </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     {filteredRequests.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-32 px-10 text-center bg-muted/5">
-                            <div className="p-8 rounded-[2rem] bg-muted/40 mb-8 ring-8 ring-muted/20">
-                                <ClipboardCheck className="h-20 w-20 text-muted-foreground/20" />
+                        <div className="flex flex-col items-center justify-center py-20 px-6 text-center bg-background border-t border-border">
+                            <div className="p-4 border border-border mb-6">
+                                <ClipboardCheck className="h-12 w-12 text-foreground" />
                             </div>
-                            <h3 className="text-3xl font-black text-foreground tracking-tight">Queue Clear</h3>
-                            <p className="text-muted-foreground max-w-md mt-4 text-lg font-medium leading-relaxed">
+                            <h3 className="text-2xl font-black text-foreground tracking-tight">Queue Clear</h3>
+                            <p className="text-foreground max-w-sm mt-3 text-sm font-bold leading-relaxed">
                                 {searchTerm ? "No specific records match your search query." : "There are currently no active requests requiring manual intervention in this category."}
                             </p>
                         </div>
@@ -294,83 +282,61 @@ export default function ManageRequests() {
                             {/* Desktop Table View */}
                             <div className="hidden md:block overflow-x-auto">
                                 <Table>
-                                    <TableHeader className="bg-muted/30 border-b border-border">
-                                        <TableRow className="hover:bg-transparent border-none h-16">
-                                            <TableHead className="font-black px-10 text-xs uppercase tracking-[0.2em] text-muted-foreground">Student / Project</TableHead>
-                                            <TableHead className="font-black px-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">Hardware Item</TableHead>
-                                            <TableHead className="font-black px-6 text-xs uppercase tracking-[0.2em] text-muted-foreground">Request Dates</TableHead>
-                                            <TableHead className="font-black px-6 text-xs uppercase tracking-[0.2em] text-muted-foreground text-center w-40">Status</TableHead>
-                                            <TableHead className="font-black text-right pr-10 text-xs uppercase tracking-[0.2em] text-muted-foreground">Actions</TableHead>
+                                    <TableHeader className="bg-background border-b border-border">
+                                        <TableRow className="hover:bg-transparent border-none h-12">
+                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Student / Project</TableHead>
+                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Hardware Item</TableHead>
+                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Request Dates</TableHead>
+                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground text-center w-32">Status</TableHead>
+                                            <TableHead className="font-black text-right pr-6 text-[10px] uppercase tracking-[0.2em] text-foreground w-24">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {filteredRequests.map((req, idx) => (
                                             <TableRow
                                                 key={req.id}
-                                                className="border-b border-border/10 hover:bg-muted/20 transition-all duration-300 group animate-in slide-in-from-left-8 duration-700 h-28"
-                                                style={{ animationDelay: `${idx * 80}ms` }}
+                                                className="border-b-[1px] border-foreground hover:bg-foreground hover:text-background transition-none duration-300 group h-20"
                                             >
-                                                <TableCell className="px-10">
-                                                    <div className="flex items-center gap-6">
-                                                        <div className="relative group/avatar">
-                                                            <div className="h-14 w-14 rounded-2xl bg-primary/10 border-2 border-primary/20 flex items-center justify-center text-primary font-black text-xl group-hover/avatar:scale-110 group-hover/avatar:bg-primary transition-all duration-500 group-hover/avatar:text-primary-foreground">
-                                                                {req.borrower?.name?.charAt(0)}
-                                                            </div>
-                                                            <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-emerald-500 border-2 border-background" title="Identity Verified" />
+                                                <TableCell className="px-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="h-10 w-10 border border-border bg-background flex items-center justify-center text-foreground font-black group-hover:border-background group-hover:text-background group-hover:bg-foreground transition-none">
+                                                            {req.borrower?.name?.charAt(0)}
                                                         </div>
-                                                        <div className="flex flex-col gap-1 min-w-0 max-w-[280px]">
+                                                        <div className="flex flex-col gap-0.5 min-w-0 max-w-[280px]">
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-black text-lg text-foreground group-hover:text-primary transition-colors truncate tracking-tight">{req.project_title}</span>
-                                                                {borrowerRatings[req.user_id] && (
-                                                                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                                                                        <Star size={10} className="fill-amber-500" />
-                                                                        <span className="text-[10px] font-black">{borrowerRatings[req.user_id].average_rating.toFixed(1)}</span>
-                                                                    </div>
-                                                                )}
+                                                                <span className="font-black text-sm md:text-base text-inherit truncate tracking-tight">{req.project_title}</span>
                                                             </div>
-                                                            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground/60">
-                                                                <Users size={12} className="text-primary/40" />
-                                                                {req.borrower?.name}
-                                                            </div>
+                                                            <span className="text-xs font-bold text-inherit opacity-80">{req.borrower?.name}</span>
                                                         </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="px-6">
-                                                    <div className="flex flex-col gap-1.5">
-                                                        <div className="flex items-center gap-2">
-                                                            <Package className="h-4 w-4 text-primary/60" />
-                                                            <span className="text-base font-bold text-foreground tracking-tight">{req.hardware?.name}</span>
-                                                        </div>
-                                                        <Badge variant="outline" className="w-fit text-[10px] font-black tracking-[0.1em] px-3 h-5 bg-muted/40 border-border/60">
-                                                            UNITS: {req.quantity}
-                                                        </Badge>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-sm font-bold text-inherit tracking-tight">{req.hardware?.name}</span>
+                                                        <span className="text-[10px] font-black tracking-widest uppercase opacity-70">
+                                                            {req.quantity} UNITS
+                                                        </span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="px-6">
-                                                    <div className="flex flex-col gap-2">
-                                                        <div className="flex items-center gap-2.5 text-sm font-bold text-muted-foreground">
-                                                            <ArrowDownLeft className="h-3.5 w-3.5 text-emerald-500/50" />
-                                                            <span className="tabular-nums">REQ: {formatDate(req.request_date)}</span>
-                                                        </div>
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-xs font-bold text-inherit tabular-nums">REQ: {formatDate(req.request_date)}</span>
                                                         {req.expected_return_date && (
-                                                            <div className="flex items-center gap-2.5 text-sm font-black text-primary/70">
-                                                                <ArrowUpRight className="h-3.5 w-3.5 text-primary/50" />
-                                                                <span className="tabular-nums uppercase">DUE: {formatDate(req.expected_return_date)}</span>
-                                                            </div>
+                                                            <span className="text-xs font-black text-inherit opacity-80 tabular-nums uppercase">DUE: {formatDate(req.expected_return_date)}</span>
                                                         )}
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="px-6 text-center">
-                                                    <StatusBadge status={req.status} className="h-9 px-6 font-black" />
+                                                    <StatusBadge status={req.status} className="h-7 px-4 text-[9px] font-black" />
                                                 </TableCell>
-                                                <TableCell className="text-right pr-10">
+                                                <TableCell className="text-right pr-6">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button
                                                                 disabled={actionLoading === req.id}
                                                                 variant="ghost"
                                                                 size="icon"
-                                                                className="h-12 w-12 rounded-2xl hover:bg-primary/10 hover:text-primary transition-all border border-transparent hover:border-primary/20 relative"
+                                                                className="h-10 w-10 rounded-none hover:bg-background hover:text-foreground transition-none border-2 border-transparent hover:border-background group-hover:hover:bg-background group-hover:hover:text-foreground relative"
                                                             >
                                                                 {actionLoading === req.id ? (
                                                                     <Loader2 className="h-5 w-5 animate-spin" />

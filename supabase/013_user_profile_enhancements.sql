@@ -16,7 +16,12 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS city TEXT,
   ADD COLUMN IF NOT EXISTS skills JSONB DEFAULT '[]'::jsonb,
   ADD COLUMN IF NOT EXISTS is_verified_email BOOLEAN DEFAULT true,
-  ADD COLUMN IF NOT EXISTS is_verified_phone BOOLEAN DEFAULT false;
+  ADD COLUMN IF NOT EXISTS is_verified_phone BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS community_association TEXT DEFAULT 'No',
+  ADD COLUMN IF NOT EXISTS community_name TEXT,
+  ADD COLUMN IF NOT EXISTS tinkerhub_id TEXT,
+  ADD COLUMN IF NOT EXISTS academic_role TEXT,
+  ADD COLUMN IF NOT EXISTS college_name TEXT;
 
 -- Backfill existing profiles
 UPDATE profiles 
@@ -94,6 +99,11 @@ BEGIN
     'skills', p.skills,
     'is_verified_email', p.is_verified_email,
     'is_verified_phone', p.is_verified_phone,
+    'community_association', p.community_association,
+    'community_name', p.community_name,
+    'tinkerhub_id', p.tinkerhub_id,
+    'academic_role', p.academic_role,
+    'college_name', p.college_name,
     'profile_completed', p.profile_completed,
     'trust', COALESCE(
       jsonb_build_object(
@@ -132,7 +142,12 @@ CREATE OR REPLACE FUNCTION update_user_profile(
   p_avatar_url TEXT DEFAULT NULL,
   p_bio TEXT DEFAULT NULL,
   p_city TEXT DEFAULT NULL,
-  p_skills JSONB DEFAULT '[]'::jsonb
+  p_skills JSONB DEFAULT '[]'::jsonb,
+  p_community_association TEXT DEFAULT 'No',
+  p_community_name TEXT DEFAULT NULL,
+  p_tinkerhub_id TEXT DEFAULT NULL,
+  p_academic_role TEXT DEFAULT NULL,
+  p_college_name TEXT DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -161,7 +176,12 @@ BEGIN
     avatar_url = p_avatar_url,
     bio = p_bio,
     city = p_city,
-    skills = p_skills
+    skills = p_skills,
+    community_association = p_community_association,
+    community_name = p_community_name,
+    tinkerhub_id = p_tinkerhub_id,
+    academic_role = p_academic_role,
+    college_name = p_college_name
   WHERE id = v_user_id;
 
   RETURN jsonb_build_object('success', true, 'message', 'Profile updated successfully');

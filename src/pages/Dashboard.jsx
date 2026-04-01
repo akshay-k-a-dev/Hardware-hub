@@ -158,13 +158,7 @@ export default function Dashboard() {
     const displayStats = (isProvider || isAdmin) ? providerStats : studentStats;
 
     const getColorClasses = (color) => {
-        const variants = {
-            blue: "bg-blue-500/5 text-blue-600 border-blue-500/10 shadow-sm shadow-blue-500/5",
-            amber: "bg-amber-500/5 text-amber-600 border-amber-500/10 shadow-sm shadow-amber-500/5",
-            emerald: "bg-emerald-500/5 text-emerald-600 border-emerald-500/10 shadow-sm shadow-emerald-500/5",
-            indigo: "bg-primary/5 text-primary border-primary/10 shadow-sm shadow-primary/5",
-        };
-        return variants[color] || variants.blue;
+        return "bg-background text-foreground border border-border";
     };
 
     if (loading) {
@@ -188,127 +182,91 @@ export default function Dashboard() {
     }
 
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-7xl mx-auto">
-            <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-2">
-                <div className="space-y-1">
-                    <div className="flex items-center gap-2 md:gap-3 text-primary mb-1">
-                        <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
-                            <LayoutDashboard className="h-4 w-4 md:h-6 md:h-6" />
-                        </div>
-                        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">
-                            Welcome, {profile?.name?.split(' ')[0]}
-                        </h1>
-                        {isProvider && (
-                            <Badge variant="outline" className="ml-1 md:ml-2 py-0.5 md:py-1 px-2 md:px-3 border-primary/20 bg-primary/5 text-primary font-black uppercase tracking-tighter cursor-pointer hover:bg-primary/10 transition-colors text-[8px] md:text-[10px]" onClick={() => setShowLabSettings(true)}>
-                                {profile.lab_name || 'Set Lab Name'} • Settings
-                            </Badge>
-                        )}
-                    </div>
-                    <p className="text-muted-foreground text-sm md:text-lg font-medium">
-                        Insights and activity for your {isProvider ? 'admin' : 'lab'} account
+        <div className="space-y-6 max-w-7xl mx-auto">
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
+                <div>
+                    <h1 className="text-lg font-bold tracking-tight text-foreground">
+                        Welcome back, {profile?.name?.split(' ')[0]}
+                    </h1>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                        {isProvider ? 'Lab admin overview' : 'Your hardware activity at a glance'}
                     </p>
                 </div>
-                {!isProvider && (
-                    <Button asChild size="lg" className="h-12 md:h-14 px-6 md:px-8 rounded-xl md:rounded-2xl font-bold shadow-md hover:scale-105 transition-transform active:scale-95 bg-primary text-primary-foreground">
-                        <Link to="/components">
-                            <Search className="mr-2 md:mr-3 h-4 w-4 md:h-5 md:h-5" /> Explore Lab
-                        </Link>
-                    </Button>
-                )}
+                <div className="flex items-center gap-2">
+                    {isProvider && (
+                        <Badge
+                            variant="outline"
+                            className="text-[10px] font-semibold border-border bg-muted/30 text-muted-foreground cursor-pointer hover:bg-muted"
+                            onClick={() => setShowLabSettings(true)}
+                        >
+                            {profile.lab_name || 'Set Lab Name'} · Settings
+                        </Badge>
+                    )}
+                    {!isProvider && (
+                        <Button asChild size="sm" className="h-8 px-4 text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 rounded-md shadow-none">
+                            <Link to="/components">
+                                <Search className="mr-1.5 h-3.5 w-3.5" /> Browse Hardware
+                            </Link>
+                        </Button>
+                    )}
+                </div>
             </header>
 
             {/* Stats Overview */}
-            <div className="grid gap-4 md:gap-6 grid-cols-2 lg:grid-cols-4">
-                {displayStats.map((s, idx) => (
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+                {displayStats.map((s) => (
                     <Card
                         key={s.label}
-                        className={`group border border-border bg-card hover:border-primary/40 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden relative animate-in zoom-in-95 fade-in duration-700 delay-${idx * 100}`}
+                        className="border border-border bg-card hover:shadow-sm transition-shadow"
                     >
-                        <div className={`absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 rounded-full blur-3xl opacity-5 ${getColorClasses(s.color).split(' ')[0]}`} />
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 md:pb-3 relative">
-                            <CardTitle className="text-[9px] md:text-xs font-black text-muted-foreground uppercase tracking-widest">{s.label}</CardTitle>
-                            <div className={`p-1.5 md:p-2.5 rounded-lg md:rounded-xl border ring-1 ring-white/5 ${getColorClasses(s.color)} group-hover:scale-110 transition-transform duration-500`}>
-                                {s.icon}
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-4 pt-0 md:p-6 md:pt-0 relative">
-                            <div className="text-2xl md:text-4xl font-black tracking-tighter tabular-nums">{s.value}</div>
-                            <div className="flex items-center gap-1.5 mt-1.5 md:mt-2">
-                                <Badge variant="secondary" className="bg-muted/50 text-[8px] md:text-[10px] font-bold py-0 h-4 md:h-5">LIVE DATA</Badge>
-                                <span className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            </div>
+                        <CardContent className="p-4">
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">{s.label}</p>
+                            <p className="text-2xl font-bold text-foreground tabular-nums">{s.value}</p>
                         </CardContent>
                     </Card>
                 ))}
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
                 {/* Recent Activity List */}
-                <Card className="lg:col-span-4 border border-border bg-card shadow-sm rounded-3xl overflow-hidden animate-in slide-in-from-left-6 duration-1000">
-                    <CardHeader className="flex flex-row items-center py-6 px-8 border-b border-border bg-muted/30">
+                <Card className="lg:col-span-4 border border-border bg-card shadow-none overflow-hidden">
+                    <CardHeader className="flex flex-row items-center p-4 border-b border-border">
                         <div className="grid gap-1 flex-1">
-                            <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                                <History className="h-6 w-6 text-primary/80" />
-                                Recent Activity
-                            </CardTitle>
-                            <CardDescription className="text-sm font-medium">Tracking the latest status of hardware requests</CardDescription>
+                            <CardTitle className="text-base font-bold text-foreground">Recent Activity</CardTitle>
+                            <CardDescription className="text-xs text-muted-foreground">Latest hardware request updates</CardDescription>
                         </div>
-                        <Button asChild variant="secondary" size="sm" className="ml-auto rounded-xl font-bold hover:bg-muted/80">
+                        <Button asChild variant="ghost" size="sm" className="ml-auto h-8 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-md">
                             <Link to={isProvider ? '/manage-requests' : '/my-requests'}>
-                                Full History <ArrowRight className="ml-2 h-4 w-4" />
+                                View All <ArrowRight className="ml-1 h-3.5 w-3.5" />
                             </Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="p-0">
                         {recentRequests.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-20 px-8 text-center bg-muted/5">
-                                <div className="p-4 rounded-full bg-muted/20 mb-6">
-                                    <AlertCircle className="h-12 w-12 text-muted-foreground/20" />
-                                </div>
-                                <h3 className="text-xl font-bold text-muted-foreground">No operations recorded</h3>
-                                <p className="text-sm text-muted-foreground/60 max-w-xs mt-2 font-medium">
-                                    {isProvider ? 'All clear! No incoming requests require your attention right now.' : 'Looks quiet here. Start exploring hardware to initiate your first request.'}
+                            <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+                                <AlertCircle className="h-8 w-8 text-muted-foreground/30 mb-3" />
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    {isProvider ? 'No pending requests.' : 'No requests yet. Browse hardware to get started.'}
                                 </p>
                             </div>
                         ) : (
-                            <div className="divide-y divide-border/20">
-                                {recentRequests.map((req, idx) => (
+                            <div className="divide-y divide-border">
+                                {recentRequests.map((req) => (
                                     <div
                                         key={req.id}
-                                        className="flex items-center justify-between p-6 hover:bg-muted/20 transition-all duration-300 group cursor-default animate-in fade-in duration-500"
-                                        style={{ animationDelay: `${idx * 150}ms` }}
+                                        className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors cursor-pointer group"
                                     >
-                                        <div className="flex items-center gap-12 flex-1">
-                                            <div className="hidden sm:flex items-center justify-center h-12 w-12 rounded-2xl bg-primary/5 border border-primary/10 group-hover:scale-110 transition-transform duration-500">
-                                                <Zap className="h-6 w-6 text-primary/60" />
-                                            </div>
-                                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
-                                                <span className="font-bold text-lg truncate group-hover:text-primary transition-colors">{req.project_title}</span>
-                                                <div className="flex flex-wrap items-center gap-3">
-                                                    <Badge variant="outline" className="font-bold border-border/60 bg-muted/20 text-xs px-2.5">
-                                                        {req.hardware?.name}
-                                                    </Badge>
-                                                    <span className="text-xs font-black text-muted-foreground/40 hidden sm:inline">•</span>
-                                                    <span className="text-sm font-bold text-muted-foreground/80">Qty: {req.quantity}</span>
-                                                    {req.borrower && (
-                                                        <>
-                                                            <span className="text-xs font-black text-muted-foreground/40 hidden md:inline">•</span>
-                                                            <span className="flex items-center gap-1.5 text-sm font-semibold text-primary/70">
-                                                                <User size={14} className="text-primary/40" /> {req.borrower.name}
-                                                                {borrowerRatings[req.user_id] && (
-                                                                    <span className="flex items-center gap-0.5 ml-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-600 text-[10px] font-black">
-                                                                        <Star size={8} className="fill-amber-500" />
-                                                                        {borrowerRatings[req.user_id].average_rating.toFixed(1)}
-                                                                    </span>
-                                                                )}
-                                                            </span>
-                                                        </>
-                                                    )}
-                                                </div>
+                                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                                            <span className="text-base font-bold truncate text-foreground">{req.project_title}</span>
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
+                                                <span className="truncate">{req.hardware?.name}</span>
+                                                <span>·</span>
+                                                <span>Qty {req.quantity}</span>
+                                                {req.borrower && <span className="hidden sm:inline">· {req.borrower.name}</span>}
                                             </div>
                                         </div>
-                                        <div className="ml-4 shrink-0">
-                                            <StatusBadge status={req.status} className="h-8 px-4 font-black shadow-sm" />
+                                        <div className="ml-3 shrink-0">
+                                            <StatusBadge status={req.status} />
                                         </div>
                                     </div>
                                 ))}
@@ -318,95 +276,71 @@ export default function Dashboard() {
                 </Card>
 
                 {/* Quick Access Menu */}
-                <Card className="lg:col-span-3 border border-border bg-card shadow-sm rounded-3xl overflow-hidden animate-in slide-in-from-right-6 duration-1000">
-                    <CardHeader className="py-6 px-8 border-b border-border bg-muted/30">
-                        <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                            <Zap className="h-6 w-6 text-amber-500" />
-                            Quick Actions
-                        </CardTitle>
-                        <CardDescription className="text-sm font-medium">Quick navigation to core features</CardDescription>
+                <Card className="lg:col-span-3 border border-border bg-card shadow-none overflow-hidden">
+                    <CardHeader className="p-4 border-b border-border">
+                        <CardTitle className="text-base font-bold text-foreground">Quick Actions</CardTitle>
+                        <CardDescription className="text-sm text-muted-foreground font-medium">Navigate to core features</CardDescription>
                     </CardHeader>
-                    <CardContent className="p-6 grid gap-4">
-                        <Button asChild variant="ghost" className="justify-start h-16 rounded-2xl border border-border hover:bg-primary/5 hover:border-primary/30 group px-6 transition-all duration-300">
+                    <CardContent className="p-4 grid gap-2">
+                        <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
                             <Link to="/components" className="flex items-center w-full">
-                                <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 mr-4 group-hover:scale-110 transition-transform">
-                                    <Wrench className="h-5 w-5" />
-                                </div>
-                                <div className="flex flex-col items-start">
-                                    <span className="font-bold text-foreground">Hardware Lab</span>
-                                    <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Browse Hardware</span>
-                                </div>
-                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Wrench className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                Hardware Lab
+                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
                             </Link>
                         </Button>
 
-                        <Button asChild variant="ghost" className="justify-start h-16 rounded-2xl border border-border hover:bg-primary/5 hover:border-primary/30 group px-6 transition-all duration-300">
+                        <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
                             <Link to={isProvider ? '/manage-requests' : '/my-requests'} className="flex items-center w-full">
-                                <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-500 mr-4 group-hover:scale-110 transition-transform">
-                                    <ClipboardList className="h-5 w-5" />
-                                </div>
-                                <div className="flex flex-col items-start">
-                                    <span className="font-bold text-foreground">{isProvider ? 'Requests' : 'My Requests'}</span>
-                                    <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Manage Requests</span>
-                                </div>
-                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <ClipboardList className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                {isProvider ? 'Manage Requests' : 'My Requests'}
+                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
                             </Link>
                         </Button>
 
                         {isProvider && (
-                            <Button asChild variant="ghost" className="justify-start h-16 rounded-2xl border border-border hover:bg-primary/5 hover:border-primary/30 group px-6 transition-all duration-300">
+                            <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
                                 <Link to="/add-component" className="flex items-center w-full">
-                                    <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 mr-4 group-hover:scale-110 transition-transform">
-                                        <Plus className="h-5 w-5" />
-                                    </div>
-                                    <div className="flex flex-col items-start">
-                                        <span className="font-bold text-foreground">Add Hardware</span>
-                                        <span className="text-[10px] text-muted-foreground font-bold tracking-widest uppercase">Expand Inventory</span>
-                                    </div>
-                                    <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <Plus className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                                    Add Hardware
+                                    <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
                                 </Link>
                             </Button>
                         )}
 
-                        <div className="mt-6 p-6 rounded-3xl bg-primary/5 border-2 border-primary/10 relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:scale-125 transition-transform duration-700">
-                                <AlertCircle size={64} />
-                            </div>
-                            <h4 className="text-base font-black mb-2 text-primary tracking-tight italic">System Advisory</h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed font-bold">
-                                Please ensure all hardware items are inspected for damages before confirming the return status. Early returns are always appreciated!
+                        <div className="mt-2 p-4 rounded-md bg-muted/40 border border-border">
+                            <h4 className="text-xs font-semibold text-foreground mb-1">Reminder</h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                                Inspect all hardware for damage before confirming returns. Early returns are appreciated.
                             </p>
-                            <Button variant="link" className="p-0 h-auto text-[10px] font-black uppercase tracking-tighter mt-4 text-primary/60 hover:text-primary">
-                                VIEW GUIDELINES
-                            </Button>
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
             <Dialog open={showLabSettings} onOpenChange={setShowLabSettings}>
-                <DialogContent className="sm:max-w-md rounded-[2rem]">
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-black tracking-tight">Lab Identity</DialogTitle>
-                        <DialogDescription className="text-sm font-medium">
+                <DialogContent className="sm:max-w-md rounded-none border border-border bg-background p-0">
+                    <DialogHeader className="p-6 border-b border-border">
+                        <DialogTitle className="text-2xl font-black tracking-tight text-foreground">Lab Identity</DialogTitle>
+                        <DialogDescription className="text-sm font-bold text-foreground opacity-80">
                             Set your laboratory or community name to brand your hardware listings.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="py-4">
+                    <div className="py-4 px-6 border-b border-border">
                         <div className="space-y-2">
-                            <Label htmlFor="labName" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Lab Name</Label>
+                            <Label htmlFor="labName" className="text-xs font-black uppercase tracking-widest text-foreground">Lab Name</Label>
                             <Input
                                 id="labName"
                                 placeholder="e.g. Robotics Innovation Lab"
                                 value={labName}
                                 onChange={(e) => setLabName(e.target.value)}
-                                className="h-12 rounded-xl bg-muted/30 border-border"
+                                className="h-12 border border-border bg-background rounded-none text-foreground placeholder-foreground/50"
                             />
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="ghost" onClick={() => setShowLabSettings(false)} className="rounded-xl font-bold">Cancel</Button>
-                        <Button onClick={handleUpdateLabName} className="h-12 px-8 rounded-xl font-black uppercase tracking-widest text-xs bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95">Save Branding</Button>
+                    <DialogFooter className="p-6 bg-background">
+                        <Button variant="ghost" onClick={() => setShowLabSettings(false)} className="rounded-none font-black text-foreground hover:bg-foreground hover:text-background border-2 border-transparent hover:border-foreground">Cancel</Button>
+                        <Button onClick={handleUpdateLabName} className="h-12 px-8 rounded-none font-black uppercase tracking-widest text-xs bg-foreground text-background border border-border hover:bg-background hover:text-foreground shadow-none">Save Branding</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
