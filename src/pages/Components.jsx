@@ -152,8 +152,8 @@ export default function Components() {
                 </div>
             </div>
 
-            {/* ── Filter Bar (scrolls with content) ── */}
-            <div className="flex flex-col gap-2.5 mb-5">
+            {/* ── Filter Bar (sticky header) ── */}
+            <div className="sticky top-0 z-10 flex flex-col gap-2.5 mb-5 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border -mx-4 px-4 md:-mx-6 md:px-6">
 
                 {/* Search + Secondary Filters Row */}
                 <div className="flex flex-col sm:flex-row gap-2">

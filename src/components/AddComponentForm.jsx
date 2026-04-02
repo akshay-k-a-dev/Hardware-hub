@@ -322,13 +322,13 @@ export default function AddComponentForm() {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="p-10">
-                <form id="add-component-form" onSubmit={handleSubmit} className="space-y-8">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-3">
+            <CardContent className="p-8">
+                <form id="add-component-form" onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
                             <Label
                                 htmlFor="name"
-                                className="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
                             >
                                 Item Name <span className="text-destructive">*</span>
                             </Label>
@@ -337,21 +337,21 @@ export default function AddComponentForm() {
                                 placeholder="e.g. NVIDIA Jetson Nano"
                                 value={form.name}
                                 onChange={(e) => handleChange('name', e.target.value)}
-                                className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 focus-visible:border-primary/40 text-lg font-bold px-6 shadow-sm transition-colors"
+                                className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
                                 required
                             />
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-2">
                             <Label
                                 htmlFor="category"
-                                className="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
                             >
                                 Category <span className="text-destructive">*</span>
                             </Label>
                             <select
                                 value={form.category}
                                 onChange={(e) => handleChange('category', e.target.value)}
-                                className="h-14 w-full rounded-2xl bg-muted/30 border border-border px-6 text-lg font-bold focus:outline-none focus-visible:ring-primary/20 focus-visible:border-primary/40 shadow-sm"
+                                className="h-10 w-full rounded-md bg-background border border-border px-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground shadow-sm"
                             >
                                 {CATEGORIES.map((c) => (
                                     <option key={c} value={c}>
@@ -363,10 +363,10 @@ export default function AddComponentForm() {
                     </div>
 
                     {/* description and specs */}
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         <Label
                             htmlFor="description"
-                            className="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
                         >
                             Description
                         </Label>
@@ -375,14 +375,14 @@ export default function AddComponentForm() {
                             placeholder="Brief description or notes"
                             value={form.description}
                             onChange={(e) => handleChange('description', e.target.value)}
-                            className="bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 focus-visible:border-primary/40 shadow-sm"
+                            className="bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground shadow-sm text-sm"
                             rows={3}
                         />
                     </div>
-                    <div className="space-y-3">
+                    <div className="space-y-2">
                         <Label
                             htmlFor="specs"
-                            className="text-xs font-black uppercase tracking-widest text-muted-foreground"
+                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
                         >
                             Specifications
                         </Label>
@@ -391,13 +391,13 @@ export default function AddComponentForm() {
                             placeholder="e.g. RAM: 8GB, Storage: 128GB"
                             value={form.specs}
                             onChange={(e) => handleChange('specs', e.target.value)}
-                            className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 focus-visible:border-primary/40 text-lg font-bold px-6 shadow-sm transition-colors"
+                            className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
                         />
                     </div>
 
                     {/* delivery checkboxes */}
-                    <div className="space-y-1">
-                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                             Delivery Method(s)
                         </Label>
                         <div className="flex items-center gap-6">
@@ -425,8 +425,8 @@ export default function AddComponentForm() {
                     </div>
 
                     {/* location input */}
-                    <div className="space-y-3">
-                        <Label htmlFor="location" className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    <div className="space-y-2">
+                        <Label htmlFor="location" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                             Location
                         </Label>
                         <div className="flex gap-2 items-center">
@@ -438,23 +438,23 @@ export default function AddComponentForm() {
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') e.preventDefault();
                                 }}
-                                className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 focus-visible:border-primary/40 text-lg font-bold px-6 shadow-sm transition-colors"
+                                className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
                             />
-                            <Button variant="ghost" type="button" size="icon" onClick={fillLocation} title="Use My Location">
-                                <MapPin className="h-5 w-5" />
+                            <Button variant="ghost" type="button" size="icon" onClick={fillLocation} title="Use My Location" className="h-10 w-10">
+                                <MapPin className="h-4 w-4" />
                             </Button>
                         </div>
                     </div>
 
                     {/* image upload */}
-                    <div className="space-y-3">
-                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">
+                    <div className="space-y-2">
+                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                             Images (optional)
                         </Label>
                         <div
                             onDrop={handleDrop}
                             onDragOver={(e) => e.preventDefault()}
-                            className="border-dashed border-2 border-border rounded-2xl p-6 text-center cursor-pointer bg-muted/10"
+                            className="border-dashed border-2 border-border rounded-md p-6 text-center cursor-pointer bg-muted/10 hover:bg-muted/30 transition-colors"
                             onClick={() => document.getElementById('image-input').click()}
                         >
                             <input
@@ -466,7 +466,7 @@ export default function AddComponentForm() {
                                 onChange={handleInputChange}
                             />
                             <UploadCloud className="mx-auto h-6 w-6 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground">
+                            <p className="text-sm text-muted-foreground mt-2">
                                 Drag & drop or click to upload (max 5)
                             </p>
                         </div>

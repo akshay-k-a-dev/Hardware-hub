@@ -215,15 +215,15 @@ export default function ComponentDetail() {
 
     if (loading) {
         return (
-            <div className="max-w-7xl mx-auto space-y-10 animate-pulse p-4">
-                <Skeleton className="h-10 w-48 rounded-xl" />
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-                    <div className="lg:col-span-8 space-y-10">
-                        <Skeleton className="h-[250px] w-full rounded-[2.5rem]" />
-                        <Skeleton className="h-[400px] w-full rounded-[2.5rem]" />
+            <div className="max-w-7xl mx-auto space-y-8 animate-pulse p-4">
+                <Skeleton className="h-10 w-48 rounded-md" />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-8 space-y-8">
+                        <Skeleton className="h-[250px] w-full rounded-md" />
+                        <Skeleton className="h-[400px] w-full rounded-md" />
                     </div>
                     <div className="lg:col-span-4 self-start">
-                        <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
+                        <Skeleton className="h-[500px] w-full rounded-md" />
                     </div>
                 </div>
             </div>
@@ -233,15 +233,15 @@ export default function ComponentDetail() {
     const availRatio = item.quantity_available / item.quantity_total;
 
     return (
-        <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 p-2 md:p-0">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
+        <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 p-4 md:p-6">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="group h-12 px-6 rounded-2xl bg-card border border-border hover:bg-primary/5 hover:border-primary/20 hover:text-primary font-black text-xs uppercase tracking-widest transition-all"
+                    className="group h-10 px-4 rounded-md bg-card border border-border hover:bg-muted font-bold text-xs uppercase tracking-widest transition-all"
                     onClick={() => navigate('/components')}
                 >
-                    <ArrowLeft className="h-4 w-4 mr-3 transition-transform group-hover:-translate-x-2" />
+                    <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
                     Back to Lab
                 </Button>
 
@@ -250,7 +250,7 @@ export default function ComponentDetail() {
                         <Button
                             variant={item.is_active ? "outline" : "default"}
                             size="sm"
-                            className={`h-12 px-6 rounded-2xl font-black text-xs uppercase tracking-widest ${!item.is_active ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'border-destructive/30 text-destructive hover:bg-destructive/5'}`}
+                            className={`h-10 px-4 rounded-md font-bold text-xs uppercase tracking-widest ${!item.is_active ? 'bg-foreground text-background hover:bg-foreground/90' : 'text-foreground hover:bg-muted'}`}
                             onClick={handleToggleActive}
                         >
                             {item.is_active ? (
@@ -261,20 +261,20 @@ export default function ComponentDetail() {
                         </Button>
                     )}
 
-                    <div className="flex items-center gap-3 bg-card border border-border px-5 py-2.5 rounded-2xl shadow-sm">
-                        <History size={16} className="text-primary/60" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">ID: </span>
-                        <span className="text-[10px] font-black uppercase text-primary tabular-nums">{item.id.split('-')[0]}</span>
+                    <div className="flex items-center gap-2 bg-card border border-border px-4 py-2 rounded-md shadow-sm">
+                        <History size={14} className="text-muted-foreground" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">ID: </span>
+                        <span className="text-[10px] font-bold uppercase text-foreground tabular-nums">{item.id.split('-')[0]}</span>
                     </div>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-                <div className="lg:col-span-8 space-y-10">
-                    <section className="bg-card border border-border rounded-[2.5rem] shadow-sm overflow-hidden group">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                <div className="lg:col-span-8 space-y-6">
+                    <section className="bg-card border border-border rounded-md shadow-sm overflow-hidden group">
                         <div className="grid grid-cols-1 md:grid-cols-2">
                             {/* Image Container */}
-                            <div className="relative h-[300px] md:h-full min-h-[400px] overflow-hidden bg-muted/20">
+                            <div className="relative h-[250px] md:h-full min-h-[300px] overflow-hidden bg-muted/20 border-b md:border-b-0 md:border-r border-border">
                                 {item.image_url ? (
                                     <img
                                         src={item.image_url}
@@ -283,47 +283,46 @@ export default function ComponentDetail() {
                                     />
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
-                                        <div className="p-8 rounded-[2rem] bg-primary/5 border border-primary/10 mb-6">
-                                            <Cpu size={64} className="text-primary/20" />
+                                        <div className="p-6 rounded-md bg-muted border border-border mb-4">
+                                            <Cpu size={48} className="text-muted-foreground" />
                                         </div>
-                                        <p className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/40">Visual reference unavailable</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Visual reference unavailable</p>
                                     </div>
                                 )}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
                             </div>
 
                             {/* Content Side */}
-                            <div className="p-10 md:p-12 flex flex-col justify-center relative">
+                            <div className="p-6 md:p-8 flex flex-col justify-center relative">
                                 <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none">
                                     <Zap size={160} />
                                 </div>
 
                                 <div className="relative space-y-8">
-                                    <div className="flex flex-wrap items-center gap-4">
-                                        <Badge variant="outline" className="h-7 px-4 font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <Badge variant="outline" className="h-6 px-3 font-bold uppercase tracking-widest border-border bg-muted">
                                             {item.category}
                                         </Badge>
-                                        <StatusBadge status={item.status} className="h-7 px-4 font-black" />
+                                        <StatusBadge status={item.status} className="h-6 px-3 font-bold" />
                                         {item.is_active === false && (
-                                            <Badge variant="destructive" className="h-7 px-4 font-black uppercase tracking-widest bg-amber-500 hover:bg-amber-600 text-white">
+                                            <Badge variant="outline" className="h-6 px-3 font-bold uppercase tracking-widest border-border text-muted-foreground">
                                                 Deactivated
                                             </Badge>
                                         )}
                                     </div>
 
-                                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter text-foreground leading-[0.9]">
+                                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
                                         {item.name}
                                     </h1>
 
-                                    <p className="text-lg text-muted-foreground/80 font-medium leading-relaxed max-w-3xl border-l-4 border-primary/20 pl-8 ml-1">
+                                    <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-3xl border-l-2 border-border pl-4">
                                         {item.description || "Experimental hardware reserved for advanced laboratory research and development projects."}
                                     </p>
 
-                                    <div className="flex items-center gap-4 pt-4">
-                                        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/30 border border-border">
-                                            <MapPin size={14} className="text-primary/60" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Location: </span>
-                                            <span className="text-[10px] font-black uppercase text-foreground">{item.owner?.lab_name || 'Main Lab'}</span>
+                                    <div className="flex items-center gap-4 pt-2">
+                                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+                                            <MapPin size={12} className="text-muted-foreground" />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location: </span>
+                                            <span className="text-[10px] font-bold uppercase text-foreground">{item.owner?.lab_name || 'Main Lab'}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -331,48 +330,45 @@ export default function ComponentDetail() {
                         </div>
                     </section>
 
-                    <section className="bg-card border border-border rounded-[2.5rem] overflow-hidden shadow-sm">
-                        <div className="py-8 px-10 border-b border-border bg-muted/20">
-                            <h3 className="text-2xl font-black flex items-center gap-4 tracking-tight">
-                                <span className="p-3 rounded-2xl bg-primary/10 text-primary">
-                                    <ShieldCheck className="h-6 w-6" />
+                    <section className="bg-card border border-border rounded-md overflow-hidden shadow-sm">
+                        <div className="py-4 px-6 border-b border-border bg-muted/50">
+                            <h3 className="text-lg font-bold flex items-center gap-2 tracking-tight">
+                                <span className="p-1.5 rounded-md bg-muted text-muted-foreground">
+                                    <ShieldCheck className="h-4 w-4" />
                                 </span>
                                 Technical Specs
                             </h3>
                         </div>
 
-                        <div className="p-10">
+                        <div className="p-6">
                             {item.specs && Object.keys(item.specs).length > 0 ? (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     {Object.entries(item.specs).map(([key, val]) => (
                                         <div
-                                            className="group flex flex-col p-6 rounded-3xl bg-muted/20 border border-border hover:border-primary/40 hover:bg-primary/5 transition-all duration-500"
+                                            className="flex flex-col p-4 rounded-md bg-muted/30 border border-border"
                                             key={key}
                                         >
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <div className="h-8 w-8 rounded-xl bg-background/60 flex items-center justify-center text-primary/40 group-hover:text-primary transition-colors">
-                                                    <Zap size={14} />
-                                                </div>
-                                                <span className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60">{key}</span>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{key}</span>
                                             </div>
-                                            <span className="text-lg font-bold text-foreground pl-1">{val}</span>
+                                            <span className="text-sm font-semibold text-foreground">{val}</span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="flex flex-col items-center justify-center py-20 bg-muted/5 rounded-[2rem] border border-dashed border-border/40 opacity-60">
-                                    <Info size={40} className="text-muted-foreground/30 mb-4" />
-                                    <p className="text-sm font-black uppercase tracking-widest text-muted-foreground/40">Specifics not listed</p>
+                                <div className="flex flex-col items-center justify-center py-12 bg-muted/10 rounded-md border border-dashed border-border opacity-80">
+                                    <Info size={24} className="text-muted-foreground mb-2" />
+                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Specifics not listed</p>
                                 </div>
                             )}
 
-                            <div className="mt-10 p-8 rounded-3xl bg-primary/5 border border-primary/10 flex items-start gap-6">
-                                <div className="p-3 rounded-2xl bg-primary/10 text-primary shrink-0">
-                                    <FileText size={24} />
+                            <div className="mt-6 p-4 rounded-md bg-muted/50 border border-border flex items-start gap-4">
+                                <div className="p-2 rounded-md bg-background border border-border text-foreground shrink-0">
+                                    <FileText size={16} />
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className="font-black text-primary tracking-tight italic">Laboratory Note</h4>
-                                    <p className="text-sm text-muted-foreground font-medium leading-relaxed">
+                                    <h4 className="font-bold text-sm tracking-tight">Laboratory Note</h4>
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
                                         Use ESD protection when handling. Make sure you've read the basic setup guide before borrowing.
                                     </p>
                                 </div>
@@ -381,23 +377,20 @@ export default function ComponentDetail() {
                     </section>
                 </div>
 
-                <aside className="lg:col-span-4 space-y-8 lg:sticky lg:top-10 self-start">
-                    <Card className="border border-border bg-card shadow-lg rounded-[2.5rem] overflow-hidden group/sidebar">
-                        <CardHeader className="py-8 px-10 border-b border-border bg-muted/20">
-                            <CardTitle className="text-xl font-black uppercase tracking-tight text-primary/80">Live Lab Stock</CardTitle>
+                <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-10 self-start">
+                    <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden">
+                        <CardHeader className="py-4 px-6 border-b border-border bg-muted/50">
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-foreground">Live Lab Stock</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-10 space-y-10">
-                            <div className="relative text-center p-10 rounded-[2.5rem] bg-gradient-to-br from-muted/50 to-muted/20 border-2 border-border/40 shadow-inner group-hover/sidebar:border-primary/20 transition-all duration-500">
-                                <div className="absolute top-4 right-4 animate-pulse">
-                                    <div className="h-3 w-3 rounded-full bg-primary shadow-lg shadow-primary/40" />
-                                </div>
-                                <div className="text-7xl font-black tracking-tighter mb-2 text-foreground tabular-nums">
+                        <CardContent className="p-6 space-y-6">
+                            <div className="relative text-center p-6 rounded-md bg-muted/30 border border-border shadow-sm">
+                                <div className="text-4xl font-bold tracking-tight mb-1 text-foreground tabular-nums">
                                     {item.quantity_available}
                                 </div>
-                                <div className="text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
+                                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                                     Units in Lab
                                 </div>
-                                <div className="mt-10 h-4 w-full bg-background rounded-full overflow-hidden p-1 shadow-inner">
+                                <div className="mt-6 h-2 w-full bg-border rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${availRatio > 0.5 ? 'bg-emerald-500' :
                                             availRatio > 0.2 ? 'bg-amber-500' : 'bg-destructive'
@@ -405,40 +398,40 @@ export default function ComponentDetail() {
                                         style={{ width: `${availRatio * 100}%` }}
                                     />
                                 </div>
-                                <div className="mt-4 flex items-center justify-between px-2">
-                                    <span className="text-[10px] font-black text-muted-foreground/60 uppercase">Total: {item.quantity_total}</span>
-                                    <span className="text-[10px] font-black text-primary uppercase">{Math.round(availRatio * 100)}% Available</span>
+                                <div className="mt-3 flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase">Total: {item.quantity_total}</span>
+                                    <span className="text-[10px] font-bold text-foreground uppercase">{Math.round(availRatio * 100)}% Available</span>
                                 </div>
                             </div>
 
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-5 rounded-3xl bg-muted/20 border border-border group/info hover:border-primary/20 transition-all">
-                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary group-hover/info:bg-primary group-hover/info:text-primary-foreground transition-all">
-                                        <Clock size={20} />
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/30 border border-border">
+                                    <div className="h-8 w-8 shrink-0 rounded-md bg-background border border-border flex items-center justify-center text-foreground">
+                                        <Clock size={16} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Loan Duration</span>
-                                        <span className="font-bold text-foreground">{item.max_lending_days} Days</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Loan Duration</span>
+                                        <span className="text-sm font-semibold text-foreground">{item.max_lending_days} Days</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-4 p-5 rounded-3xl bg-muted/20 border border-border group/info hover:border-blue-500/20 transition-all">
-                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500 group-hover/info:bg-blue-500 group-hover/info:text-white transition-all">
-                                        <User size={20} />
+                                <div className="flex items-center gap-3 p-3 rounded-md bg-muted/30 border border-border">
+                                    <div className="h-8 w-8 shrink-0 rounded-md bg-background border border-border flex items-center justify-center text-foreground">
+                                        <User size={16} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Lab In Charge</span>
-                                        <span className="font-bold text-foreground">{item.owner?.name}</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Lab In Charge</span>
+                                        <span className="text-sm font-semibold text-foreground">{item.owner?.name}</span>
                                     </div>
                                 </div>
                             </div>
                         </CardContent>
-                        <CardFooter className="p-10 pt-0">
+                        <CardFooter className="p-6 pt-0">
                             {isStudent && item.status === 'available' && item.quantity_available > 0 ? (
                                 <Dialog open={showRequestForm} onOpenChange={setShowRequestForm}>
                                     <DialogTrigger asChild>
-                                        <Button className="w-full h-16 text-sm font-black uppercase tracking-widest shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all rounded-3xl bg-primary text-primary-foreground">
+                                        <Button className="w-full h-10 text-xs font-bold uppercase tracking-widest rounded-md bg-foreground text-background">
                                             Borrow Item
-                                            <ArrowRightCircle className="ml-3 h-5 w-5" />
+                                            <ArrowRightCircle className="ml-2 h-4 w-4" />
                                         </Button>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-[420px] bg-background border border-border rounded-none p-6 shadow-none animate-in zoom-in-95 duration-200">
@@ -523,20 +516,20 @@ export default function ComponentDetail() {
                                     {/* Pre-Book Actions */}
                                     {prebookInfo?.in_queue ? (
                                         <div className="space-y-4">
-                                            <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 space-y-3">
+                                            <div className="p-4 rounded-md bg-muted/30 border border-border space-y-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-10 w-10 shrink-0 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                                                        <BookmarkCheck size={20} />
+                                                    <div className="h-8 w-8 shrink-0 rounded-md bg-background border border-border flex items-center justify-center text-foreground">
+                                                        <BookmarkCheck size={16} />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Your Queue Position</span>
-                                                        <span className="font-bold text-foreground text-lg">#{prebookInfo.position}</span>
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Your Queue Position</span>
+                                                        <span className="font-semibold text-foreground text-sm">#{prebookInfo.position}</span>
                                                     </div>
                                                 </div>
                                                 {prebookInfo.status === 'notified' && prebookInfo.hold_expires_at && (
-                                                    <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/20 animate-pulse">
-                                                        <Timer size={14} className="text-blue-500" />
-                                                        <span className="text-xs font-bold text-blue-600">
+                                                    <div className="flex items-center gap-2 p-2 rounded-md bg-background border border-border">
+                                                        <Timer size={14} className="text-foreground" />
+                                                        <span className="text-[10px] font-bold text-foreground">
                                                             Hold active — claim before it expires!
                                                         </span>
                                                     </div>
@@ -545,16 +538,16 @@ export default function ComponentDetail() {
 
                                             {prebookInfo.status === 'notified' ? (
                                                 <Button
-                                                    className="w-full h-14 rounded-3xl font-black uppercase text-xs tracking-widest shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground"
+                                                    className="w-full h-10 rounded-md font-bold uppercase text-xs tracking-widest bg-foreground text-background"
                                                     onClick={() => navigate('/my-prebooks')}
                                                 >
-                                                    <Zap size={16} className="mr-2" />
+                                                    <Zap size={14} className="mr-2" />
                                                     Go Claim Now
                                                 </Button>
                                             ) : (
                                                 <Button
                                                     variant="outline"
-                                                    className="w-full h-14 rounded-3xl border-destructive/30 text-destructive hover:bg-destructive/10 font-black uppercase text-[10px] tracking-widest transition-all"
+                                                    className="w-full h-10 rounded-md border-border font-bold uppercase text-[10px] tracking-widest transition-all"
                                                     onClick={handleCancelPrebook}
                                                     disabled={prebooking}
                                                 >
@@ -564,7 +557,7 @@ export default function ComponentDetail() {
                                         </div>
                                     ) : (
                                         <Button
-                                            className="w-full h-16 text-sm font-black uppercase tracking-widest shadow-md hover:scale-[1.02] active:scale-[0.98] transition-all rounded-3xl bg-gradient-to-r from-amber-500 to-orange-500 text-white border-0 hover:from-amber-600 hover:to-orange-600"
+                                            className="w-full h-10 text-xs font-bold uppercase tracking-widest rounded-md bg-foreground text-background hover:bg-foreground/90"
                                             onClick={handlePrebook}
                                             disabled={prebooking}
                                         >
@@ -572,23 +565,23 @@ export default function ComponentDetail() {
                                                 <>Joining Waitlist...</>
                                             ) : (
                                                 <>
-                                                    <BookmarkCheck className="mr-3 h-5 w-5" />
+                                                    <BookmarkCheck className="mr-2 h-4 w-4" />
                                                     Pre-Book / Hold Item
                                                 </>
                                             )}
                                         </Button>
                                     )}
 
-                                    <p className="text-[10px] text-center font-black uppercase tracking-tighter text-muted-foreground/40 leading-tight">
+                                    <p className="text-[10px] text-center font-bold uppercase tracking-widest text-muted-foreground leading-tight">
                                         Join the waitlist to get notified when this item becomes available.
                                     </p>
                                 </div>
                             ) : (
                                 <div className="w-full space-y-4">
-                                    <Button variant="secondary" className="w-full h-16 rounded-3xl opacity-40 cursor-not-allowed font-black uppercase text-xs tracking-widest" disabled>
+                                    <Button variant="secondary" className="w-full h-10 rounded-md opacity-40 cursor-not-allowed font-bold uppercase text-xs tracking-widest" disabled>
                                         {item.quantity_available === 0 ? 'Out of Stock' : 'Admin Only'}
                                     </Button>
-                                    <p className="text-[10px] text-center font-black uppercase tracking-tighter text-muted-foreground/40 leading-tight">
+                                    <p className="text-[10px] text-center font-bold uppercase tracking-widest text-muted-foreground leading-tight">
                                         Laboratory access restricted for this item.
                                     </p>
                                 </div>

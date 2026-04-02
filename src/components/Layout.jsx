@@ -45,7 +45,7 @@ import { Toaster } from '@/components/ui/toaster';
 // We wrap with a shell component so LayoutInner can safely call useSidebar.
 export default function Layout() {
     return (
-        <SidebarProvider>
+        <SidebarProvider defaultOpen={false}>
             <LayoutInner />
         </SidebarProvider>
     );
@@ -106,9 +106,9 @@ function LayoutInner() {
         <div className="flex h-screen w-full overflow-hidden bg-background">
             {/* ── Sidebar ──────────────────────────────────── */}
             <Sidebar variant="inset" collapsible="icon" className="border-r border-border">
-                <SidebarHeader className="flex flex-row items-center gap-2.5 px-4 py-3.5 border-b border-border group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center border border-border bg-foreground text-background">
-                        <Wrench size={14} />
+                <SidebarHeader className="flex flex-row items-center gap-2 px-3 py-3 border-b border-border group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center border border-border bg-foreground text-background">
+                        <Wrench size={12} />
                     </div>
                     <span className="text-sm font-bold tracking-tight text-foreground truncate group-data-[collapsible=icon]:hidden">
                         HardwareHub
@@ -123,14 +123,14 @@ function LayoutInner() {
                                     asChild
                                     isActive={location.pathname === link.to}
                                     tooltip={link.label}
-                                    className="py-2 px-3 text-sm hover:bg-muted hover:text-foreground data-[active=true]:bg-foreground data-[active=true]:text-background data-[active=true]:font-semibold rounded-md transition-colors duration-150 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                                    className="h-8 px-2.5 py-1 text-sm hover:bg-muted hover:text-foreground data-[active=true]:bg-foreground data-[active=true]:text-background data-[active=true]:font-semibold rounded-md transition-colors duration-150 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                                 >
                                     <NavLink
                                         to={link.to}
                                         end={link.to === '/'}
                                         onClick={handleNavClick}
                                     >
-                                        <span className="mr-2.5 shrink-0 opacity-70 group-data-[collapsible=icon]:mr-0">{link.icon}</span>
+                                        <span className="mr-2 shrink-0 opacity-70 group-data-[collapsible=icon]:mr-0">{link.icon}</span>
                                         <span className="font-medium truncate group-data-[collapsible=icon]:hidden">{link.label}</span>
                                     </NavLink>
                                 </SidebarMenuButton>

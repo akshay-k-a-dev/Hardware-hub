@@ -387,8 +387,8 @@ export default function Profile() {
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-5 relative">
-                            <div className="flex flex-col items-center justify-center py-4 text-center border-b border-border/50">
-                                <span className="text-6xl font-black tracking-tighter tabular-nums drop-shadow-sm">
+                            <div className="flex flex-col items-center justify-center py-4 text-center border-b border-border">
+                                <span className="text-5xl font-black tracking-tighter tabular-nums drop-shadow-sm">
                                     {trust?.score || 100}
                                 </span>
                                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-1">out of 100</span>

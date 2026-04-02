@@ -473,85 +473,50 @@ export default function ManageRequests() {
                 </CardContent>
             </Card>
 
-            <div className="space-y-4 md:space-y-6">
-                <div className="flex items-center gap-2 md:gap-3 text-primary mb-1">
-                    <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
-                        <Inbox className="h-5 w-5 md:h-6 md:h-6" />
-                    </div>
-                    <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">Management</h1>
-                </div>
-                <p className="text-muted-foreground text-sm md:text-lg font-medium max-w-2xl">
-                    Approve, track, and manage all hardware deployments from your central hub.
-                </p>
-            </div>
 
-            <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-                <Card className="flex-1 border border-border bg-card shadow-sm rounded-3xl md:rounded-[2rem] p-6 md:p-8 flex items-center gap-6 md:gap-8 group">
-                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-primary/5 border-2 border-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform flex-shrink-0">
-                        <History size={24} className="md:w-8 md:h-8" />
-                    </div>
-                    <div>
-                        <h4 className="text-base md:text-lg font-black tracking-tight text-foreground mb-1">Usage Insights</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground font-medium leading-relaxed max-w-sm">
-                            Analyze borrow rates and demand patterns across your portfolio.
-                        </p>
-                    </div>
-                </Card>
-                <Card className="flex-1 border border-border bg-card shadow-sm rounded-3xl md:rounded-[2rem] p-6 md:p-8 flex items-center gap-6 md:gap-8 group">
-                    <div className="h-12 w-12 md:h-16 md:w-16 rounded-xl md:rounded-2xl bg-amber-500/5 border-2 border-amber-500/10 flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform flex-shrink-0">
-                        <AlertCircle size={24} className="md:w-8 md:h-8" />
-                    </div>
-                    <div>
-                        <h4 className="text-base md:text-lg font-black tracking-tight text-foreground mb-1">Inventory Health</h4>
-                        <p className="text-xs md:text-sm text-muted-foreground font-medium leading-relaxed max-w-sm">
-                            Flag technical issues during the hardware return workflow.
-                        </p>
-                    </div>
-                </Card>
-            </div>
             <Dialog open={ratingDialog.open} onValueChange={(v) => !v && setRatingDialog({ ...ratingDialog, open: false })}>
-                <DialogContent className="sm:max-w-[500px] rounded-[2rem]">
+                <DialogContent className="sm:max-w-md rounded-lg">
                     <DialogHeader>
-                        <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-500 mb-4">
-                            <Star size={28} className="fill-amber-500" />
+                        <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground mb-4">
+                            <Star size={24} className="fill-muted-foreground" />
                         </div>
-                        <DialogTitle className="text-3xl font-black tracking-tight">Rate Borrower</DialogTitle>
-                        <DialogDescription className="text-base font-medium">
+                        <DialogTitle className="text-xl font-bold tracking-tight">Rate Borrower</DialogTitle>
+                        <DialogDescription className="text-sm">
                             How was your experience with <strong>{ratingDialog.borrowerName}</strong>? This helps other lenders trust this student.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="py-6 space-y-8">
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Rating Quality</Label>
+                    <div className="py-4 space-y-6">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rating Quality</Label>
                             <div className="flex gap-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
                                         key={star}
                                         type="button"
                                         onClick={() => setRatingValue(star)}
-                                        className={`p-3 rounded-xl transition-all ${ratingValue >= star ? 'bg-amber-500 text-white' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50'}`}
+                                        className={`p-2 rounded-md transition-all ${ratingValue >= star ? 'bg-foreground text-background' : 'bg-muted/50 text-muted-foreground hover:bg-muted'}`}
                                     >
-                                        <Star size={24} className={ratingValue >= star ? 'fill-white' : ''} />
+                                        <Star size={20} className={ratingValue >= star ? 'fill-background' : ''} />
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Optional Comments</Label>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Optional Comments</Label>
                             <Textarea
                                 placeholder="e.g. Returned in perfect condition, very communicative..."
                                 value={ratingComment}
                                 onChange={(e) => setRatingComment(e.target.value)}
-                                className="min-h-[120px] rounded-2xl bg-muted/20 border-border focus:ring-amber-500/20"
+                                className="min-h-[100px] rounded-md bg-background border-border text-sm focus-visible:ring-1 focus-visible:ring-foreground"
                             />
                         </div>
                     </div>
 
-                    <DialogFooter className="gap-4">
-                        <Button variant="ghost" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-12 rounded-xl flex-1 font-bold">Cancel</Button>
-                        <Button onClick={submitRating} className="h-12 rounded-xl flex-1 font-black uppercase tracking-widest text-xs bg-amber-500 hover:bg-amber-600">Submit Rating</Button>
+                    <DialogFooter className="gap-2 sm:space-x-0">
+                        <Button variant="outline" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-9 flex-1 font-bold rounded-md">Cancel</Button>
+                        <Button onClick={submitRating} className="h-9 flex-1 font-bold text-xs bg-foreground text-background rounded-md">Submit Rating</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

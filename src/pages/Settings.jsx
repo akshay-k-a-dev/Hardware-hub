@@ -105,11 +105,11 @@ export default function Settings() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                 
                 {/* 1. Profile & Preferences */}
-                <Card className="border border-border bg-card shadow-sm rounded-3xl overflow-hidden hover:border-primary/20 transition-all duration-300 group">
-                    <CardHeader className="bg-muted/30 border-b border-border/50 pb-5">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                            <div className="p-2 bg-blue-500/10 text-blue-500 rounded-xl group-hover:scale-110 transition-transform">
-                                <User size={20} />
+                <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
+                    <CardHeader className="bg-muted/50 border-b border-border pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                            <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
+                                <User size={18} />
                             </div>
                             Prefrences & Identity
                         </CardTitle>
@@ -136,10 +136,10 @@ export default function Settings() {
                                 onCheckedChange={() => handleToggle('profileVisibility')} 
                             />
                         </div>
-                        <div className="pt-4 border-t border-border/50">
+                        <div className="pt-4 border-t border-border">
                             <Button 
                                 variant="outline" 
-                                className="w-full rounded-xl border-primary/20 text-primary hover:bg-primary/5 hover:text-primary font-bold h-12"
+                                className="w-full rounded-md border-border text-foreground hover:bg-muted font-bold h-10"
                                 onClick={() => navigate('/profile')}
                             >
                                 Edit Full Profile
@@ -149,11 +149,11 @@ export default function Settings() {
                 </Card>
 
                 {/* 2. Notifications */}
-                <Card className="border border-border bg-card shadow-sm rounded-3xl overflow-hidden hover:border-primary/20 transition-all duration-300 group">
-                    <CardHeader className="bg-muted/30 border-b border-border/50 pb-5">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                            <div className="p-2 bg-amber-500/10 text-amber-500 rounded-xl group-hover:scale-110 transition-transform">
-                                <Bell size={20} />
+                <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
+                    <CardHeader className="bg-muted/50 border-b border-border pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                            <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
+                                <Bell size={18} />
                             </div>
                             Alerts & Notifications
                         </CardTitle>
@@ -203,11 +203,11 @@ export default function Settings() {
                 </Card>
 
                 {/* 3. Security & Privacy */}
-                <Card className="border border-border bg-card shadow-sm rounded-3xl overflow-hidden hover:border-primary/20 transition-all duration-300 group">
-                    <CardHeader className="bg-muted/30 border-b border-border/50 pb-5">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                            <div className="p-2 bg-emerald-500/10 text-emerald-500 rounded-xl group-hover:scale-110 transition-transform">
-                                <Shield size={20} />
+                <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
+                    <CardHeader className="bg-muted/50 border-b border-border pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                            <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
+                                <Shield size={18} />
                             </div>
                             Security
                         </CardTitle>
@@ -227,10 +227,10 @@ export default function Settings() {
                                 onCheckedChange={() => handleToggle('twoFactor')} 
                             />
                         </div>
-                        <div className="pt-4 border-t border-border/50 space-y-4">
+                        <div className="pt-4 border-t border-border space-y-4">
                             <Button 
                                 variant="outline" 
-                                className="w-full rounded-xl font-bold h-12 justify-start hover:bg-muted"
+                                className="w-full rounded-md font-bold h-10 justify-start hover:bg-muted"
                                 onClick={() => navigate('/reset-password')}
                             >
                                 <Key className="mr-3 h-4 w-4 text-muted-foreground" />
@@ -238,7 +238,7 @@ export default function Settings() {
                             </Button>
                             <Button 
                                 variant="outline" 
-                                className="w-full rounded-xl font-bold h-12 justify-start hover:bg-muted"
+                                className="w-full rounded-md font-bold h-10 justify-start hover:bg-muted"
                                 onClick={() => {
                                     toast({ description: "All other active sessions have been signed out." });
                                 }}
@@ -251,24 +251,24 @@ export default function Settings() {
                 </Card>
 
                 {/* 4. Connected Apps */}
-                <Card className="border border-border bg-card shadow-sm rounded-3xl overflow-hidden hover:border-primary/20 transition-all duration-300 group md:col-span-2 lg:col-span-1">
-                    <CardHeader className="bg-muted/30 border-b border-border/50 pb-5">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold">
-                            <div className="p-2 bg-purple-500/10 text-purple-500 rounded-xl group-hover:scale-110 transition-transform">
-                                <Plug size={20} />
+                <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group md:col-span-2 lg:col-span-1">
+                    <CardHeader className="bg-muted/50 border-b border-border pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                            <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
+                                <Plug size={18} />
                             </div>
                             Connected Labs & Integrations
                         </CardTitle>
                         <CardDescription className="text-sm font-medium">Link university systems to your HardwareHub profile.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6">
-                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-muted/20 rounded-2xl border border-dashed border-border/50">
-                            <Plug className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                            <h3 className="font-bold text-foreground">No integrations active</h3>
+                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center bg-muted/20 rounded-md border border-dashed border-border">
+                            <Plug className="h-10 w-10 text-muted-foreground/50 mb-4" />
+                            <h3 className="font-bold text-foreground text-sm">No integrations active</h3>
                             <p className="text-xs text-muted-foreground max-w-[200px] mt-2 mb-4">
                                 Connect student portals or inventory trackers to automate workflows.
                             </p>
-                            <Button variant="secondary" size="sm" className="rounded-xl font-bold block" onClick={() => toast({ title: "Coming soon", description: "Integration directory is under construction."})}>
+                            <Button variant="secondary" size="sm" className="rounded-md h-10 font-bold block" onClick={() => toast({ title: "Coming soon", description: "Integration directory is under construction."})}>
                                 Explore Directory
                             </Button>
                         </div>
@@ -276,11 +276,11 @@ export default function Settings() {
                 </Card>
 
                 {/* 5. Account Data & Danger Zone */}
-                <Card className="border-destructive/30 bg-card shadow-sm rounded-3xl overflow-hidden hover:border-destructive/60 transition-all duration-300 group md:col-span-2">
-                    <CardHeader className="bg-destructive/5 border-b border-destructive/10 pb-5">
-                        <CardTitle className="flex items-center gap-3 text-xl font-bold text-destructive">
-                            <div className="p-2 bg-destructive/10 text-destructive rounded-xl group-hover:scale-110 transition-transform">
-                                <AlertCircle size={20} />
+                <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group md:col-span-2">
+                    <CardHeader className="bg-muted/50 border-b border-border pb-4">
+                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-destructive">
+                            <div className="p-1.5 bg-destructive/10 text-destructive rounded-md">
+                                <AlertCircle size={18} />
                             </div>
                             Zone of Danger
                         </CardTitle>
@@ -292,20 +292,20 @@ export default function Settings() {
                                 <span className="font-bold text-base text-foreground">Download User Snapshot</span>
                                 <p className="text-sm text-muted-foreground font-medium">Request a ZIP copy of all your requests and lab activity.</p>
                             </div>
-                            <Button variant="outline" className="h-12 w-full md:w-auto px-6 rounded-xl font-bold" onClick={handleDownloadData}>
-                                <Download className="mr-2 h-4 w-4 text-primary" />
+                            <Button variant="outline" className="h-10 w-full md:w-auto px-6 rounded-md font-bold" onClick={handleDownloadData}>
+                                <Download className="mr-2 h-4 w-4 text-foreground" />
                                 Export JSON Data
                             </Button>
                         </div>
                         
-                        <div className="h-px bg-border/50 w-full my-6" />
+                        <div className="h-px bg-border w-full my-6" />
 
                         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                             <div className="space-y-1 flex-1">
                                 <span className="font-bold text-base text-foreground">Deactivate Account</span>
                                 <p className="text-sm text-muted-foreground font-medium">Permanently deletes your account and scrubs your data from the ledger.</p>
                             </div>
-                            <Button variant="destructive" className="h-12 w-full md:w-auto px-6 rounded-xl font-bold bg-destructive/90 hover:bg-destructive" onClick={() => setDeleteDialogOpen(true)}>
+                            <Button variant="destructive" className="h-10 w-full md:w-auto px-6 rounded-md font-bold bg-foreground text-background hover:bg-foreground/90" onClick={() => setDeleteDialogOpen(true)}>
                                 <Trash2 className="mr-2 h-4 w-4" />
                                 Delete Account
                             </Button>
@@ -316,9 +316,9 @@ export default function Settings() {
             </div>
 
             <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-                <DialogContent className="sm:max-w-md rounded-3xl border-destructive/20 shadow-2xl">
+                <DialogContent className="sm:max-w-md rounded-lg border-border">
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-black text-destructive">Confirm Deletion</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-destructive">Confirm Deletion</DialogTitle>
                         <DialogDescription className="text-sm font-medium">
                             This action cannot be undone. All your requests, lab inventory, and rating history will be permanently deleted from our servers.
                         </DialogDescription>
@@ -329,14 +329,14 @@ export default function Settings() {
                         </Label>
                         <Input 
                             placeholder="DELETE" 
-                            className="h-12 border-border bg-muted/30 focus-visible:ring-destructive/20 rounded-xl"
+                            className="h-10 border-border bg-background focus-visible:ring-1 focus-visible:ring-foreground rounded-md"
                         />
                     </div>
                     <DialogFooter>
-                        <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} className="rounded-xl font-bold">
+                        <Button variant="ghost" onClick={() => setDeleteDialogOpen(false)} className="rounded-md font-bold h-10">
                             Cancel
                         </Button>
-                        <Button variant="destructive" onClick={handleDeleteAccount} className="h-12 px-8 rounded-xl font-black bg-destructive hover:bg-destructive shadow-lg shadow-destructive/20">
+                        <Button variant="destructive" onClick={handleDeleteAccount} className="h-10 px-6 rounded-md font-bold bg-foreground text-background hover:bg-foreground/90">
                             Permenantly Delete
                         </Button>
                     </DialogFooter>
