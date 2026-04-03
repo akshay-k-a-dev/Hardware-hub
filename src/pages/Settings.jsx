@@ -93,11 +93,11 @@ export default function Settings() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 pb-10">
-            <header className="flex flex-col gap-2">
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-foreground">
+            <header className="flex flex-col gap-1 pb-4 border-b border-border mb-6">
+                <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">
                     Settings
                 </h1>
-                <p className="text-muted-foreground text-sm md:text-lg font-medium">
+                <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">
                     Manage your preferences, notifications, and security.
                 </p>
             </header>
@@ -107,19 +107,19 @@ export default function Settings() {
                 {/* 1. Profile & Preferences */}
                 <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
                     <CardHeader className="bg-muted/50 border-b border-border pb-4">
-                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                        <CardTitle className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-foreground">
                             <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
-                                <User size={18} />
+                                <User size={14} />
                             </div>
-                            Prefrences & Identity
+                            Preferences & Identity
                         </CardTitle>
-                        <CardDescription className="text-sm font-medium">Control your theme and public profile presence.</CardDescription>
+                        <CardDescription className="text-[10px] font-bold uppercase opacity-60">Control your theme and public profile presence.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <span className="font-bold text-base text-foreground">App Theme</span>
-                                <p className="text-xs text-muted-foreground font-medium">Switch between light and dark mode</p>
+                                <span className="font-black text-xs uppercase tracking-tight text-foreground">App Theme</span>
+                                <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Switch between light and dark mode</p>
                             </div>
                             <div className="flex items-center gap-3 p-1.5 bg-muted rounded-full border border-border/50">
                                 <Moon size={14} className={isDark ? "text-amber-500" : "text-muted-foreground"} />
@@ -128,8 +128,8 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="space-y-1">
-                                <span className="font-bold text-base text-foreground">Profile Visibility</span>
-                                <p className="text-xs text-muted-foreground font-medium">Allow others to see your public activity</p>
+                                <span className="font-black text-xs uppercase tracking-tight text-foreground">Profile Visibility</span>
+                                <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Allow others to see your public activity</p>
                             </div>
                             <Switch 
                                 checked={settings.profileVisibility} 
@@ -151,21 +151,21 @@ export default function Settings() {
                 {/* 2. Notifications */}
                 <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
                     <CardHeader className="bg-muted/50 border-b border-border pb-4">
-                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                        <CardTitle className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-foreground">
                             <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
-                                <Bell size={18} />
+                                <Bell size={14} />
                             </div>
                             Alerts & Notifications
                         </CardTitle>
-                        <CardDescription className="text-sm font-medium">Choose how and when you want to be notified.</CardDescription>
+                        <CardDescription className="text-[10px] font-bold uppercase opacity-60">Choose how and when you want to be notified.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Mail size={18} className="text-muted-foreground" />
+                                <Mail size={16} className="text-muted-foreground opacity-70" />
                                 <div className="space-y-1">
-                                    <span className="font-bold text-base text-foreground">Email Notifications</span>
-                                    <p className="text-xs text-muted-foreground font-medium">Get updates on your requests via email.</p>
+                                    <span className="font-black text-xs uppercase tracking-tight text-foreground">Email Notifications</span>
+                                    <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Get updates on your requests via email.</p>
                                 </div>
                             </div>
                             <Switch 
@@ -175,10 +175,10 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Smartphone size={18} className="text-muted-foreground" />
+                                <Smartphone size={16} className="text-muted-foreground opacity-70" />
                                 <div className="space-y-1">
-                                    <span className="font-bold text-base text-foreground">Push Notifications</span>
-                                    <p className="text-xs text-muted-foreground font-medium">Real-time alerts in your browser/device.</p>
+                                    <span className="font-black text-xs uppercase tracking-tight text-foreground">Push Notifications</span>
+                                    <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Real-time alerts in your browser/device.</p>
                                 </div>
                             </div>
                             <Switch 
@@ -188,10 +188,10 @@ export default function Settings() {
                         </div>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Moon size={18} className="text-muted-foreground" />
+                                <Moon size={16} className="text-muted-foreground opacity-70" />
                                 <div className="space-y-1">
-                                    <span className="font-bold text-base text-foreground">Do Not Disturb</span>
-                                    <p className="text-xs text-muted-foreground font-medium">Suppress alerts between 10PM and 8AM.</p>
+                                    <span className="font-black text-xs uppercase tracking-tight text-foreground">Do Not Disturb</span>
+                                    <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Suppress alerts between 10PM and 8AM.</p>
                                 </div>
                             </div>
                             <Switch 
@@ -205,21 +205,21 @@ export default function Settings() {
                 {/* 3. Security & Privacy */}
                 <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden transition-all duration-300 group">
                     <CardHeader className="bg-muted/50 border-b border-border pb-4">
-                        <CardTitle className="flex items-center gap-2 text-lg font-bold text-foreground">
+                        <CardTitle className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-foreground">
                             <div className="p-1.5 bg-muted text-muted-foreground rounded-md">
-                                <Shield size={18} />
+                                <Shield size={14} />
                             </div>
                             Security
                         </CardTitle>
-                        <CardDescription className="text-sm font-medium">Protect your account and hardware data.</CardDescription>
+                        <CardDescription className="text-[10px] font-bold uppercase opacity-60">Protect your account and hardware data.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-6 space-y-6">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-4">
-                                <Lock size={18} className="text-muted-foreground" />
+                                <Lock size={16} className="text-muted-foreground opacity-70" />
                                 <div className="space-y-1">
-                                    <span className="font-bold text-base text-foreground">Two-Factor Auth (MFA)</span>
-                                    <p className="text-xs text-muted-foreground font-medium">Add an extra layer of security.</p>
+                                    <span className="font-black text-xs uppercase tracking-tight text-foreground">Two-Factor Auth (MFA)</span>
+                                    <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Add an extra layer of security.</p>
                                 </div>
                             </div>
                             <Switch 
@@ -337,7 +337,7 @@ export default function Settings() {
                             Cancel
                         </Button>
                         <Button variant="destructive" onClick={handleDeleteAccount} className="h-10 px-6 rounded-md font-bold bg-foreground text-background hover:bg-foreground/90">
-                            Permenantly Delete
+                            Permanently Delete
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -233,12 +233,12 @@ export default function ComponentDetail() {
     const availRatio = item.quantity_available / item.quantity_total;
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 p-4 md:p-6">
+        <div className="max-w-7xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-6 duration-1000 p-4 md:p-6">
             <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="group h-10 px-4 rounded-md bg-card border border-border hover:bg-muted font-bold text-xs uppercase tracking-widest transition-all"
+                    className="group h-9 px-3 rounded-md bg-card border border-border hover:bg-muted font-bold text-xs uppercase tracking-widest transition-all"
                     onClick={() => navigate('/components')}
                 >
                     <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
@@ -310,7 +310,7 @@ export default function ComponentDetail() {
                                         )}
                                     </div>
 
-                                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
+                                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground leading-tight uppercase tracking-widest">
                                         {item.name}
                                     </h1>
 
@@ -318,12 +318,23 @@ export default function ComponentDetail() {
                                         {item.description || "Experimental hardware reserved for advanced laboratory research and development projects."}
                                     </p>
 
-                                    <div className="flex items-center gap-4 pt-2">
+                                    <div className="flex flex-wrap items-center gap-4 pt-2">
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
                                             <MapPin size={12} className="text-muted-foreground" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location: </span>
-                                            <span className="text-[10px] font-bold uppercase text-foreground">{item.owner?.lab_name || 'Main Lab'}</span>
+                                            <span className="text-[10px] font-bold uppercase text-foreground">{item.location || item.owner?.lab_name || 'Main Lab'}</span>
                                         </div>
+                                        
+                                        {(item.delivery_courier || item.delivery_offline) && (
+                                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
+                                                <Package size={12} className="text-muted-foreground" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Delivery: </span>
+                                                <div className="flex gap-1">
+                                                     {item.delivery_courier && <Badge variant="outline" className="text-[9px] h-4 px-1 border-border font-black uppercase text-foreground">Courier</Badge>}
+                                                     {item.delivery_offline && <Badge variant="outline" className="text-[9px] h-4 px-1 border-border font-black uppercase text-foreground">Offline</Badge>}
+                                                 </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -332,8 +343,8 @@ export default function ComponentDetail() {
 
                     <section className="bg-card border border-border rounded-md overflow-hidden shadow-sm">
                         <div className="py-4 px-6 border-b border-border bg-muted/50">
-                            <h3 className="text-lg font-bold flex items-center gap-2 tracking-tight">
-                                <span className="p-1.5 rounded-md bg-muted text-muted-foreground">
+                            <h3 className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
+                                <span className="p-1 px-1.5 rounded-sm bg-muted text-muted-foreground border border-border">
                                     <ShieldCheck className="h-4 w-4" />
                                 </span>
                                 Technical Specs
@@ -392,11 +403,11 @@ export default function ComponentDetail() {
                                 </div>
                                 <div className="mt-6 h-2 w-full bg-border rounded-full overflow-hidden">
                                     <div
-                                        className={`h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${availRatio > 0.5 ? 'bg-emerald-500' :
-                                            availRatio > 0.2 ? 'bg-amber-500' : 'bg-destructive'
-                                            }`}
-                                        style={{ width: `${availRatio * 100}%` }}
-                                    />
+                                         className={`h-full rounded-full transition-all duration-1000 ease-out shadow-lg ${availRatio > 0.5 ? 'bg-foreground' :
+                                             availRatio > 0.1 ? 'bg-yellow-500' : 'bg-destructive'
+                                             }`}
+                                         style={{ width: `${availRatio * 100}%` }}
+                                     />
                                 </div>
                                 <div className="mt-3 flex items-center justify-between px-1">
                                     <span className="text-[10px] font-bold text-muted-foreground uppercase">Total: {item.quantity_total}</span>
@@ -429,23 +440,23 @@ export default function ComponentDetail() {
                             {isStudent && item.status === 'available' && item.quantity_available > 0 ? (
                                 <Dialog open={showRequestForm} onOpenChange={setShowRequestForm}>
                                     <DialogTrigger asChild>
-                                        <Button className="w-full h-10 text-xs font-bold uppercase tracking-widest rounded-md bg-foreground text-background">
+                                        <Button className="w-full h-10 text-xs font-bold uppercase tracking-widest rounded-sm bg-foreground text-background hover:bg-foreground/90 transition-colors">
                                             Borrow Item
                                             <ArrowRightCircle className="ml-2 h-4 w-4" />
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-[420px] bg-background border border-border rounded-none p-6 shadow-none animate-in zoom-in-95 duration-200">
+                                    <DialogContent className="sm:max-w-[420px] bg-background border border-border rounded-sm p-6 shadow-2xl animate-in zoom-in-95 duration-200">
                                         <form onSubmit={handleRequest} className="space-y-6">
                                             <DialogHeader className="space-y-2">
-                                                <DialogTitle className="text-xl font-bold tracking-tight text-foreground">Borrow Request</DialogTitle>
-                                                <DialogDescription className="text-sm text-muted-foreground">
+                                                <DialogTitle className="text-xl font-bold tracking-tight text-foreground uppercase tracking-widest">Borrow Request</DialogTitle>
+                                                <DialogDescription className="text-xs text-muted-foreground font-medium uppercase tracking-tighter">
                                                     Briefly describe your project for quick approval.
                                                 </DialogDescription>
                                             </DialogHeader>
 
                                             <div className="grid gap-4">
                                                 <div className="space-y-1.5">
-                                                    <Label htmlFor="quantity" className="text-xs font-semibold text-foreground">Quantity Needed (Max: {item.quantity_available})</Label>
+                                                    <Label htmlFor="quantity" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quantity Needed (Max: {item.quantity_available})</Label>
                                                     <Input
                                                         id="quantity"
                                                         type="number"
@@ -454,26 +465,26 @@ export default function ComponentDetail() {
                                                         value={requestForm.quantity}
                                                         onChange={(e) => setRequestForm({ ...requestForm, quantity: e.target.value })}
                                                         required
-                                                        className="h-9 bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 tabular-nums"
+                                                        className="h-9 bg-transparent border border-border rounded-sm focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 tabular-nums"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <Label htmlFor="title" className="text-xs font-semibold text-foreground">Project Name</Label>
+                                                    <Label htmlFor="title" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Project Name</Label>
                                                     <Input
                                                         id="title"
                                                         placeholder="e.g. Robotics Controller"
                                                         value={requestForm.project_title}
                                                         onChange={(e) => setRequestForm({ ...requestForm, project_title: e.target.value })}
                                                         required
-                                                        className="h-9 bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3"
+                                                        className="h-9 bg-transparent border border-border rounded-sm focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3"
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5">
-                                                    <Label htmlFor="description" className="text-xs font-semibold text-foreground">Project Description</Label>
+                                                    <Label htmlFor="description" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Project Description</Label>
                                                     <Textarea
                                                         id="description"
                                                         placeholder="Briefly explain your use case."
-                                                        className="min-h-[80px] bg-transparent border border-border rounded-none focus-visible:ring-1 focus-visible:ring-foreground text-sm p-3 resize-none"
+                                                        className="min-h-[80px] bg-transparent border border-border rounded-sm focus-visible:ring-1 focus-visible:ring-foreground text-sm p-3 resize-none"
                                                         value={requestForm.project_description}
                                                         onChange={(e) => setRequestForm({ ...requestForm, project_description: e.target.value })}
                                                     />
@@ -481,13 +492,13 @@ export default function ComponentDetail() {
                                             </div>
 
                                             <DialogFooter className="gap-2 sm:space-x-0">
-                                                <Button type="button" variant="outline" className="h-9 w-full rounded-none font-semibold text-xs border border-border hover:bg-accent" onClick={() => setShowRequestForm(false)}>
+                                                <Button type="button" variant="outline" className="h-9 w-full rounded-sm font-black uppercase tracking-widest text-[10px] border border-border hover:bg-muted" onClick={() => setShowRequestForm(false)}>
                                                     Cancel
                                                 </Button>
                                                 <Button
                                                     type="submit"
                                                     disabled={submitting}
-                                                    className="h-9 w-full rounded-none font-semibold text-xs bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2"
+                                                    className="h-9 w-full rounded-sm font-black uppercase tracking-widest text-[10px] bg-foreground text-background hover:bg-foreground/90 flex items-center justify-center gap-2 transition-colors"
                                                 >
                                                     {submitting ? 'Processing...' : 'Submit Request'}
                                                 </Button>
@@ -498,16 +509,16 @@ export default function ComponentDetail() {
                             ) : isStudent && item.quantity_available === 0 ? (
                                 <div className="w-full space-y-5">
                                     {/* Out of Stock Label */}
-                                    <div className="flex items-center justify-center gap-3 p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
-                                        <AlertCircle size={18} className="text-destructive" />
-                                        <span className="text-sm font-black uppercase tracking-widest text-destructive">Out of Stock</span>
+                                    <div className="flex items-center justify-center gap-3 p-4 rounded-sm bg-muted/20 border border-border">
+                                        <AlertCircle size={18} className="text-muted-foreground" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Out of Stock</span>
                                     </div>
 
                                     {/* Queue Info */}
                                     {prebookCount > 0 && (
                                         <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                                            <Users size={14} className="text-primary/60" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">
+                                            <Users size={14} className="text-foreground/40" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">
                                                 {prebookCount} {prebookCount === 1 ? 'person' : 'people'} in waitlist
                                             </span>
                                         </div>
@@ -516,21 +527,21 @@ export default function ComponentDetail() {
                                     {/* Pre-Book Actions */}
                                     {prebookInfo?.in_queue ? (
                                         <div className="space-y-4">
-                                            <div className="p-4 rounded-md bg-muted/30 border border-border space-y-3">
+                                            <div className="p-4 rounded-sm bg-muted/30 border border-border space-y-3">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 shrink-0 rounded-md bg-background border border-border flex items-center justify-center text-foreground">
+                                                    <div className="h-8 w-8 shrink-0 rounded-sm bg-background border border-border flex items-center justify-center text-foreground">
                                                         <BookmarkCheck size={16} />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Your Queue Position</span>
-                                                        <span className="font-semibold text-foreground text-sm">#{prebookInfo.position}</span>
+                                                        <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Queue Position</span>
+                                                        <span className="font-black text-foreground text-sm tabular-nums">#{prebookInfo.position}</span>
                                                     </div>
                                                 </div>
                                                 {prebookInfo.status === 'notified' && prebookInfo.hold_expires_at && (
-                                                    <div className="flex items-center gap-2 p-2 rounded-md bg-background border border-border">
-                                                        <Timer size={14} className="text-foreground" />
-                                                        <span className="text-[10px] font-bold text-foreground">
-                                                            Hold active — claim before it expires!
+                                                    <div className="flex items-center gap-2 p-2 rounded-sm bg-yellow-500/10 border border-yellow-200">
+                                                        <Timer size={14} className="text-yellow-700" />
+                                                        <span className="text-[9px] font-bold text-yellow-800 uppercase tracking-tighter">
+                                                            Hold active — claim now
                                                         </span>
                                                     </div>
                                                 )}
@@ -538,7 +549,7 @@ export default function ComponentDetail() {
 
                                             {prebookInfo.status === 'notified' ? (
                                                 <Button
-                                                    className="w-full h-10 rounded-md font-bold uppercase text-xs tracking-widest bg-foreground text-background"
+                                                    className="w-full h-10 rounded-sm font-black uppercase text-xs tracking-widest bg-foreground text-background hover:bg-foreground/90 transition-colors"
                                                     onClick={() => navigate('/my-prebooks')}
                                                 >
                                                     <Zap size={14} className="mr-2" />
@@ -547,7 +558,7 @@ export default function ComponentDetail() {
                                             ) : (
                                                 <Button
                                                     variant="outline"
-                                                    className="w-full h-10 rounded-md border-border font-bold uppercase text-[10px] tracking-widest transition-all"
+                                                    className="w-full h-10 rounded-sm border-border font-black uppercase text-[10px] tracking-widest transition-all hover:bg-muted"
                                                     onClick={handleCancelPrebook}
                                                     disabled={prebooking}
                                                 >
@@ -557,7 +568,7 @@ export default function ComponentDetail() {
                                         </div>
                                     ) : (
                                         <Button
-                                            className="w-full h-10 text-xs font-bold uppercase tracking-widest rounded-md bg-foreground text-background hover:bg-foreground/90"
+                                            className="w-full h-10 text-xs font-black uppercase tracking-widest rounded-sm bg-foreground text-background hover:bg-foreground/90 transition-colors"
                                             onClick={handlePrebook}
                                             disabled={prebooking}
                                         >
@@ -572,8 +583,8 @@ export default function ComponentDetail() {
                                         </Button>
                                     )}
 
-                                    <p className="text-[10px] text-center font-bold uppercase tracking-widest text-muted-foreground leading-tight">
-                                        Join the waitlist to get notified when this item becomes available.
+                                    <p className="text-[9px] text-center font-bold uppercase tracking-tighter text-muted-foreground leading-tight px-4">
+                                        Join the waitlist to get notified when this item becomes available in the lab.
                                     </p>
                                 </div>
                             ) : (

@@ -141,9 +141,9 @@ export default function MyRequests() {
                         <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
                             <Clock className="h-5 w-5 md:h-6 md:h-6" />
                         </div>
-                        <h1 className="text-lg font-bold tracking-tight text-foreground">My Activity</h1>
+                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">My Activity</h1>
                     </div>
-                    <p className="text-muted-foreground text-sm md:text-lg font-medium">
+                    <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">
                         Track your hardware requests, deployments, and return schedules.
                     </p>
                 </div>
@@ -183,14 +183,14 @@ export default function MyRequests() {
             <Card className="border border-border bg-card shadow-sm rounded-[2.5rem] overflow-hidden animate-in zoom-in-95 duration-700">
                 <CardHeader className="py-8 px-10 border-b border-border bg-muted/20">
                     <div className="flex items-center justify-between">
-                        <CardTitle className="text-2xl font-black flex items-center gap-2">
+                        <CardTitle className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
                             Request History
                         </CardTitle>
-                        <Badge variant="outline" className="font-bold border-primary/20 bg-primary/5 text-primary">
+                        <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-primary/20 bg-primary/5 text-primary">
                             {requests.length} LOG ENTRIES
                         </Badge>
                     </div>
-                    <CardDescription className="text-sm font-medium mt-1">
+                    <CardDescription className="text-[10px] font-bold uppercase opacity-60 mt-1">
                         Detailed breakdown of all {filter !== 'all' ? filter : ''} lab requests in chronological order.
                     </CardDescription>
                 </CardHeader>

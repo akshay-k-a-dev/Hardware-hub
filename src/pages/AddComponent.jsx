@@ -20,13 +20,13 @@ export default function AddComponent() {
                 </Button>
             </header>
 
-            <div className="flex items-center gap-5 px-1">
-                <div className="h-16 w-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
-                    <Box size={32} />
+            <div className="flex items-center gap-5 px-1 border-b border-border pb-6">
+                <div className="h-14 w-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary border border-primary/20 shrink-0">
+                    <Box size={28} />
                 </div>
                 <div>
-                    <h1 className="text-4xl font-extrabold tracking-tight text-foreground mb-1">Add to Lab</h1>
-                    <p className="text-muted-foreground text-lg font-medium">Register new components or boards for students to use.</p>
+                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">Add to Lab</h1>
+                    <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-2 uppercase tracking-tight opacity-70">Register new components or boards for students to use.</p>
                 </div>
             </div>
 

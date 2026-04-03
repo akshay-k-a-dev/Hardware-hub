@@ -27,85 +27,65 @@ export default function ComponentCard({ item = {}, onClick }) {
     };
 
     return (
-        <Link to={`/components/${id}`} onClick={handleClick} className="group block h-full">
-            <Card className="h-full flex flex-col border border-border bg-card hover:shadow-md hover:border-foreground/20 transition-all duration-200 rounded-md overflow-hidden">
+        <Link to={`/components/${id}`} onClick={handleClick} className="group block focus-visible:outline-none">
+            <Card className="h-full flex flex-col border border-border bg-card hover:bg-white hover:border-rose-500/20 hover:shadow-xl hover:shadow-rose-500/5 transition-all duration-300 rounded-sm overflow-hidden relative group-hover:-translate-y-1">
 
                 {/* Product Image */}
-                <div className="relative aspect-[4/3] overflow-hidden bg-muted/30 border-b border-border">
+                <div className="relative aspect-square sm:aspect-[4/3] overflow-hidden bg-muted/20 border-b border-border/40 group-hover:bg-muted/10 transition-colors">
                     {image_url ? (
                         <img
                             src={image_url}
                             alt={name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-muted/20">
-                            <Cpu className="h-10 w-10 text-muted-foreground/40" />
-                        </div>
-                    )}
-
-                    {/* Category Badge */}
-                    <div className="absolute top-2 left-2">
-                        <Badge
-                            variant="secondary"
-                            className="text-[10px] font-bold uppercase tracking-widest bg-background/90 backdrop-blur-sm text-foreground border border-border/60 py-0.5 px-2 rounded-sm shadow-sm"
-                        >
-                            {category}
-                        </Badge>
-                    </div>
-
-                    {/* Out of Stock / Pre-book overlay */}
-                    {isOutOfStock && !isDeactivated && (
-                        <div className="absolute bottom-0 inset-x-0 bg-background/80 backdrop-blur-sm py-2 px-3 flex items-center gap-1.5 border-t border-border/60">
-                            <BookmarkCheck className="h-4 w-4 text-foreground shrink-0" />
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-foreground">Pre-book Available</span>
+                        <div className="w-full h-full flex items-center justify-center opacity-20">
+                            <Cpu className="h-8 w-8 text-foreground" />
                         </div>
                     )}
                 </div>
 
                 {/* Product Info */}
-                <div className="flex flex-col flex-1 p-4 gap-3">
-                    {/* Name */}
-                    <div>
-                        <h3 className="text-base font-bold text-foreground tracking-tight line-clamp-1 group-hover:text-foreground">
-                            {name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground font-medium mt-1 line-clamp-2 leading-relaxed">
-                            {description || 'Hardware component for research and development.'}
-                        </p>
+                <div className="flex flex-col flex-1 p-3.5 gap-2">
+                    {/* Title */}
+                    <h3 className="text-[11px] font-black text-foreground tracking-widest line-clamp-1 group-hover:text-rose-600 transition-colors uppercase">
+                        {name}
+                    </h3>
+                    
+                    {/* Category & Lab */}
+                    <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground font-black uppercase tracking-tighter truncate opacity-80">
+                        <span>{category}</span>
+                        {(owner?.lab_name || item.location) && (
+                            <>
+                                <span>•</span>
+                                <span className="truncate">{owner?.lab_name || item.location}</span>
+                            </>
+                        )}
                     </div>
 
                     {/* Status + Units */}
-                    <div className="flex items-center justify-between mt-auto pt-2">
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-border/30">
                         <Badge
                             variant="outline"
-                            className={`text-[10px] font-bold uppercase tracking-widest h-6 px-2 rounded-sm border ${status.className}`}
+                            className={`text-[8px] font-black uppercase tracking-[0.1em] h-5 px-2 rounded-sm border-none shadow-none ${statusKey === 'available' ? 'bg-yellow-500/10 text-yellow-700' : 'bg-muted text-muted-foreground'}`}
                         >
                             {status.label}
                         </Badge>
                         {!isDeactivated && (
-                            <span className="text-xs font-bold text-muted-foreground">
-                                {quantity_available} units
+                            <span className="text-[10px] font-black text-foreground/40 tabular-nums uppercase tracking-widest">
+                                {quantity_available > 0 ? `${quantity_available} Qty` : 'N/A'}
                             </span>
                         )}
                     </div>
 
-                    {/* Lab */}
-                    {owner?.lab_name && (
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground truncate border-t border-border pt-2">
-                            {owner.lab_name}
-                        </p>
-                    )}
-
                     {/* CTA */}
                     <Button
-                        variant="outline"
+                        variant="default"
                         size="sm"
-                        className="w-full h-9 text-xs font-bold uppercase tracking-widest border-border rounded-sm group-hover:bg-foreground group-hover:text-background group-hover:border-foreground transition-all duration-200 mt-1"
+                        className="w-full h-8 mt-1.5 text-[9px] font-black uppercase tracking-[0.2em] bg-foreground text-background hover:bg-rose-600 focus:bg-rose-600 transition-all duration-300 rounded-sm shadow-sm"
                         tabIndex={-1}
                     >
-                        {isOutOfStock ? 'Pre-Book' : 'View Details'}
-                        <ArrowRight className="h-3.5 w-3.5 ml-1.5 group-hover:translate-x-0.5 transition-transform" />
+                        {isOutOfStock ? 'Waitlist' : 'Request'}
                     </Button>
                 </div>
             </Card>

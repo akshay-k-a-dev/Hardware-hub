@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     Package,
     Clock,
@@ -16,7 +16,10 @@ import {
     Zap,
     History,
     Star,
-    MapPin
+    MapPin,
+    Bell,
+    ArrowUpRight,
+    SearchCode
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -45,14 +48,18 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Dashboard() {
+    const navigate = useNavigate();
     const { profile, isProvider, isAdmin, updateProfile } = useAuth();
     const { toast } = useToast();
     const [stats, setStats] = useState({ available: 0, pending: 0, active: 0, total: 0 });
+    const [activeHardware, setActiveHardware] = useState([]);
     const [recentRequests, setRecentRequests] = useState([]);
+    const [alerts, setAlerts] = useState([]);
     const [borrowerRatings, setBorrowerRatings] = useState({});
     const [loading, setLoading] = useState(true);
     const [showLabSettings, setShowLabSettings] = useState(false);
     const [labName, setLabName] = useState(profile?.lab_name || '');
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         loadDashboard();
@@ -77,22 +84,40 @@ export default function Dashboard() {
     };
 
     const loadStudentDashboard = async () => {
+        const threeDaysAgo = new Date();
+        threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+        
+        const nextThreeDays = new Date();
+        nextThreeDays.setDate(nextThreeDays.getDate() + 3);
+
         const [
-            { count: available },
-            { count: pending },
-            { count: active },
-            { count: total },
-            { data: recent },
+            { count: pendingCount },
+            { count: activeCount },
+            { data: activeHw },
+            { data: recentApproved },
+            { data: dueSoon },
         ] = await Promise.all([
-            supabase.from('hardware_items').select('*', { count: 'exact', head: true }).eq('status', 'available').gt('quantity_available', 0),
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).eq('status', 'pending'),
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).in('status', ['issued', 'overdue']),
-            supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id),
-            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').eq('user_id', profile.id).order('created_at', { ascending: false }).limit(5),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').eq('user_id', profile.id).in('status', ['issued', 'overdue']).order('expected_return_date', { ascending: true }),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name)').eq('user_id', profile.id).eq('status', 'approved').gte('updated_at', threeDaysAgo.toISOString()),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name)').eq('user_id', profile.id).eq('status', 'issued').lte('expected_return_date', nextThreeDays.toISOString()),
         ]);
 
-        setStats({ available: available || 0, pending: pending || 0, active: active || 0, total: total || 0 });
-        setRecentRequests(recent || []);
+        setStats({ pending: pendingCount || 0, active: activeCount || 0 });
+        setActiveHardware(activeHw || []);
+
+        const dynamicAlerts = [];
+        (activeHw || []).filter(r => r.status === 'overdue').forEach(r => {
+            dynamicAlerts.push({ id: `ov-${r.id}`, type: 'destructive', message: `OVERDUE: Return ${r.hardware.name} now.`, icon: <AlertCircle className="h-3 w-3" /> });
+        });
+        (dueSoon || []).forEach(r => {
+            dynamicAlerts.push({ id: `due-${r.id}`, type: 'warning', message: `${r.hardware.name} is due within 72h.`, icon: <Bell className="h-3 w-3" /> });
+        });
+        (recentApproved || []).forEach(r => {
+            dynamicAlerts.push({ id: `app-${r.id}`, type: 'success', message: `${r.hardware.name} request was approved!`, icon: <CheckCircle2 className="h-3 w-3" /> });
+        });
+        setAlerts(dynamicAlerts);
     };
 
     const loadProviderDashboard = async () => {
@@ -141,209 +166,307 @@ export default function Dashboard() {
         }
     };
 
-    const studentStats = [
-        { label: 'Available Lab Stock', value: stats.available, icon: <Package className="h-4 w-4" />, color: "blue" },
-        { label: 'Pending Approval', value: stats.pending, icon: <Clock className="h-4 w-4" />, color: "amber" },
-        { label: 'Currently Borrowed', value: stats.active, icon: <CheckCircle2 className="h-4 w-4" />, color: "emerald" },
-        { label: 'Activity History', value: stats.total, icon: <TrendingUp className="h-4 w-4" />, color: "indigo" },
-    ];
+    const handleSearch = (e) => {
+        e.preventDefault();
+        if (searchQuery.trim()) {
+            navigate(`/components?search=${encodeURIComponent(searchQuery.trim())}`);
+        }
+    };
 
-    const providerStats = [
-        { label: 'Managed Items', value: stats.available, icon: <Package className="h-4 w-4" />, color: "blue" },
-        { label: 'Pending Approval', value: stats.pending, icon: <Clock className="h-4 w-4" />, color: "amber" },
-        { label: 'Issued Items', value: stats.active, icon: <CheckCircle2 className="h-4 w-4" />, color: "emerald" },
-        { label: 'Total Stock', value: stats.total, icon: <TrendingUp className="h-4 w-4" />, color: "indigo" },
-    ];
-
-    const displayStats = (isProvider || isAdmin) ? providerStats : studentStats;
-
-    const getColorClasses = (color) => {
-        return "bg-background text-foreground border border-border";
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '—';
+        return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     };
 
     if (loading) {
         return (
             <div className="space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto">
-                <div className="space-y-4">
-                    <Skeleton className="h-12 w-80 rounded-lg" />
-                    <Skeleton className="h-4 w-[500px]" />
-                </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                    {[1, 2, 3, 4].map((i) => (
-                        <Skeleton key={i} className="h-32 w-full rounded-2xl" />
-                    ))}
-                </div>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                    <Skeleton className="md:col-span-4 h-[450px] rounded-2xl" />
-                    <Skeleton className="md:col-span-3 h-[450px] rounded-2xl" />
+                <Skeleton className="h-48 w-full rounded-sm" />
+                <div className="grid gap-6 md:grid-cols-2">
+                    <Skeleton className="h-32 w-full rounded-sm" />
+                    <Skeleton className="h-32 w-full rounded-sm" />
                 </div>
             </div>
         );
     }
 
-    return (
-        <div className="space-y-6 max-w-7xl mx-auto">
-            <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
-                <div>
-                    <h1 className="text-lg font-bold tracking-tight text-foreground">
-                        Welcome back, {profile?.name?.split(' ')[0]}
-                    </h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                        {isProvider ? 'Lab admin overview' : 'Your hardware activity at a glance'}
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    {isProvider && (
-                        <Badge
-                            variant="outline"
-                            className="text-[10px] font-semibold border-border bg-muted/30 text-muted-foreground cursor-pointer hover:bg-muted"
-                            onClick={() => setShowLabSettings(true)}
-                        >
-                            {profile.lab_name || 'Set Lab Name'} · Settings
-                        </Badge>
-                    )}
-                    {!isProvider && (
-                        <Button asChild size="sm" className="h-8 px-4 text-xs font-semibold bg-foreground text-background hover:bg-foreground/90 rounded-md shadow-none">
-                            <Link to="/components">
-                                <Search className="mr-1.5 h-3.5 w-3.5" /> Browse Hardware
-                            </Link>
-                        </Button>
-                    )}
-                </div>
-            </header>
-
-            {/* Stats Overview */}
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
-                {displayStats.map((s) => (
-                    <Card
-                        key={s.label}
-                        className="border border-border bg-card hover:shadow-sm transition-shadow"
+    if (isProvider || isAdmin) {
+        // Provider Dashboard View (Keep existing logic but apply minimal styling)
+        return (
+            <div className="space-y-6 max-w-7xl mx-auto">
+                <header className="flex items-center justify-between pb-4 border-b border-border">
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Lab Administrator</h1>
+                        <p className="text-[10px] md:text-xs font-black uppercase text-muted-foreground mt-0.5 tracking-tight opacity-70">Inventory and Request Management Console</p>
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-[10px] font-black uppercase tracking-widest rounded-sm border-border bg-muted/30"
+                        onClick={() => setShowLabSettings(true)}
                     >
-                        <CardContent className="p-4">
-                            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">{s.label}</p>
-                            <p className="text-2xl font-bold text-foreground tabular-nums">{s.value}</p>
+                        {profile.lab_name || 'Set Lab Name'} · Settings
+                    </Button>
+                </header>
+
+                <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+                    {[
+                        { label: 'Managed Items', value: stats.available, icon: <Package size={14} /> },
+                        { label: 'Pending Approval', value: stats.pending, icon: <Clock size={14} /> },
+                        { label: 'Issued Items', value: stats.active, icon: <CheckCircle2 size={14} /> },
+                        { label: 'Total Logs', value: stats.total, icon: <History size={14} /> }
+                    ].map((s) => (
+                        <Card key={s.label} className="border border-border bg-card shadow-sm rounded-sm">
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{s.label}</p>
+                                    <div className="text-muted-foreground/40">{s.icon}</div>
+                                </div>
+                                <p className="text-2xl font-black text-foreground tabular-nums">{s.value}</p>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="grid gap-6 lg:grid-cols-7">
+                    <Card className="lg:col-span-4 border border-border bg-card rounded-sm overflow-hidden">
+                        <CardHeader className="p-4 border-b border-border bg-muted/20">
+                            <CardTitle className="text-xs font-black uppercase tracking-widest">Recent Activity Pool</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            {recentRequests.length === 0 ? (
+                                <div className="p-12 text-center">
+                                    <AlertCircle className="h-8 w-8 text-muted-foreground/20 mx-auto mb-3" />
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Queue is currently clear</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border">
+                                    {recentRequests.map((req) => (
+                                        <div key={req.id} className="p-4 flex items-center justify-between hover:bg-muted/30 cursor-pointer">
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="text-sm font-black uppercase tracking-tight text-foreground">{req.project_title}</span>
+                                                <span className="text-[10px] font-black uppercase text-muted-foreground opacity-70">{req.hardware?.name} · {req.borrower?.name}</span>
+                                            </div>
+                                            <StatusBadge status={req.status} className="h-5 px-2 text-[8px] font-black" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
-                ))}
+                    <div className="lg:col-span-3 space-y-4">
+                        <Card className="border border-border rounded-sm">
+                            <CardHeader className="p-4 border-b border-border bg-muted/20"><CardTitle className="text-xs font-black uppercase tracking-widest">Actions</CardTitle></CardHeader>
+                            <CardContent className="p-3 grid gap-2">
+                                <Button asChild variant="outline" className="w-full justify-start h-9 rounded-sm border-border hover:bg-muted text-[10px] font-black uppercase tracking-widest">
+                                    <Link to="/add-component"><Plus size={14} className="mr-2" /> Add Hardware</Link>
+                                </Button>
+                                <Button asChild variant="outline" className="w-full justify-start h-9 rounded-sm border-border hover:bg-muted text-[10px] font-black uppercase tracking-widest">
+                                    <Link to="/manage-requests"><ClipboardList size={14} className="mr-2" /> Manage All Requests</Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
+                {/* Lab Name Dialog */}
+                <Dialog open={showLabSettings} onOpenChange={setShowLabSettings}>
+                    <DialogContent className="sm:max-w-md rounded-sm border border-border bg-background p-0">
+                        <DialogHeader className="p-6 border-b border-border">
+                            <DialogTitle className="text-xl font-black uppercase tracking-tighter">Lab Settings</DialogTitle>
+                        </DialogHeader>
+                        <div className="p-6 space-y-4">
+                            <div className="space-y-1.5">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Lab Branding Name</Label>
+                                <Input value={labName} onChange={(e) => setLabName(e.target.value)} placeholder="Robotics Lab" className="h-10 rounded-sm border-border bg-background uppercase font-black" />
+                            </div>
+                        </div>
+                        <DialogFooter className="p-4 bg-muted/20 border-t border-border">
+                            <Button onClick={handleUpdateLabName} className="w-full h-10 rounded-sm bg-foreground text-background font-black uppercase tracking-widest text-xs">Save Changes</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+        );
+    }
+
+    // Student Dashboard View (Action-Driven & Minimal)
+    return (
+        <div className="space-y-8 max-w-7xl mx-auto pb-12">
+            
+            {/* 1. Hero Action Section */}
+            <div className="relative overflow-hidden bg-foreground text-background rounded-sm p-8 md:p-12 flex flex-col items-center text-center gap-8 shadow-2xl border border-border">
+                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -mr-48 -mt-48 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full -ml-48 -mb-48 blur-3xl"></div>
+                </div>
+
+                <div className="relative space-y-2">
+                    <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none italic">
+                        Hardware Inventory
+                    </h2>
+                    <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] opacity-60">
+                        Professional Microcontrollers, Sensors, and Lab Equipment
+                    </p>
+                </div>
+
+                <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
+                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                    <Input 
+                        placeholder="Search processors, robotics, or components..." 
+                        className="h-14 pl-14 bg-background border-none text-foreground placeholder:text-muted-foreground/50 text-sm md:text-base rounded-sm focus-visible:ring-4 focus-visible:ring-white/10 shadow-xl"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                        <Button type="submit" size="sm" className="h-10 px-4 bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-[10px] tracking-widest rounded-sm hidden sm:flex">
+                            Explore
+                        </Button>
+                    </div>
+                </form>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-                {/* Recent Activity List */}
-                <Card className="lg:col-span-4 border border-border bg-card shadow-none overflow-hidden">
-                    <CardHeader className="flex flex-row items-center p-4 border-b border-border">
-                        <div className="grid gap-1 flex-1">
-                            <CardTitle className="text-base font-bold text-foreground">Recent Activity</CardTitle>
-                            <CardDescription className="text-xs text-muted-foreground">Latest hardware request updates</CardDescription>
+            {/* 2. Simplified Stats Row */}
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Approval</p>
+                            <p className="text-4xl font-black text-foreground tabular-nums group-hover:scale-110 transition-transform origin-left">{stats.pending}</p>
                         </div>
-                        <Button asChild variant="ghost" size="sm" className="ml-auto h-8 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-md">
-                            <Link to={isProvider ? '/manage-requests' : '/my-requests'}>
-                                View All <ArrowRight className="ml-1 h-3.5 w-3.5" />
-                            </Link>
+                        <div className="p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
+                            <Clock className="h-8 w-8" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Currently Borrowed</p>
+                            <p className="text-4xl font-black text-foreground tabular-nums group-hover:scale-110 transition-transform origin-left">{stats.active}</p>
+                        </div>
+                        <div className="p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
+                            <Package className="h-8 w-8" />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            <div className="grid gap-8 lg:grid-cols-12">
+                
+                {/* 3. Your Active Hardware (Main Focus) */}
+                <div className="lg:col-span-8 space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                            <Zap className="h-4 w-4" /> Your Active Hardware
+                        </h3>
+                        <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">
+                            <Link to="/my-requests">View History <ArrowRight className="ml-1 h-3 w-3" /></Link>
                         </Button>
-                    </CardHeader>
-                    <CardContent className="p-0">
-                        {recentRequests.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
-                                <AlertCircle className="h-8 w-8 text-muted-foreground/30 mb-3" />
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    {isProvider ? 'No pending requests.' : 'No requests yet. Browse hardware to get started.'}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-border">
-                                {recentRequests.map((req) => (
-                                    <div
-                                        key={req.id}
-                                        className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors cursor-pointer group"
-                                    >
-                                        <div className="flex flex-col gap-1 flex-1 min-w-0">
-                                            <span className="text-base font-bold truncate text-foreground">{req.project_title}</span>
-                                            <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium">
-                                                <span className="truncate">{req.hardware?.name}</span>
-                                                <span>·</span>
-                                                <span>Qty {req.quantity}</span>
-                                                {req.borrower && <span className="hidden sm:inline">· {req.borrower.name}</span>}
+                    </div>
+
+                    <Card className="border border-border bg-card shadow-none rounded-sm overflow-hidden">
+                        <CardContent className="p-0">
+                            {activeHardware.length === 0 ? (
+                                <div className="p-16 text-center bg-muted/10">
+                                    <div className="h-16 w-16 rounded-sm bg-muted border border-border flex items-center justify-center mx-auto mb-6 text-muted-foreground/30 italic">
+                                        <Package size={32} />
+                                    </div>
+                                    <h4 className="text-sm font-black uppercase tracking-widest text-foreground">No active loans</h4>
+                                    <p className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground mt-2 max-w-[240px] mx-auto opacity-60">
+                                        Ready for your next project? Browse the lab to reserve equipment.
+                                    </p>
+                                    <Button asChild variant="outline" size="sm" className="mt-6 rounded-sm border-foreground hover:bg-foreground hover:text-background text-[10px] font-black uppercase tracking-widest px-8">
+                                        <Link to="/components">Request Now</Link>
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-border/60">
+                                    {activeHardware.map((hw) => (
+                                        <div key={hw.id} className="p-5 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 bg-muted/40 rounded-sm flex items-center justify-center text-foreground font-black border border-border group-hover:bg-foreground group-hover:text-background transition-colors uppercase text-lg italic">
+                                                    {hw.hardware?.name?.[0]}
+                                                </div>
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="text-sm font-black uppercase tracking-tight text-foreground">{hw.hardware?.name}</span>
+                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground">
+                                                        <span>Due: {formatDate(hw.expected_return_date)}</span>
+                                                        <span>•</span>
+                                                        <span className={hw.status === 'overdue' ? 'text-destructive' : 'text-foreground'}>
+                                                            {hw.status === 'overdue' ? 'Overdue Action Needed' : 'In Possession'}
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <Button asChild size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link to={`/components/${hw.hardware_id}`}><ArrowUpRight size={16} /></Link>
+                                            </Button>
                                         </div>
-                                        <div className="ml-3 shrink-0">
-                                            <StatusBadge status={req.status} />
-                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* 4. Actions & Dynamic Alerts */}
+                <div className="lg:col-span-4 space-y-8">
+                    
+                    {/* Dynamic Alerts */}
+                    {alerts.length > 0 && (
+                        <div className="space-y-3">
+                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Recent Updates</h3>
+                            <div className="space-y-2">
+                                {alerts.map((alert) => (
+                                    <div 
+                                        key={alert.id} 
+                                        className={`p-3 rounded-sm border flex items-start gap-3 animate-in slide-in-from-right-4 duration-500
+                                            ${alert.type === 'destructive' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 
+                                              alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-200 text-yellow-700' : 
+                                              'bg-foreground/5 border-border text-foreground'}`}
+                                    >
+                                        <div className="mt-0.5">{alert.icon}</div>
+                                        <p className="text-[10px] font-black uppercase tracking-tighter leading-tight flex-1 font-bold">
+                                            {alert.message}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
-                        )}
-                    </CardContent>
-                </Card>
+                        </div>
+                    )}
 
-                {/* Quick Access Menu */}
-                <Card className="lg:col-span-3 border border-border bg-card shadow-none overflow-hidden">
-                    <CardHeader className="p-4 border-b border-border">
-                        <CardTitle className="text-base font-bold text-foreground">Quick Actions</CardTitle>
-                        <CardDescription className="text-sm text-muted-foreground font-medium">Navigate to core features</CardDescription>
-                    </CardHeader>
-                    <CardContent className="p-4 grid gap-2">
-                        <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
-                            <Link to="/components" className="flex items-center w-full">
-                                <Wrench className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                                Hardware Lab
-                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
-                            </Link>
-                        </Button>
-
-                        <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
-                            <Link to={isProvider ? '/manage-requests' : '/my-requests'} className="flex items-center w-full">
-                                <ClipboardList className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                                {isProvider ? 'Manage Requests' : 'My Requests'}
-                                <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
-                            </Link>
-                        </Button>
-
-                        {isProvider && (
-                            <Button asChild variant="ghost" className="justify-start h-10 rounded-md border border-border bg-background hover:bg-muted group px-3 text-sm font-medium">
-                                <Link to="/add-component" className="flex items-center w-full">
-                                    <Plus className="mr-2 h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                                    Add Hardware
-                                    <ArrowRight className="ml-auto h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                    {/* Quick Navigation */}
+                    <div className="space-y-4">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Navigation Console</h3>
+                        <div className="grid gap-2">
+                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
+                                <Link to="/components" className="flex items-center w-full">
+                                    <SearchCode className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
+                                    Request Hardware
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                                 </Link>
                             </Button>
-                        )}
 
-                        <div className="mt-2 p-4 rounded-md bg-muted/40 border border-border">
-                            <h4 className="text-xs font-semibold text-foreground mb-1">Reminder</h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                                Inspect all hardware for damage before confirming returns. Early returns are appreciated.
-                            </p>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
+                                <Link to="/my-requests" className="flex items-center w-full">
+                                    <History className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
+                                    View My Items
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                                </Link>
+                            </Button>
 
-            <Dialog open={showLabSettings} onOpenChange={setShowLabSettings}>
-                <DialogContent className="sm:max-w-md rounded-none border border-border bg-background p-0">
-                    <DialogHeader className="p-6 border-b border-border">
-                        <DialogTitle className="text-2xl font-black tracking-tight text-foreground">Lab Identity</DialogTitle>
-                        <DialogDescription className="text-sm font-bold text-foreground opacity-80">
-                            Set your laboratory or community name to brand your hardware listings.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 px-6 border-b border-border">
-                        <div className="space-y-2">
-                            <Label htmlFor="labName" className="text-xs font-black uppercase tracking-widest text-foreground">Lab Name</Label>
-                            <Input
-                                id="labName"
-                                placeholder="e.g. Robotics Innovation Lab"
-                                value={labName}
-                                onChange={(e) => setLabName(e.target.value)}
-                                className="h-12 border border-border bg-background rounded-none text-foreground placeholder-foreground/50"
-                            />
+                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
+                                <Link to="/my-requests" className="flex items-center w-full">
+                                    <ClipboardList className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
+                                    Track Requests
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                                </Link>
+                            </Button>
                         </div>
                     </div>
-                    <DialogFooter className="p-6 bg-background">
-                        <Button variant="ghost" onClick={() => setShowLabSettings(false)} className="rounded-none font-black text-foreground hover:bg-foreground hover:text-background border-2 border-transparent hover:border-foreground">Cancel</Button>
-                        <Button onClick={handleUpdateLabName} className="h-12 px-8 rounded-none font-black uppercase tracking-widest text-xs bg-foreground text-background border border-border hover:bg-background hover:text-foreground shadow-none">Save Branding</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                </div>
+            </div>
         </div>
     );
 }

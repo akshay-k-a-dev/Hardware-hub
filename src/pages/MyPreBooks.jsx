@@ -185,7 +185,7 @@ export default function MyPreBooks() {
 
     if (loading && prebooks.length === 0) {
         return (
-            <div className="space-y-10 animate-in fade-in duration-500 max-w-7xl mx-auto">
+            <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto">
                 <div className="space-y-4">
                     <Skeleton className="h-12 w-64 rounded-lg" />
                     <Skeleton className="h-4 w-[450px]" />
@@ -199,16 +199,16 @@ export default function MyPreBooks() {
     }
 
     return (
-        <div className="space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-7xl mx-auto">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-1000 max-w-7xl mx-auto">
             <header className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between pb-2 px-1">
                 <div className="space-y-1">
                     <div className="flex items-center gap-2 md:gap-3 text-primary mb-1">
                         <div className="p-1.5 md:p-2 rounded-xl bg-primary/10">
                             <BookmarkCheck className="h-5 w-5 md:h-6 md:w-6" />
                         </div>
-                        <h1 className="text-2xl md:text-4xl font-extrabold tracking-tight text-foreground">My Pre-Books</h1>
+                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">My Pre-Books</h1>
                     </div>
-                    <p className="text-muted-foreground text-sm md:text-lg font-medium">
+                    <p className="text-muted-foreground text-[10px] md:text-xs font-black uppercase tracking-tight opacity-70">
                         Track your waitlist reservations and claim items when they become available.
                     </p>
                 </div>
@@ -225,7 +225,7 @@ export default function MyPreBooks() {
             {/* Active Pre-Books */}
             {activePrebooks.length > 0 && (
                 <div className="space-y-6">
-                    <h2 className="text-lg font-black uppercase tracking-widest text-muted-foreground/60 px-1">Active Reservations</h2>
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Active Reservations</h2>
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {activePrebooks.map((pb, idx) => (
                             <Card
@@ -264,7 +264,7 @@ export default function MyPreBooks() {
                                 <CardContent className="p-6 space-y-5">
                                     <div>
                                         <h3
-                                            className="text-xl font-black tracking-tight text-foreground group-hover/card:text-primary transition-colors cursor-pointer line-clamp-1"
+                                            className="text-lg font-black tracking-tight text-foreground group-hover/card:text-primary transition-colors cursor-pointer line-clamp-1"
                                             onClick={() => navigate(`/components/${pb.hardware?.id}`)}
                                         >
                                             {pb.hardware?.name || 'Unknown Item'}
@@ -315,15 +315,15 @@ export default function MyPreBooks() {
                                                     <div className="p-4 w-fit rounded-2xl bg-destructive/10 text-destructive mb-4">
                                                         <AlertTriangle className="h-8 w-8" />
                                                     </div>
-                                                    <AlertDialogTitle className="text-3xl font-black tracking-tight text-foreground mb-2 leading-none">Cancel Pre-Book?</AlertDialogTitle>
-                                                    <AlertDialogDescription className="text-lg font-medium text-muted-foreground leading-relaxed">
+                                                    <AlertDialogTitle className="text-xl font-black tracking-tight text-foreground mb-2 leading-none">Cancel Pre-Book?</AlertDialogTitle>
+                                                    <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
                                                         You'll lose your #{pb.position} position in the queue for <strong>"{pb.hardware?.name}"</strong>. This cannot be undone.
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter className="mt-10 gap-4">
-                                                    <AlertDialogCancel className="h-14 px-8 rounded-2xl font-black text-xs uppercase border-2 border-border/60 hover:bg-muted/20">Keep Reservation</AlertDialogCancel>
+                                                    <AlertDialogCancel className="h-12 px-8 rounded-2xl font-black text-xs uppercase border-2 border-border/60 hover:bg-muted/20">Keep Reservation</AlertDialogCancel>
                                                     <AlertDialogAction
-                                                        className="h-14 px-10 rounded-2xl font-black text-xs uppercase bg-destructive hover:bg-destructive/90 shadow-xl shadow-destructive/20"
+                                                        className="h-12 px-10 rounded-2xl font-black text-xs uppercase bg-destructive hover:bg-destructive/90 shadow-xl shadow-destructive/20"
                                                         onClick={() => handleCancel(pb.id)}
                                                     >
                                                         Yes, Cancel
@@ -345,8 +345,8 @@ export default function MyPreBooks() {
                     <div className="p-8 rounded-[2rem] bg-muted/40 mb-8 ring-8 ring-muted/20">
                         <BookmarkCheck className="h-16 w-16 text-muted-foreground/30" />
                     </div>
-                    <h3 className="text-3xl font-black text-foreground tracking-tight">No Active Pre-Books</h3>
-                    <p className="text-muted-foreground max-w-md mt-4 text-lg font-medium leading-relaxed">
+                    <h3 className="text-xl font-black text-foreground tracking-tight uppercase">No Active Pre-Books</h3>
+                    <p className="text-muted-foreground max-w-sm mt-4 text-[10px] font-black uppercase leading-relaxed opacity-60">
                         When items are out of stock, you can pre-book them to join the waitlist. You'll be notified when they're available.
                     </p>
                     <Button
@@ -363,7 +363,7 @@ export default function MyPreBooks() {
             {/* Past Pre-Books */}
             {pastPrebooks.length > 0 && (
                 <div className="space-y-6">
-                    <h2 className="text-lg font-black uppercase tracking-widest text-muted-foreground/60 px-1">Past Reservations</h2>
+                    <h2 className="text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Past Reservations</h2>
                     <Card className="border border-border bg-card shadow-sm rounded-[2.5rem] overflow-hidden">
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/20">
@@ -404,7 +404,7 @@ export default function MyPreBooks() {
                     <Info size={40} />
                 </div>
                 <div className="space-y-2 flex-1 text-center md:text-left">
-                    <h4 className="text-xl font-black text-primary tracking-tight italic">How Pre-Booking Works</h4>
+                    <h4 className="text-lg font-black text-primary tracking-tight italic uppercase">How Pre-Booking Works</h4>
                     <p className="text-sm text-muted-foreground font-bold leading-relaxed max-w-3xl">
                         When an item is out of stock, join the waitlist. When it's returned, you'll be notified and given a 24-hour window to claim it. If you don't claim it in time, it moves to the next person.
                     </p>
@@ -413,14 +413,14 @@ export default function MyPreBooks() {
 
             {/* Claim Dialog */}
             <Dialog open={claimDialog.open} onOpenChange={(open) => setClaimDialog({ ...claimDialog, open })}>
-                <DialogContent className="sm:max-w-[600px] bg-card border border-border rounded-[2.5rem] p-10 shadow-xl animate-in zoom-in-95 duration-300">
-                    <form onSubmit={handleClaim} className="space-y-10">
-                        <DialogHeader className="space-y-4">
-                            <div className="h-16 w-16 rounded-[1.5rem] bg-primary/10 flex items-center justify-center text-primary mb-2">
-                                <Zap size={32} />
+                <DialogContent className="sm:max-w-[500px] bg-card border border-border rounded-[2.5rem] p-8 shadow-xl animate-in zoom-in-95 duration-300">
+                    <form onSubmit={handleClaim} className="space-y-8">
+                        <DialogHeader className="space-y-3">
+                            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-2">
+                                <Zap size={24} />
                             </div>
-                            <DialogTitle className="text-4xl font-black tracking-tight text-foreground leading-none">Claim Your Item</DialogTitle>
-                            <DialogDescription className="text-lg font-medium text-muted-foreground leading-relaxed">
+                            <DialogTitle className="text-2xl font-black tracking-tight text-foreground leading-none uppercase">Claim Your Item</DialogTitle>
+                            <DialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
                                 Almost there! Describe your project and we'll create a borrow request for <strong>"{claimDialog.prebook?.hardware?.name}"</strong>.
                             </DialogDescription>
                         </DialogHeader>
@@ -434,7 +434,7 @@ export default function MyPreBooks() {
                                     value={claimForm.project_title}
                                     onChange={(e) => setClaimForm({ ...claimForm, project_title: e.target.value })}
                                     required
-                                    className="h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold px-6"
+                                    className="h-12 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-sm font-bold px-6"
                                 />
                             </div>
                             <div className="space-y-3">
@@ -442,21 +442,21 @@ export default function MyPreBooks() {
                                 <Textarea
                                     id="claim-desc"
                                     placeholder="Briefly explain how you'll use this for your project."
-                                    className="min-h-[120px] bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold p-6 leading-relaxed"
+                                    className="min-h-[100px] bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-sm font-bold p-6 leading-relaxed"
                                     value={claimForm.project_description}
                                     onChange={(e) => setClaimForm({ ...claimForm, project_description: e.target.value })}
                                 />
                             </div>
                         </div>
 
-                        <DialogFooter className="gap-4">
-                            <Button type="button" variant="ghost" className="h-14 flex-1 rounded-2xl font-black uppercase text-xs border border-border hover:bg-muted/30" onClick={() => setClaimDialog({ open: false, prebook: null })}>
+                        <DialogFooter className="gap-3">
+                            <Button type="button" variant="ghost" className="h-12 flex-1 rounded-2xl font-black uppercase text-xs border border-border hover:bg-muted/30" onClick={() => setClaimDialog({ open: false, prebook: null })}>
                                 Cancel
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={submitting}
-                                className="h-14 px-10 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center gap-3"
+                                className="h-12 px-10 rounded-2xl font-black uppercase text-xs tracking-widest flex items-center gap-3"
                             >
                                 {submitting ? (
                                     <>Processing...</>

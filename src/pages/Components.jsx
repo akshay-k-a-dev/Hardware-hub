@@ -120,150 +120,114 @@ export default function Components() {
     const activeAvailabilityLabel = AVAILABILITY_OPTIONS.find(o => o.value === availability)?.label;
 
     return (
-        <div className="flex flex-col gap-0 max-w-[1400px] mx-auto">
+        <div className="flex flex-col gap-0 max-w-[1400px] mx-auto animate-in fade-in duration-500">
+            {/* ── Filter Bar ── */}
+            <div className="flex flex-col gap-4 mb-6 pb-2 border-b border-border">
+                
+                {/* Header & Main Search Row */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-2.5">
+                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Hardware Lab</h1>
+                        <span className="text-[10px] font-black text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-sm border border-border/50 uppercase tracking-widest">
+                            {summary.total} ITEMS
+                        </span>
+                    </div>
 
-            {/* ── Mini Summary Strip ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-border mb-4">
-                <div>
-                    <h1 className="text-lg font-bold tracking-tight text-foreground">Hardware Lab</h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">Browse boards, sensors, and modules for your projects</p>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-card border border-border">
-                        <Package className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-xs font-semibold text-foreground">{summary.total}</span>
-                        <span className="text-xs text-muted-foreground">total</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-card border border-border">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                        <span className="text-xs font-semibold text-foreground">{summary.available}</span>
-                        <span className="text-xs text-muted-foreground">in stock</span>
-                    </div>
-                    {isStudent && summary.myPending > 0 && (
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-amber-50 border border-amber-200">
-                            <Clock className="h-3.5 w-3.5 text-amber-600" />
-                            <span className="text-xs font-semibold text-amber-700">{summary.myPending} pending</span>
+                    <div className="flex items-center gap-2 w-full md:w-auto md:min-w-[420px]">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+                            <Input
+                                placeholder="Search hardware lab..."
+                                className="pl-9 h-9 text-xs bg-background border-border shadow-none rounded-sm focus-visible:ring-1 focus-visible:ring-foreground transition-all"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                            {search && (
+                                <button
+                                    onClick={() => setSearch('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                                >
+                                    <XCircle className="h-3.5 w-3.5" />
+                                </button>
+                            )}
                         </div>
-                    )}
-                    <Link to="/dashboard" className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                        <LayoutDashboard className="h-3.5 w-3.5" />
-                        Dashboard
-                    </Link>
-                </div>
-            </div>
-
-            {/* ── Filter Bar (sticky header) ── */}
-            <div className="sticky top-0 z-10 flex flex-col gap-2.5 mb-5 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border -mx-4 px-4 md:-mx-6 md:px-6">
-
-                {/* Search + Secondary Filters Row */}
-                <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Search hardware by name or description..."
-                            className="pl-9 h-9 text-sm bg-card border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground"
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                        />
-                        {search && (
-                            <button
-                                onClick={() => setSearch('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                                <XCircle className="h-4 w-4" />
-                            </button>
-                        )}
+                        
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`h-9 px-3 gap-2 text-[10px] font-bold uppercase tracking-widest border-border rounded-sm shadow-none whitespace-nowrap transition-all ${availability !== 'all' ? 'border-foreground text-foreground bg-muted/20' : 'text-foreground'}`}
+                                >
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                    <span className="hidden sm:inline">{availability === 'all' ? 'Filter status' : activeAvailabilityLabel}</span>
+                                    <ChevronDown className="h-3 w-3 ml-0.5 opacity-60" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-44 rounded-sm border-border shadow-xl p-1 animate-in zoom-in-95 duration-200">
+                                <DropdownMenuRadioGroup value={availability} onValueChange={setAvailability}>
+                                    {AVAILABILITY_OPTIONS.map(opt => (
+                                        <DropdownMenuRadioItem key={opt.value} value={opt.value} className="text-xs font-bold uppercase tracking-wider cursor-pointer rounded-sm py-2">
+                                            {opt.label}
+                                        </DropdownMenuRadioItem>
+                                    ))}
+                                </DropdownMenuRadioGroup>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
-
-                    {/* Availability Filter Dropdown */}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className={`h-9 gap-1.5 text-xs font-bold border-border rounded-md whitespace-nowrap ${availability !== 'all' ? 'border-foreground bg-foreground text-background' : ''}`}
-                            >
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                {activeAvailabilityLabel}
-                                <ChevronDown className="h-3 w-3 ml-0.5 opacity-60" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-44 rounded-md">
-                            <DropdownMenuRadioGroup value={availability} onValueChange={setAvailability}>
-                                {AVAILABILITY_OPTIONS.map(opt => (
-                                    <DropdownMenuRadioItem key={opt.value} value={opt.value} className="text-sm font-medium cursor-pointer">
-                                        {opt.label}
-                                    </DropdownMenuRadioItem>
-                                ))}
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {hasActiveFilters && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={clearFilters}
-                            className="h-9 gap-1.5 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-md"
-                        >
-                            <Trash2 className="h-3.5 w-3.5" />
-                            Clear
-                        </Button>
-                    )}
                 </div>
 
                 {/* Category Pills */}
-                <div className="flex gap-1.5 overflow-x-auto pb-0.5 scrollbar-none flex-wrap sm:flex-nowrap">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none flex-nowrap items-center">
+                    <span className="text-[9px] font-black text-muted-foreground uppercase tracking-tighter mr-2 shrink-0">Categories:</span>
                     {CATEGORIES.map(cat => {
                         const isActive = category === cat.value;
                         return (
                             <button
                                 key={cat.value}
                                 onClick={() => setCategory(cat.value)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md border whitespace-nowrap transition-all duration-150 shrink-0
+                                className={`flex items-center gap-2 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-sm border whitespace-nowrap transition-all duration-200 shrink-0
                                     ${isActive
-                                        ? 'bg-foreground text-background border-foreground'
-                                        : 'bg-card text-muted-foreground border-border hover:border-foreground hover:text-foreground'
+                                        ? 'bg-foreground text-background border-foreground shadow-md'
+                                        : 'bg-card text-muted-foreground border-border hover:border-foreground/40 hover:text-foreground'
                                     }`}
                             >
-                                {cat.icon}
+                                <span className="opacity-70">{cat.icon}</span>
                                 {cat.label}
                             </button>
                         );
                     })}
                 </div>
 
-                {/* Active Filter Tags */}
+                {/* Active Filters Row (if any) */}
                 {hasActiveFilters && (
-                    <div className="flex flex-wrap gap-1.5 items-center">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mr-1">Filters:</span>
-                        {category !== 'All' && (
-                            <Badge
-                                variant="secondary"
-                                className="text-[10px] font-bold h-5 px-2 gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive rounded-sm"
-                                onClick={() => setCategory('All')}
-                            >
-                                {category} ×
-                            </Badge>
-                        )}
-                        {availability !== 'all' && (
-                            <Badge
-                                variant="secondary"
-                                className="text-[10px] font-bold h-5 px-2 gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive rounded-sm"
-                                onClick={() => setAvailability('all')}
-                            >
-                                {activeAvailabilityLabel} ×
-                            </Badge>
-                        )}
-                        {search && (
-                            <Badge
-                                variant="secondary"
-                                className="text-[10px] font-bold h-5 px-2 gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive rounded-sm max-w-[160px] truncate"
-                                onClick={() => setSearch('')}
-                            >
-                                "{search}" ×
-                            </Badge>
-                        )}
+                    <div className="flex items-center gap-2 pt-2 mt-1">
+                        <span className="text-[9px] uppercase font-black text-muted-foreground tracking-tighter pl-1">Selected:</span>
+                        <div className="flex flex-wrap gap-1.5 flex-1">
+                            {category !== 'All' && (
+                                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest h-5 px-2 gap-1 cursor-pointer hover:bg-muted border border-border/60 text-foreground" onClick={() => setCategory('All')}>
+                                    {category} ×
+                                </Badge>
+                            )}
+                            {availability !== 'all' && (
+                                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest h-5 px-2 gap-1 cursor-pointer hover:bg-muted border border-border/60 text-foreground" onClick={() => setAvailability('all')}>
+                                    {activeAvailabilityLabel} ×
+                                </Badge>
+                            )}
+                            {search && (
+                                <Badge variant="outline" className="text-[10px] font-bold uppercase tracking-widest h-5 px-2 gap-1 cursor-pointer hover:bg-muted border border-border/60 text-foreground max-w-[160px] truncate" onClick={() => setSearch('')}>
+                                    "{search}" ×
+                                </Badge>
+                            )}
+                        </div>
+                        <Button
+                            variant="link"
+                            size="sm"
+                            onClick={clearFilters}
+                            className="h-6 px-2 text-[10px] font-black uppercase tracking-tighter text-muted-foreground hover:text-foreground p-0"
+                        >
+                            Reset all
+                        </Button>
                     </div>
                 )}
             </div>

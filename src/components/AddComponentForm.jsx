@@ -197,6 +197,9 @@ export default function AddComponentForm() {
                 quantity_total: parseInt(form.quantity_total) || 1,
                 quantity_available: parseInt(form.quantity_total) || 1,
                 max_lending_days: parseInt(form.max_lending_days) || 14,
+                location: location,
+                delivery_courier: delivery.courier,
+                delivery_offline: delivery.offline,
             };
 
             // 1. Insert item

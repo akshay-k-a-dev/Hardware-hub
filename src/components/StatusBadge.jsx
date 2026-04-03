@@ -10,15 +10,15 @@ import {
 } from 'lucide-react';
 
 const statusConfig = {
-    pending: { color: 'bg-amber-500/5 text-amber-600 border-amber-500/20', icon: Clock, label: 'Pending Approval' },
-    approved: { color: 'bg-blue-500/5 text-blue-600 border-blue-500/20', icon: CheckCircle2, label: 'Approved' },
-    issued: { color: 'bg-primary/5 text-primary border-primary/20', icon: PackageCheck, label: 'Handed Over' },
-    returned: { color: 'bg-emerald-500/5 text-emerald-600 border-emerald-500/10', icon: History, label: 'Returned' },
+    pending: { color: 'bg-yellow-500/5 text-yellow-700 border-yellow-200', icon: Clock, label: 'Pending Approval' },
+    approved: { color: 'bg-foreground/5 text-foreground border-border', icon: CheckCircle2, label: 'Approved' },
+    issued: { color: 'bg-foreground/5 text-foreground border-border', icon: PackageCheck, label: 'In Possession' },
+    returned: { color: 'bg-muted text-muted-foreground border-border', icon: History, label: 'Returned' },
     rejected: { color: 'bg-destructive/5 text-destructive border-destructive/10', icon: XCircle, label: 'Rejected' },
     cancelled: { color: 'bg-muted text-muted-foreground border-border', icon: XCircle, label: 'Cancelled' },
-    overdue: { color: 'bg-red-500/5 text-red-600 border-red-500/20 animate-pulse font-black', icon: AlertTriangle, label: 'Overdue!' },
-    available: { color: 'bg-emerald-500/5 text-emerald-600 border-emerald-500/10', icon: CheckCircle2, label: 'In Lab (Ready)' },
-    borrowed: { color: 'bg-primary/5 text-primary border-primary/20', icon: PackageCheck, label: 'Borrowed' },
+    overdue: { color: 'bg-destructive/10 text-destructive border-destructive/20 font-black', icon: AlertTriangle, label: 'Overdue!' },
+    available: { color: 'bg-yellow-500/5 text-yellow-700 border-yellow-200', icon: CheckCircle2, label: 'In Lab (Ready)' },
+    borrowed: { color: 'bg-foreground/5 text-foreground border-border', icon: PackageCheck, label: 'Borrowed' },
 };
 
 export default function StatusBadge({ status, className }) {

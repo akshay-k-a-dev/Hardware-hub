@@ -205,7 +205,7 @@ export default function ManageRequests() {
                         <Skeleton className="h-14 flex-1 rounded-2xl" />
                         <Skeleton className="h-14 w-80 rounded-2xl" />
                     </div>
-                    <Skeleton className="h-[500px] w-full rounded-[2.5rem]" />
+                    <Skeleton className="h-[500px] w-full rounded-md" />
                 </div>
             </div>
         );
@@ -215,8 +215,8 @@ export default function ManageRequests() {
         <div className="space-y-6 max-w-7xl mx-auto">
             <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
                 <div>
-                    <h1 className="text-lg font-bold tracking-tight text-foreground">Manage Requests</h1>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Manage Requests</h1>
+                    <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">
                         Review and approve student hardware requests
                     </p>
                 </div>
@@ -345,50 +345,40 @@ export default function ManageRequests() {
                                                                 )}
                                                             </Button>
                                                         </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="w-64 p-2 bg-card border border-border rounded-2xl animate-in zoom-in-95 duration-200">
-                                                            <DropdownMenuLabel className="px-4 py-3 text-xs font-black uppercase tracking-widest text-muted-foreground">Quick Actions</DropdownMenuLabel>
-                                                            <DropdownMenuSeparator className="bg-border/40 mx-2" />
+                                                        <DropdownMenuContent align="end" className="w-56 p-1 bg-card border border-border rounded-sm animate-in zoom-in-95 duration-200">
+                                                            <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quick Actions</DropdownMenuLabel>
+                                                            <DropdownMenuSeparator className="bg-border/40" />
 
                                                             {req.status === 'pending' && (
                                                                 <>
-                                                                    <DropdownMenuItem onClick={() => handleAction('approve', req.id)} className="h-12 rounded-xl focus:bg-emerald-500/10 focus:text-emerald-500 font-bold px-4 cursor-pointer gap-3 mb-1">
-                                                                        <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                                                            <CheckCircle2 size={18} />
-                                                                        </div>
+                                                                    <DropdownMenuItem onClick={() => handleAction('approve', req.id)} className="h-9 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
+                                                                        <CheckCircle2 size={14} />
                                                                         Approve
                                                                     </DropdownMenuItem>
-                                                                    <DropdownMenuItem onClick={() => handleAction('reject', req.id)} className="h-12 rounded-xl focus:bg-destructive/10 focus:text-destructive font-bold px-4 cursor-pointer gap-3">
-                                                                        <div className="h-8 w-8 rounded-lg bg-destructive/10 flex items-center justify-center">
-                                                                            <XCircle size={18} />
-                                                                        </div>
+                                                                    <DropdownMenuItem onClick={() => handleAction('reject', req.id)} className="h-9 rounded-sm focus:bg-destructive focus:text-destructive-foreground font-bold px-3 cursor-pointer gap-2">
+                                                                        <XCircle size={14} />
                                                                         Reject
                                                                     </DropdownMenuItem>
                                                                 </>
                                                             )}
 
                                                             {req.status === 'approved' && (
-                                                                <DropdownMenuItem onClick={() => handleAction('issue', req.id)} className="h-12 rounded-xl focus:bg-primary/10 focus:text-primary font-bold px-4 cursor-pointer gap-3">
-                                                                    <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                                                                        <PackageCheck size={18} />
-                                                                    </div>
+                                                                <DropdownMenuItem onClick={() => handleAction('issue', req.id)} className="h-10 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
+                                                                    <PackageCheck size={14} />
                                                                     Mark as Issued
                                                                 </DropdownMenuItem>
                                                             )}
 
                                                             {(req.status === 'issued' || req.status === 'overdue') && (
-                                                                <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="h-12 rounded-xl focus:bg-amber-500/10 focus:text-amber-500 font-bold px-4 cursor-pointer gap-3">
-                                                                    <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                                                        <CornerUpLeft size={18} />
-                                                                    </div>
+                                                                <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="h-10 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
+                                                                    <CornerUpLeft size={14} />
                                                                     Confirm Return
                                                                 </DropdownMenuItem>
                                                             )}
 
                                                             {req.status === 'returned' && (
-                                                                <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="h-12 rounded-xl focus:bg-amber-500/10 focus:text-amber-500 font-bold px-4 cursor-pointer gap-3">
-                                                                    <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-500">
-                                                                        <ThumbsUp size={18} />
-                                                                    </div>
+                                                                <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="h-10 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
+                                                                    <ThumbsUp size={14} />
                                                                     Rate Student
                                                                 </DropdownMenuItem>
                                                             )}
@@ -427,7 +417,7 @@ export default function ManageRequests() {
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div className="flex flex-col gap-1 p-3 rounded-xl bg-muted/30 border border-border">
+                                            <div className="flex flex-col gap-1 p-3 rounded-md bg-muted/30 border border-border">
                                                 <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Hardware</span>
                                                 <span className="text-sm font-bold truncate">{req.hardware?.name}</span>
                                             </div>
@@ -444,11 +434,11 @@ export default function ManageRequests() {
                                             </div>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" className="h-10 rounded-xl px-4 font-black uppercase text-[10px] tracking-widest gap-2">
+                                                    <Button variant="outline" className="h-10 rounded-md px-4 font-black uppercase text-[10px] tracking-widest gap-2">
                                                         Manage <MoreHorizontal size={14} />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-2xl">
+                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-md">
                                                     {/* Same actions as desktop */}
                                                     {req.status === 'pending' && (
                                                         <>
@@ -474,7 +464,7 @@ export default function ManageRequests() {
             </Card>
 
 
-            <Dialog open={ratingDialog.open} onValueChange={(v) => !v && setRatingDialog({ ...ratingDialog, open: false })}>
+            <Dialog open={ratingDialog.open} onOpenChange={(v) => !v && setRatingDialog({ ...ratingDialog, open: false })}>
                 <DialogContent className="sm:max-w-md rounded-lg">
                     <DialogHeader>
                         <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground mb-4">
@@ -515,8 +505,8 @@ export default function ManageRequests() {
                     </div>
 
                     <DialogFooter className="gap-2 sm:space-x-0">
-                        <Button variant="outline" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-9 flex-1 font-bold rounded-md">Cancel</Button>
-                        <Button onClick={submitRating} className="h-9 flex-1 font-bold text-xs bg-foreground text-background rounded-md">Submit Rating</Button>
+                        <Button variant="outline" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-9 flex-1 font-bold rounded-sm border-border hover:bg-muted text-xs uppercase tracking-widest">Cancel</Button>
+                        <Button onClick={submitRating} className="h-9 flex-1 font-black text-xs bg-foreground text-background hover:bg-foreground/90 transition-all rounded-sm uppercase tracking-widest">Submit Rating</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

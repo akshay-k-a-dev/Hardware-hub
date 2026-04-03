@@ -53,7 +53,7 @@ export default function Layout() {
 
 function LayoutInner() {
     const { profile, signOut, isProvider, isAdmin } = useAuth();
-    const { setOpenMobile, isMobile } = useSidebar(); // ← close sheet on mobile nav
+    const { setOpenMobile, isMobile } = useSidebar(); 
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -80,23 +80,22 @@ function LayoutInner() {
         navigate('/login', { replace: true });
     };
 
-    // Close the mobile Sheet drawer when a nav link is tapped
     const handleNavClick = () => {
         if (isMobile) setOpenMobile(false);
     };
 
     const studentLinks = [
-        { to: '/dashboard', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
-        { to: '/', icon: <Wrench size={16} />, label: 'Hardware Lab' },
-        { to: '/my-requests', icon: <ClipboardList size={16} />, label: 'My Requests' },
-        { to: '/my-prebooks', icon: <BookmarkCheck size={16} />, label: 'My Pre-Books' },
+        { to: '/dashboard', icon: <LayoutDashboard size={15} />, label: 'Dashboard' },
+        { to: '/', icon: <Wrench size={15} />, label: 'Hardware Lab' },
+        { to: '/my-requests', icon: <ClipboardList size={15} />, label: 'My Requests' },
+        { to: '/my-prebooks', icon: <BookmarkCheck size={15} />, label: 'My Pre-Books' },
     ];
 
     const providerLinks = [
-        { to: '/dashboard', icon: <LayoutDashboard size={16} />, label: 'Dashboard' },
-        { to: '/', icon: <Wrench size={16} />, label: 'Hardware Lab' },
-        { to: '/manage-requests', icon: <FileCheck size={16} />, label: 'Manage Requests' },
-        { to: '/add-component', icon: <PlusSquare size={16} />, label: 'Add Hardware' },
+        { to: '/dashboard', icon: <LayoutDashboard size={15} />, label: 'Dashboard' },
+        { to: '/', icon: <Wrench size={15} />, label: 'Hardware Lab' },
+        { to: '/manage-requests', icon: <FileCheck size={15} />, label: 'Manage Requests' },
+        { to: '/add-component', icon: <PlusSquare size={15} />, label: 'Add Hardware' },
     ];
 
     const links = (isProvider || isAdmin) ? providerLinks : studentLinks;
@@ -105,33 +104,33 @@ function LayoutInner() {
     return (
         <div className="flex h-screen w-full overflow-hidden bg-background">
             {/* ── Sidebar ──────────────────────────────────── */}
-            <Sidebar variant="inset" collapsible="icon" className="border-r border-border">
-                <SidebarHeader className="flex flex-row items-center gap-2 px-3 py-3 border-b border-border group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-                    <div className="flex h-6 w-6 shrink-0 items-center justify-center border border-border bg-foreground text-background">
-                        <Wrench size={12} />
+            <Sidebar variant="inset" collapsible="icon" className="border-r border-border bg-background">
+                <SidebarHeader className="flex flex-row items-center gap-2 px-3 py-2.5 border-b border-border group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center border border-border bg-foreground text-background rounded-sm">
+                        <Wrench size={10} />
                     </div>
-                    <span className="text-sm font-bold tracking-tight text-foreground truncate group-data-[collapsible=icon]:hidden">
-                        HardwareHub
+                    <span className="text-[11px] font-black uppercase tracking-widest text-foreground truncate group-data-[collapsible=icon]:hidden">
+                        HUB
                     </span>
                 </SidebarHeader>
 
                 <SidebarContent className="px-2 py-2">
-                    <SidebarMenu className="space-y-0.5">
+                    <SidebarMenu className="space-y-1">
                         {links.map((link) => (
                             <SidebarMenuItem key={link.to}>
                                 <SidebarMenuButton
                                     asChild
                                     isActive={location.pathname === link.to}
                                     tooltip={link.label}
-                                    className="h-8 px-2.5 py-1 text-sm hover:bg-muted hover:text-foreground data-[active=true]:bg-foreground data-[active=true]:text-background data-[active=true]:font-semibold rounded-md transition-colors duration-150 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                                    className="h-9 px-2.5 text-xs hover:bg-muted hover:text-foreground data-[active=true]:bg-foreground data-[active=true]:text-background data-[active=true]:font-bold rounded-sm transition-all duration-200 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                                 >
                                     <NavLink
                                         to={link.to}
                                         end={link.to === '/'}
                                         onClick={handleNavClick}
                                     >
-                                        <span className="mr-2 shrink-0 opacity-70 group-data-[collapsible=icon]:mr-0">{link.icon}</span>
-                                        <span className="font-medium truncate group-data-[collapsible=icon]:hidden">{link.label}</span>
+                                        <span className="shrink-0 opacity-80 group-data-[collapsible=icon]:mr-0">{link.icon}</span>
+                                        <span className="font-semibold truncate group-data-[collapsible=icon]:hidden ml-2">{link.label}</span>
                                     </NavLink>
                                 </SidebarMenuButton>
                             </SidebarMenuItem>
@@ -139,28 +138,27 @@ function LayoutInner() {
                     </SidebarMenu>
                 </SidebarContent>
 
-                <SidebarFooter className="p-3 border-t border-border group-data-[collapsible=icon]:p-2">
-                    <div className="flex items-center gap-2.5 px-3 py-2.5 mb-2 border border-border rounded-md bg-muted/40 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:justify-center">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center border border-border bg-background text-foreground font-bold text-xs rounded-sm">
+                <SidebarFooter className="p-2 border-t border-border group-data-[collapsible=icon]:p-1.5">
+                    <div className="flex items-center gap-2 px-2.5 py-2 mb-1.5 border border-border rounded-sm bg-muted/40 group-data-[collapsible=icon]:bg-transparent group-data-[collapsible=icon]:border-none group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:justify-center">
+                        <div className="flex h-6 w-6 shrink-0 items-center justify-center border border-border bg-background text-foreground font-black text-[10px] rounded-sm">
                             {initial}
                         </div>
                         <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
-                            <span className="text-xs font-semibold truncate text-foreground">
-                                {profile?.name}
+                            <span className="text-[10px] font-bold truncate text-foreground leading-none">
+                                {profile?.name?.split(' ')[0]}
                             </span>
-                            <span className="text-[10px] text-muted-foreground uppercase font-medium tracking-wider">
-                                {profile?.role === 'provider' ? 'Lab Admin' : profile?.role}
+                            <span className="text-[9px] text-muted-foreground uppercase font-black tracking-tighter mt-0.5">
+                                {profile?.role === 'provider' ? 'ADMIN' : 'STUDENT'}
                             </span>
                         </div>
                     </div>
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-start text-sm text-muted-foreground hover:text-foreground hover:bg-muted rounded-md group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:py-2 group-data-[collapsible=icon]:h-9"
+                        className="w-full justify-start text-[10px] font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground hover:bg-muted rounded-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:h-8"
                         onClick={handleSignOut}
-                        title="Sign Out"
                     >
-                        <LogOut size={14} className="mr-2.5 shrink-0 group-data-[collapsible=icon]:mr-0 group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
+                        <LogOut size={13} className="mr-2.5 shrink-0 group-data-[collapsible=icon]:mr-0" />
                         <span className="group-data-[collapsible=icon]:hidden">Sign Out</span>
                     </Button>
                 </SidebarFooter>
@@ -168,23 +166,22 @@ function LayoutInner() {
 
             {/* ── Main area ────────────────────────────────── */}
             <SidebarInset className="flex flex-col overflow-hidden w-full">
-                {/* Topbar — compact h-12, no white gap */}
-                <header className="flex h-12 items-center justify-between border-b border-border bg-background px-4 md:px-5 shrink-0 z-10">
+                {/* Topbar — ultra compact e-commerce header */}
+                <header className="flex h-10 items-center justify-between border-b border-border/60 bg-background/80 backdrop-blur-md px-4 md:px-6 shrink-0 z-20">
                     <div className="flex items-center gap-2 flex-1">
-                        <SidebarTrigger className="hover:bg-muted hover:text-foreground shrink-0 text-foreground h-8 w-8" />
-                        {/* Global search removed from topbar — lives in Hardware Lab page */}
+                        <SidebarTrigger className="hover:bg-muted hover:text-foreground shrink-0 text-foreground h-7 w-7 transition-colors rounded-sm" />
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                         {/* Theme toggle */}
                         <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => setIsDark(prev => !prev)}
-                            className="h-8 w-8 hover:bg-muted text-foreground"
+                            className="h-7 w-7 hover:bg-muted text-foreground transition-all duration-200"
                             aria-label="Toggle theme"
                         >
-                            {isDark ? <Sun size={15} /> : <Moon size={15} />}
+                            {isDark ? <Sun size={14} /> : <Moon size={14} />}
                         </Button>
 
                         <NotificationBell />
@@ -195,37 +192,37 @@ function LayoutInner() {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="h-8 w-8 hover:bg-muted text-foreground border border-border rounded-sm"
+                                    className="h-7 w-7 hover:bg-muted text-foreground border border-border rounded-sm transition-all duration-200"
                                 >
-                                    <span className="text-xs font-bold">{initial}</span>
+                                    <span className="text-[10px] font-black">{initial}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 align="end"
-                                className="w-48 border border-border bg-card rounded-md shadow-md p-1"
+                                className="w-48 border border-border bg-card rounded-md shadow-lg p-1 animate-in slide-in-from-top-1 duration-200"
                             >
-                                <DropdownMenuLabel className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                                <DropdownMenuLabel className="px-2 py-1.5 text-[9px] font-black uppercase tracking-widest text-muted-foreground">
                                     {profile?.name}
                                 </DropdownMenuLabel>
-                                <DropdownMenuSeparator className="bg-border" />
+                                <DropdownMenuSeparator className="bg-border/60" />
                                 <DropdownMenuItem
                                     onClick={() => navigate('/profile')}
-                                    className="cursor-pointer text-sm px-2 py-1.5 rounded-sm hover:bg-muted"
+                                    className="cursor-pointer text-xs font-semibold px-2 py-1.5 rounded-sm hover:bg-muted transition-colors"
                                 >
                                     <User className="mr-2 h-3.5 w-3.5" />
                                     Profile
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                     onClick={() => navigate('/settings')}
-                                    className="cursor-pointer text-sm px-2 py-1.5 rounded-sm hover:bg-muted"
+                                    className="cursor-pointer text-xs font-semibold px-2 py-1.5 rounded-sm hover:bg-muted transition-colors"
                                 >
                                     <Settings className="mr-2 h-3.5 w-3.5" />
                                     Settings
                                 </DropdownMenuItem>
-                                <DropdownMenuSeparator className="bg-border" />
+                                <DropdownMenuSeparator className="bg-border/60" />
                                 <DropdownMenuItem
                                     onClick={handleSignOut}
-                                    className="cursor-pointer text-sm px-2 py-1.5 rounded-sm hover:bg-muted text-muted-foreground"
+                                    className="cursor-pointer text-xs font-semibold px-2 py-1.5 rounded-sm hover:bg-muted text-muted-foreground transition-colors"
                                 >
                                     <LogOut className="mr-2 h-3.5 w-3.5" />
                                     Sign Out

@@ -25,7 +25,8 @@ export default function Profile() {
         community_name: '',
         tinkerhub_id: '',
         academic_role: 'Student',
-        college_name: ''
+        college_name: '',
+        lab_name: ''
     });
 
     useEffect(() => {
@@ -55,7 +56,8 @@ export default function Profile() {
                 community_name: profileData.community_name || '',
                 tinkerhub_id: profileData.tinkerhub_id || '',
                 academic_role: profileData.academic_role || 'Student',
-                college_name: profileData.college_name || ''
+                college_name: profileData.college_name || '',
+                lab_name: profileData.lab_name || ''
             });
         } catch (error) {
             console.error('Error fetching profile:', error);
@@ -97,7 +99,8 @@ export default function Profile() {
                 p_community_name: editForm.community_name,
                 p_tinkerhub_id: editForm.tinkerhub_id,
                 p_academic_role: editForm.academic_role,
-                p_college_name: editForm.college_name
+                p_college_name: editForm.college_name,
+                p_lab_name: editForm.lab_name
             });
 
             if (error) throw error;
@@ -128,21 +131,26 @@ export default function Profile() {
 
     const { trust, profile_completed } = data;
     const bandColors = {
-        trusted: 'bg-emerald-500/10 text-emerald-600 ring-emerald-500/20',
-        caution: 'bg-amber-500/10 text-amber-600 ring-amber-500/20',
-        blocked: 'bg-rose-500/10 text-rose-600 ring-rose-500/20'
+        trusted: 'bg-foreground text-background font-black border-foreground',
+        caution: 'bg-yellow-500/10 text-yellow-700 border-yellow-200',
+        blocked: 'bg-destructive text-destructive-foreground font-black border-destructive'
     };
 
     return (
         <div className="max-w-4xl mx-auto space-y-6 pb-12">
-            <h1 className="text-3xl font-black tracking-tight text-foreground">User Profile</h1>
+            <header className="pb-4 border-b border-border mb-6">
+                <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">User Profile</h1>
+                <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">
+                    Manage your identity, academic details, and trust status.
+                </p>
+            </header>
 
             {!profile_completed && !isEditing && (
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex items-start gap-4 ring-1 ring-primary/10">
                     <AlertTriangle className="h-5 w-5 text-primary mt-0.5" />
                     <div className="flex-1">
-                        <h3 className="font-semibold text-primary">Profile Incomplete</h3>
-                        <p className="text-sm text-muted-foreground mt-1">Complete your full name, bio, and city to finish setting up your account.</p>
+                        <h3 className="text-xs font-black uppercase tracking-widest text-primary">Profile Incomplete</h3>
+                        <p className="text-[10px] font-bold text-muted-foreground mt-1 uppercase opacity-80">Complete your full name, bio, and city to finish setting up your account.</p>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>Complete Now</Button>
                 </div>
@@ -155,9 +163,9 @@ export default function Profile() {
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             {data.is_verified_email ? (
-                                <Badge variant="outline" className="text-xs bg-emerald-50 text-emerald-600 border-emerald-200"><CheckCircle2 className="w-3 h-3 mr-1" /> Email Verified</Badge>
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-foreground text-background border-foreground"><CheckCircle2 className="w-3 h-3 mr-1" /> Profile Verified</Badge>
                             ) : (
-                                <Badge variant="outline" className="text-xs border-dashed gap-1">Unverified Email</Badge>
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-dashed text-muted-foreground border-border">Pending Verification</Badge>
                             )}
                         </div>
                         {!isEditing && (
@@ -329,6 +337,18 @@ export default function Profile() {
                                                 </div>
                                             )}
                                         </div>
+
+                                        {(data.role === 'provider' || data.role === 'admin') && (
+                                            <div className="mt-4 space-y-1.5 pt-4 border-t border-border/40">
+                                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Lab Branding Name</label>
+                                                <Input 
+                                                    value={editForm.lab_name}
+                                                    onChange={e => setEditForm({...editForm, lab_name: e.target.value})}
+                                                    placeholder="e.g. Robotics Innovation Lab"
+                                                    className="bg-background"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             ) : (
@@ -355,6 +375,14 @@ export default function Profile() {
                                                 <p className="text-sm font-medium">{data.community_name || 'Associated'} {data.community_name === 'TinkerHub' && data.tinkerhub_id && `(ID: ${data.tinkerhub_id})`}</p>
                                             </div>
                                         )}
+                                        {data.lab_name && (
+                                            <div className="col-span-full pt-2">
+                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">Managed Lab</h4>
+                                                <p className="text-sm font-medium underline underline-offset-4 decoration-primary/30">
+                                                    {data.lab_name}
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             )}
@@ -376,8 +404,8 @@ export default function Profile() {
                 <div className="space-y-6">
                     <Card className="shadow-sm border-border/50 bg-gradient-to-b from-card/80 to-card/30 backdrop-blur-sm overflow-hidden relative">
                         {/* Decorative background glow based on band */}
-                        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none
-                            ${trust?.band === 'trusted' ? 'bg-emerald-500' : trust?.band === 'caution' ? 'bg-amber-500' : 'bg-rose-500'}`} 
+                        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-10 pointer-events-none
+                            ${trust?.band === 'trusted' ? 'bg-foreground' : trust?.band === 'caution' ? 'bg-yellow-500' : 'bg-destructive'}`} 
                         />
                         
                         <CardHeader className="pb-3 relative">

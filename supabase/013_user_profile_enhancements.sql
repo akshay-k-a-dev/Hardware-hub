@@ -104,6 +104,7 @@ BEGIN
     'tinkerhub_id', p.tinkerhub_id,
     'academic_role', p.academic_role,
     'college_name', p.college_name,
+    'lab_name', p.lab_name,
     'profile_completed', p.profile_completed,
     'trust', COALESCE(
       jsonb_build_object(
@@ -147,7 +148,8 @@ CREATE OR REPLACE FUNCTION update_user_profile(
   p_community_name TEXT DEFAULT NULL,
   p_tinkerhub_id TEXT DEFAULT NULL,
   p_academic_role TEXT DEFAULT NULL,
-  p_college_name TEXT DEFAULT NULL
+  p_college_name TEXT DEFAULT NULL,
+  p_lab_name TEXT DEFAULT NULL
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -181,7 +183,8 @@ BEGIN
     community_name = p_community_name,
     tinkerhub_id = p_tinkerhub_id,
     academic_role = p_academic_role,
-    college_name = p_college_name
+    college_name = p_college_name,
+    lab_name = p_lab_name
   WHERE id = v_user_id;
 
   RETURN jsonb_build_object('success', true, 'message', 'Profile updated successfully');

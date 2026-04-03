@@ -80,8 +80,8 @@ export default function Register() {
                         </div>
                     </div>
                     <div className="space-y-1">
-                        <CardTitle className="text-xl font-bold tracking-tight text-foreground">Create Account</CardTitle>
-                        <CardDescription className="text-xs font-medium text-muted-foreground">
+                        <CardTitle className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">Create Account</CardTitle>
+                        <CardDescription className="text-[10px] md:text-xs font-black text-muted-foreground mt-1 uppercase tracking-tight opacity-70">
                             Join HardwareHub to access the lab
                         </CardDescription>
                     </div>

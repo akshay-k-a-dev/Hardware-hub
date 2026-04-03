@@ -81,8 +81,8 @@ export default function Login() {
                         </div>
                     </div>
                     <div className="space-y-1">
-                        <CardTitle className="text-xl font-bold tracking-tight text-foreground">HardwareHub</CardTitle>
-                        <CardDescription className="text-xs font-medium text-muted-foreground">Sign in to access the lab</CardDescription>
+                        <CardTitle className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">HardwareHub</CardTitle>
+                        <CardDescription className="text-[10px] md:text-xs font-black text-muted-foreground mt-2 uppercase tracking-tight opacity-70">Sign in to access the lab</CardDescription>
                     </div>
                 </CardHeader>
 

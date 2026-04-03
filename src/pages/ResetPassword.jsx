@@ -91,9 +91,9 @@ export default function ResetPassword() {
                             <Cpu className="h-10 w-10" />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <CardTitle className="text-4xl font-black tracking-tight text-foreground">Secure Reset</CardTitle>
-                        <CardDescription className="text-lg font-medium text-muted-foreground">Set your new laboratory access code</CardDescription>
+                    <div className="space-y-1">
+                        <CardTitle className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Secure Reset</CardTitle>
+                        <CardDescription className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">Set your new laboratory access code</CardDescription>
                     </div>
                 </CardHeader>
 
