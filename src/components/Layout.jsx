@@ -237,34 +237,36 @@ function LayoutInner() {
                 </header>
 
                 {/* Page content */}
-                <main className="flex-1 overflow-y-auto bg-background p-4 pb-20 md:p-6 scroll-smooth">
+                <main className={`flex-1 overflow-y-auto bg-background p-4 md:p-6 scroll-smooth ${location.pathname === '/dashboard' ? 'pb-24' : 'pb-8'}`}>
                     <Outlet />
                 </main>
             </SidebarInset>
             
             {/* ── Mobile Downbar (Professional Full-width Version) ── */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-border flex items-center justify-between px-6 z-[100] pb-safe">
-                {[
-                    { label: 'Dash', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-                    { label: 'Lab', path: '/', icon: <Wrench size={20} /> },
-                    { label: 'Activity', path: '/my-requests', icon: <History size={20} /> },
-                    { label: 'Profile', path: '/profile', icon: <User size={20} /> }
-                ].map((item) => {
-                    const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
-                    return (
-                        <button 
-                            key={item.label}
-                            onClick={() => navigate(item.path)}
-                            className={`flex flex-col items-center gap-1 transition-all flex-1 py-1 ${isActive ? 'text-foreground' : 'text-foreground/70 hover:text-foreground/90'}`}
-                        >
-                            <div className={`p-1.5 transition-all ${isActive ? 'scale-110' : ''}`}>
-                                {item.icon}
-                            </div>
-                            <span className={`text-[8.5px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-80'}`}>{item.label}</span>
-                        </button>
-                    );
-                })}
-            </div>
+            {location.pathname === '/dashboard' && (
+                <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-border flex items-center justify-between px-6 z-[100] pb-safe">
+                    {[
+                        { label: 'Dash', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
+                        { label: 'Lab', path: '/', icon: <Wrench size={20} /> },
+                        { label: 'Activity', path: '/my-requests', icon: <History size={20} /> },
+                        { label: 'Profile', path: '/profile', icon: <User size={20} /> }
+                    ].map((item) => {
+                        const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path));
+                        return (
+                            <button 
+                                key={item.label}
+                                onClick={() => navigate(item.path)}
+                                className={`flex flex-col items-center gap-1 transition-all flex-1 py-1 ${isActive ? 'text-foreground' : 'text-foreground/70 hover:text-foreground/90'}`}
+                            >
+                                <div className={`p-1.5 transition-all ${isActive ? 'scale-110' : ''}`}>
+                                    {item.icon}
+                                </div>
+                                <span className={`text-[8.5px] font-black uppercase tracking-widest ${isActive ? 'opacity-100' : 'opacity-80'}`}>{item.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
 
             <Toaster />
         </div>
