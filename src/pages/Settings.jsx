@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { 
     User, Moon, Bell, Shield, Key, Mail, Lock, 
-    Smartphone, Download, Trash2, Plug, PlaySquare, AlertCircle
+    Smartphone, Download, Trash2, Plug, PlaySquare, AlertCircle, Sun
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -121,9 +121,10 @@ export default function Settings() {
                                 <span className="font-black text-xs uppercase tracking-tight text-foreground">App Theme</span>
                                 <p className="text-[10px] text-muted-foreground font-black uppercase opacity-60">Switch between light and dark mode</p>
                             </div>
-                            <div className="flex items-center gap-3 p-1.5 bg-muted rounded-full border border-border/50">
-                                <Moon size={14} className={isDark ? "text-amber-500" : "text-muted-foreground"} />
+                            <div className="flex items-center gap-3 p-1.5 bg-muted/50 rounded-full border border-border/50 px-2.5">
+                                <Sun size={14} className={!isDark ? "text-amber-500" : "text-muted-foreground/40"} />
                                 <Switch checked={isDark} onCheckedChange={handleThemeToggle} />
+                                <Moon size={14} className={isDark ? "text-blue-500" : "text-muted-foreground/40"} />
                             </div>
                         </div>
                         <div className="flex items-center justify-between">

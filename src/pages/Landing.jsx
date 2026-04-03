@@ -41,7 +41,7 @@ export default function Landing() {
                 {/* Chip badge */}
                 <div className="mb-6 sm:mb-8 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-sm">
                     <Cpu className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/50" />
-                    <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
+                    <span className="text-[12px] sm:text-[13px] font-semibold uppercase tracking-[0.2em] text-white/50">
                         HardwareHub
                     </span>
                 </div>
@@ -52,33 +52,31 @@ export default function Landing() {
                 </h1>
 
                 {/* Gooey animated subheading */}
-                <div className="mt-3 sm:mt-5">
+                <div className="mt-4 sm:mt-6">
                     <GooeyText
                         texts={['Who Build', 'Who Explore', 'Who Innovate']}
-                        morphTime={1.8}
-                        cooldownTime={0.6}
+                        morphTime={1.0}
+                        cooldownTime={2.5}
                     />
                 </div>
 
                 {/* Soft glowing underline accent */}
-                <div className="mt-5 sm:mt-6 h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="mt-8 sm:mt-10 h-px w-20 sm:w-32 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
                 {/* Tagline */}
-                <p className="mt-6 sm:mt-8 max-w-sm sm:max-w-md text-xs sm:text-sm md:text-base font-medium leading-relaxed text-white/40 px-2">
-                    The inventory platform that gets out of your way.
-                    <br className="hidden sm:block" />
-                    Request, track, and manage lab hardware—effortlessly.
+                <p className="mt-8 sm:mt-12 max-w-sm sm:max-w-xl text-sm sm:text-base font-medium leading-relaxed text-white/40 px-4 tracking-tight">
+                    Borrow what you need. build what matters.
                 </p>
 
                 {/* CTA buttons */}
-                <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0">
+                <div className="mt-10 sm:mt-14 flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto px-6 sm:px-0 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
                     <Button
                         asChild
-                        className="h-11 sm:h-12 w-full sm:w-auto px-8 rounded-lg bg-white text-black font-semibold text-sm
-                                   hover:bg-white/90 transition-all duration-300
-                                   shadow-[0_0_40px_rgba(255,255,255,0.06)]"
+                        className="h-12 w-full sm:w-auto px-10 rounded-full bg-white text-black font-semibold text-sm
+                                   hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300
+                                   shadow-[0_0_40px_rgba(255,255,255,0.08)] px-10"
                     >
-                        <Link to="/register">
+                        <Link to="/register" className="text-base">
                             Get Started
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -86,11 +84,11 @@ export default function Landing() {
                     <Button
                         asChild
                         variant="ghost"
-                        className="h-11 sm:h-12 w-full sm:w-auto px-8 rounded-lg text-white/60 font-semibold text-sm
-                                   border border-white/10 hover:bg-white/[0.04] hover:text-white
-                                   transition-all duration-300"
+                        className="h-12 w-full sm:w-auto px-10 rounded-full text-white/70 font-semibold text-sm
+                                   border border-white/5 bg-white/[0.02] hover:bg-white/[0.06] hover:text-white
+                                   transition-all duration-300 backdrop-blur-sm shadow-xl"
                     >
-                        <Link to="/login">
+                        <Link to="/login" className="text-base">
                             Sign In
                         </Link>
                     </Button>

@@ -16,6 +16,7 @@ import ResetPassword from './pages/ResetPassword';
 import Debug from './pages/Debug';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import SeedData from './pages/SeedData';
 import Landing from './pages/Landing';
 
 export default function App() {
@@ -42,6 +43,7 @@ export default function App() {
     return (
         <Routes>
             <Route path="/landing" element={<Landing />} />
+            <Route path="/seed" element={<SeedData />} />
             <Route path="/debug" element={<Debug />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/login" element={<Login />} />

@@ -10,15 +10,15 @@ import {
 } from 'lucide-react';
 
 const statusConfig = {
-    pending: { color: 'bg-yellow-500/5 text-yellow-700 border-yellow-200', icon: Clock, label: 'Pending Approval' },
-    approved: { color: 'bg-foreground/5 text-foreground border-border', icon: CheckCircle2, label: 'Approved' },
-    issued: { color: 'bg-foreground/5 text-foreground border-border', icon: PackageCheck, label: 'In Possession' },
-    returned: { color: 'bg-muted text-muted-foreground border-border', icon: History, label: 'Returned' },
-    rejected: { color: 'bg-destructive/5 text-destructive border-destructive/10', icon: XCircle, label: 'Rejected' },
-    cancelled: { color: 'bg-muted text-muted-foreground border-border', icon: XCircle, label: 'Cancelled' },
-    overdue: { color: 'bg-destructive/10 text-destructive border-destructive/20 font-black', icon: AlertTriangle, label: 'Overdue!' },
-    available: { color: 'bg-yellow-500/5 text-yellow-700 border-yellow-200', icon: CheckCircle2, label: 'In Lab (Ready)' },
-    borrowed: { color: 'bg-foreground/5 text-foreground border-border', icon: PackageCheck, label: 'Borrowed' },
+    pending: { color: 'bg-amber-500/15 text-amber-500 border-amber-500/20', icon: Clock, label: 'Pending' },
+    approved: { color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/20', icon: CheckCircle2, label: 'Approved' },
+    issued: { color: 'bg-blue-500/15 text-blue-500 border-blue-500/20', icon: PackageCheck, label: 'Issued' },
+    returned: { color: 'bg-slate-500/15 text-slate-500 border-slate-500/20', icon: History, label: 'Returned' },
+    rejected: { color: 'bg-rose-500/15 text-rose-500 border-rose-500/20', icon: XCircle, label: 'Rejected' },
+    cancelled: { color: 'bg-slate-500/15 text-slate-500 border-slate-500/20', icon: XCircle, label: 'Cancelled' },
+    overdue: { color: 'bg-rose-500/20 text-rose-600 border-rose-500/30 font-bold animate-pulse', icon: AlertTriangle, label: 'Overdue' },
+    available: { color: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/20', icon: CheckCircle2, label: 'Available' },
+    borrowed: { color: 'bg-blue-500/15 text-blue-500 border-blue-500/20', icon: PackageCheck, label: 'Borrowed' },
 };
 
 export default function StatusBadge({ status, className }) {
@@ -30,7 +30,7 @@ export default function StatusBadge({ status, className }) {
         <Badge
             variant="outline"
             className={cn(
-                "font-black text-[10px] uppercase tracking-widest flex items-center gap-2 w-fit h-7 px-3 rounded-xl border transition-all duration-300",
+                "font-semibold text-[11px] uppercase tracking-wider flex items-center justify-center gap-1.5 w-fit h-7 px-5 rounded-full border transition-all duration-300 leading-none backdrop-blur-sm",
                 config.color,
                 className
             )}

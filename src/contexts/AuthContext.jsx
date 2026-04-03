@@ -63,7 +63,7 @@ export function AuthProvider({ children }) {
         // Race the session fetch against a 10s timeout
         const { data, error } = await Promise.race([
           supabase.auth.getSession(),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_TIMEOUT')), 10000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('SESSION_TIMEOUT')), 20000))
         ]);
 
         if (!mounted) return;
@@ -93,14 +93,19 @@ export function AuthProvider({ children }) {
       }
     };
 
-    // Safety timeout - force loading to false after 10 seconds if everything else fails
+    // Safety timeout - force loading to false after 20 seconds to prevent app hang
     timeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn("[AUTH] Global initialization timeout reached");
-        setLoading(false);
-        initInProgress.current = false;
-      }
-    }, 10000);
+      if (!mounted) return;
+      // Use functional update to check the CURRENT value of loading without closure trap
+      setLoading(currentLoading => {
+        if (currentLoading) {
+          console.warn("[AUTH] Global initialization timeout reached");
+          initInProgress.current = false;
+          return false;
+        }
+        return false;
+      });
+    }, 20000);
 
     initializeAuth();
 
@@ -125,8 +130,9 @@ export function AuthProvider({ children }) {
         setProfile(null);
       }
 
-      // Always clear loading if we get a state change
-      if (loading) setLoading(false);
+      // Always clear loading and safety timer if we get a state change
+      if (timeoutId) clearTimeout(timeoutId);
+      setLoading(false);
     });
 
     return () => {

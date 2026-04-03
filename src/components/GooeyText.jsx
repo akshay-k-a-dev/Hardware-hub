@@ -3,116 +3,120 @@ import { useEffect, useRef, useCallback } from 'react';
 /**
  * GooeyText — A premium liquid-morphing text animation component.
  *
- * This refined version uses a continuous time-based loop to ensure a 
- * perfectly seamless transition between words without any visible cuts.
- *
- * Props:
- *   texts        — string[]  phrases to cycle through
- *   morphTime    — number    seconds for the actual morphing transition (default 1.8)
- *   cooldownTime — number    seconds to hold/pause on each word (default 0.6)
- *   className    — string    extra Tailwind classes on the wrapper
+ * Fixed "Blink" version:
+ * Uses an alternating layer strategy where at any time:
+ * - One layer is the "source" (Word A)
+ * - One layer is the "destination" (Word B)
+ * - The swap of content ONLY happens when a layer is completely invisible (opacity 0).
  */
 export default function GooeyText({
     texts = ['Who Build', 'Who Explore', 'Who Innovate'],
-    morphTime = 1.8,
-    cooldownTime = 0.6,
+    morphTime = 0.8,
+    cooldownTime = 0.3,
     className = '',
 }) {
-    const text1Ref = useRef(null);
-    const text2Ref = useRef(null);
+    const textRef1 = useRef(null);
+    const textRef2 = useRef(null);
     const rafRef = useRef(null);
-    const timeRef = useRef(0);
-    const lastFrameRef = useRef(performance.now());
-    const currentIndexRef = useRef(0);
+    const stateRef = useRef({
+        time: 0,
+        lastNow: performance.now(),
+        lastCycle: -1,
+    });
 
     const cycleTime = morphTime + cooldownTime;
 
-    // ── Update styles based on eased progress ────────────────
-    const updateStyles = useCallback((fraction) => {
-        // We use a smoother easing curve for the morph phase (progress 0 → 1)
-        // This ensures the transition is fluid and avoids harsh edges.
-        const eased = fraction <= 0 ? 0 : fraction >= 1 ? 1 : 
-                     fraction < 0.5 ? 2 * fraction * fraction : 1 - Math.pow(-2 * fraction + 2, 2) / 2;
+    const tick = useCallback((now) => {
+        const state = stateRef.current;
+        const dt = (now - state.lastNow) / 1000;
+        state.lastNow = now;
+        state.time += dt;
 
-        // Clamp blur to a soft range (max 20px) to keep text readable
-        const blur1 = Math.min(eased * 15, 20);
-        const blur2 = Math.min((1 - eased) * 15, 20);
+        // Normalized time for the loop
+        const totalProgress = state.time / cycleTime;
+        const cycleIndex = Math.floor(totalProgress);
+        const localProgress = totalProgress - cycleIndex; // 0 to 1
 
-        if (text1Ref.current) {
-            text1Ref.current.style.filter = `blur(${blur1}px)`;
-            text1Ref.current.style.opacity = `${1 - eased}`;
-        }
-        if (text2Ref.current) {
-            text2Ref.current.style.filter = `blur(${blur2}px)`;
-            text2Ref.current.style.opacity = `${eased}`;
-        }
-    }, []);
+        const idx = cycleIndex % texts.length;
+        const nextIdx = (idx + 1) % texts.length;
 
-    // ── Main Animation Loop ──────────────────────────────────
-    const tick = useCallback(
-        (now) => {
-            const dt = (now - lastFrameRef.current) / 1000;
-            lastFrameRef.current = now;
-            timeRef.current += dt;
-
-            // Calculate total cycles and current local progress
-            const totalProgress = timeRef.current / cycleTime;
-            const cycleIndex = Math.floor(totalProgress);
-            const localProgress = totalProgress - cycleIndex; // 0 to 1
-
-            // Determine if we need to update the text content for the next cycle
-            const actualIndex = cycleIndex % texts.length;
-            if (actualIndex !== currentIndexRef.current) {
-                currentIndexRef.current = actualIndex;
-                const nextIndex = (actualIndex + 1) % texts.length;
-                
-                // Update text content only when cross-faded out or starting fresh
-                // This prevents visual "popping" of text
-                if (text1Ref.current) text1Ref.current.textContent = texts[actualIndex];
-                if (text2Ref.current) text2Ref.current.textContent = texts[nextIndex];
-            }
-
-            // Define the pause vs morph windows within the cycle
-            // cooldownTime is the 'pause' at the start of the cycle
-            const pauseRatio = cooldownTime / cycleTime;
-            
-            if (localProgress < pauseRatio) {
-                // Pause phase: fully visible word A
-                updateStyles(0);
+        // Handle text content swapping without blink
+        // We use an alternating strategy: 
+        // Layer 1 = Word N, Layer 2 = Word N+1
+        // Then swap responsibilities.
+        
+        if (state.lastCycle !== cycleIndex) {
+            state.lastCycle = cycleIndex;
+            // Immediate update for fluid transition
+            if (cycleIndex % 2 === 0) {
+                if (textRef1.current) textRef1.current.textContent = texts[idx];
+                if (textRef2.current) textRef2.current.textContent = texts[nextIdx];
             } else {
-                // Morph phase: Word A → Word B
-                // Normalize progress to 0-1 within the morphing window
-                const morphedProgress = (localProgress - pauseRatio) / (1 - pauseRatio);
-                updateStyles(morphedProgress);
+                if (textRef2.current) textRef2.current.textContent = texts[idx];
+                if (textRef1.current) textRef1.current.textContent = texts[nextIdx];
             }
+        }
 
-            rafRef.current = requestAnimationFrame(tick);
-        },
-        [texts, cycleTime, cooldownTime, updateStyles]
-    );
+        // Character morphing and readable pause
+        const pauseRatio = cooldownTime / cycleTime;
+        let eased = 0;
+        
+        if (localProgress < (1 - pauseRatio)) {
+            // Morph phase: Cubic Ease-In-Out for a much softer landing and more organic motion
+            const t = localProgress / (1 - pauseRatio);
+            eased = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        } else {
+            // Pause phase: Hold character at 100% visible
+            eased = 1;
+        }
+
+        // Transitions
+        // If cycleIndex is even, we morph from Layer 1 (current) to Layer 2 (next)
+        // If cycleIndex is odd, we morph from Layer 2 (current) to Layer 1 (next)
+        
+        const blurMax = 20;
+        const blurLevel = eased * blurMax;
+        const invBlurLevel = (1 - eased) * blurMax;
+
+        if (cycleIndex % 2 === 0) {
+            // Morph 1 -> 2
+            if (textRef1.current) {
+                textRef1.current.style.filter = `blur(${blurLevel}px)`;
+                textRef1.current.style.opacity = 1 - eased;
+            }
+            if (textRef2.current) {
+                textRef2.current.style.filter = `blur(${invBlurLevel}px)`;
+                textRef2.current.style.opacity = eased;
+            }
+        } else {
+            // Morph 2 -> 1
+            if (textRef2.current) {
+                textRef2.current.style.filter = `blur(${blurLevel}px)`;
+                textRef2.current.style.opacity = 1 - eased;
+            }
+            if (textRef1.current) {
+                textRef1.current.style.filter = `blur(${invBlurLevel}px)`;
+                textRef1.current.style.opacity = eased;
+            }
+        }
+
+        rafRef.current = requestAnimationFrame(tick);
+    }, [texts, cycleTime, cooldownTime]);
 
     useEffect(() => {
-        // Initial setup
-        if (text1Ref.current) text1Ref.current.textContent = texts[0];
-        if (text2Ref.current) text2Ref.current.textContent = texts[1] ?? texts[0];
-
-        lastFrameRef.current = performance.now();
+        stateRef.current.lastNow = performance.now();
         rafRef.current = requestAnimationFrame(tick);
-
         return () => cancelAnimationFrame(rafRef.current);
-    }, [texts, tick]);
+    }, [tick]);
 
-    const filterId = 'gooey-morph-filter-seamless';
+    const filterId = 'gooey-morph-filter-premium';
 
     return (
         <div className={`relative ${className}`}>
-            <svg
-                className="absolute w-0 h-0 invisible"
-                aria-hidden="true"
-            >
+            <svg className="absolute w-0 h-0 invisible" aria-hidden="true">
                 <defs>
                     <filter id={filterId}>
-                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.6" result="blur" />
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur" />
                         <feColorMatrix
                             in="blur"
                             mode="matrix"
@@ -131,25 +135,21 @@ export default function GooeyText({
                 className="relative inline-grid place-items-center"
                 style={{ filter: `url(#${filterId})` }}
             >
-                {/* 
-                    Using 'Inter Tight' for a more premium, modern feel.
-                    Reduced tracking-tight for a sophisticated aesthetic.
-                */}
                 <span
-                    ref={text1Ref}
+                    ref={textRef1}
                     aria-hidden="true"
                     className="col-start-1 row-start-1 select-none font-inter-tight
                                text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl
-                               font-semibold tracking-tight leading-tight text-white
-                               whitespace-nowrap"
+                               font-semibold tracking-tighter leading-tight text-white
+                               whitespace-nowrap will-change-[filter,opacity]"
                 />
                 <span
-                    ref={text2Ref}
+                    ref={textRef2}
                     aria-hidden="true"
                     className="col-start-1 row-start-1 select-none font-inter-tight
                                text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl
-                               font-semibold tracking-tight leading-tight text-white
-                               whitespace-nowrap"
+                               font-semibold tracking-tighter leading-tight text-white
+                               whitespace-nowrap will-change-[filter,opacity]"
                     style={{ opacity: 0 }}
                 />
 

@@ -195,7 +195,7 @@ export default function ManageRequests() {
 
     if (loading && requests.length === 0) {
         return (
-            <div className="space-y-10 animate-in fade-in duration-500 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-10 animate-in fade-in duration-500 max-w-[1400px] mx-auto p-4 md:p-6 lg:px-0">
                 <div className="space-y-4">
                     <Skeleton className="h-12 w-80 rounded-lg" />
                     <Skeleton className="h-4 w-[500px]" />
@@ -212,7 +212,7 @@ export default function ManageRequests() {
     }
 
     return (
-        <div className="space-y-6 max-w-7xl mx-auto">
+        <div className="flex flex-col gap-6 max-w-[1400px] mx-auto p-4 md:p-6 lg:px-0">
             <header className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-border">
                 <div>
                     <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Manage Requests</h1>
@@ -295,11 +295,11 @@ export default function ManageRequests() {
                                         {filteredRequests.map((req, idx) => (
                                             <TableRow
                                                 key={req.id}
-                                                className="border-b-[1px] border-foreground hover:bg-foreground hover:text-background transition-none duration-300 group h-20"
+                                                className="border-b border-border/40 hover:bg-muted/30 transition-colors group h-20"
                                             >
-                                                <TableCell className="px-6">
+                                                <TableCell className="px-6 py-4 align-middle">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="h-10 w-10 border border-border bg-background flex items-center justify-center text-foreground font-black group-hover:border-background group-hover:text-background group-hover:bg-foreground transition-none">
+                                                        <div className="h-10 w-10 border border-border bg-background flex items-center justify-center text-foreground font-black group-hover:bg-foreground group-hover:text-background transition-colors rounded-full">
                                                             {req.borrower?.name?.charAt(0)}
                                                         </div>
                                                         <div className="flex flex-col gap-0.5 min-w-0 max-w-[280px]">
@@ -326,10 +326,12 @@ export default function ManageRequests() {
                                                         )}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="px-6 text-center">
-                                                    <StatusBadge status={req.status} className="h-7 px-4 text-[9px] font-black" />
+                                                <TableCell className="px-6 py-4 align-middle text-center">
+                                                    <div className="flex justify-center">
+                                                        <StatusBadge status={req.status} className="h-6 px-3" />
+                                                    </div>
                                                 </TableCell>
-                                                <TableCell className="text-right pr-6">
+                                                <TableCell className="text-right pr-6 py-4 align-middle">
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <Button
@@ -399,58 +401,68 @@ export default function ManageRequests() {
                                 </Table>
                             </div>
 
-                            {/* Mobile Card View */}
-                            <div className="md:hidden flex flex-col divide-y divide-border">
+                            {/* Mobile Card View (Redesigned) */}
+                            <div className="md:hidden flex flex-col gap-4 p-4">
                                 {filteredRequests.map((req, idx) => (
-                                    <div key={req.id} className="p-6 space-y-6 animate-in slide-in-from-bottom-4 duration-500" style={{ animationDelay: `${idx * 50}ms` }}>
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black">
+                                    <div 
+                                        key={req.id} 
+                                        className="bg-card border border-border/40 p-5 rounded-[2rem] shadow-sm animate-in slide-in-from-bottom-2 duration-500" 
+                                        style={{ animationDelay: `${idx * 40}ms` }}
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-10 w-10 rounded-full bg-muted/60 flex items-center justify-center text-foreground font-black text-xs border border-border/20 shadow-sm">
                                                     {req.borrower?.name?.charAt(0)}
                                                 </div>
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-foreground leading-tight">{req.project_title}</span>
-                                                    <span className="text-xs text-muted-foreground">{req.borrower?.name}</span>
+                                                    <span className="text-xs font-black uppercase tracking-tight leading-none">{req.project_title}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1 opacity-70">{req.borrower?.name}</span>
                                                 </div>
                                             </div>
-                                            <StatusBadge status={req.status} className="h-7 px-3 text-[10px]" />
+                                            <StatusBadge status={req.status} className="h-5 px-3 text-[9px] font-black" />
                                         </div>
 
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="flex flex-col gap-1 p-3 rounded-md bg-muted/30 border border-border">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Hardware</span>
-                                                <span className="text-sm font-bold truncate">{req.hardware?.name}</span>
+                                        <div className="grid grid-cols-2 gap-3 mb-5">
+                                            <div className="flex flex-col gap-1 p-3 rounded-2xl bg-muted/20 border border-border/10">
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Hardware</span>
+                                                <span className="text-[11px] font-bold truncate leading-none">{req.hardware?.name}</span>
                                             </div>
-                                            <div className="flex flex-col gap-1 p-3 rounded-xl bg-muted/30 border border-border">
-                                                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Quantity</span>
-                                                <span className="text-sm font-bold">{req.quantity} Units</span>
+                                            <div className="flex flex-col gap-1 p-3 rounded-2xl bg-muted/20 border border-border/10">
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Units</span>
+                                                <span className="text-[11px] font-bold leading-none">{req.quantity} Quantity</span>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between pt-2">
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/20">
                                             <div className="flex flex-col">
-                                                <span className="text-[10px] font-black text-muted-foreground uppercase opacity-40">Requested On</span>
-                                                <span className="text-xs font-bold">{formatDate(req.request_date)}</span>
+                                                <span className="text-[9px] font-black text-muted-foreground uppercase opacity-40 tracking-widest">Requested</span>
+                                                <span className="text-[10px] font-bold lowercase">{formatDate(req.request_date)}</span>
                                             </div>
+                                            
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" className="h-10 rounded-md px-4 font-black uppercase text-[10px] tracking-widest gap-2">
-                                                        Manage <MoreHorizontal size={14} />
+                                                    <Button variant="outline" className="h-9 rounded-xl px-4 font-black uppercase text-[9px] tracking-widest gap-2 border-border/60 hover:bg-foreground hover:text-background transition-all">
+                                                        Manage <ChevronRight size={12} />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-md">
-                                                    {/* Same actions as desktop */}
+                                                <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
+                                                    <DropdownMenuLabel className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Contextual Actions</DropdownMenuLabel>
+                                                    <DropdownMenuSeparator className="bg-border/40" />
+
                                                     {req.status === 'pending' && (
                                                         <>
-                                                            <DropdownMenuItem onClick={() => handleAction('approve', req.id)}>Approve</DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleAction('reject', req.id)}>Reject</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleAction('approve', req.id)} className="font-bold text-xs rounded-lg py-2">Approve Request</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleAction('reject', req.id)} className="font-bold text-xs text-destructive rounded-lg py-2">Reject Request</DropdownMenuItem>
                                                         </>
                                                     )}
                                                     {req.status === 'approved' && (
-                                                        <DropdownMenuItem onClick={() => handleAction('issue', req.id)}>Mark as Issued</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleAction('issue', req.id)} className="font-bold text-xs rounded-lg py-2">Mark as Issued</DropdownMenuItem>
                                                     )}
                                                     {(req.status === 'issued' || req.status === 'overdue') && (
-                                                        <DropdownMenuItem onClick={() => handleAction('return', req.id)}>Confirm Return</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="font-bold text-xs rounded-lg py-2">Confirm Return</DropdownMenuItem>
+                                                    )}
+                                                    {req.status === 'returned' && (
+                                                        <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="font-bold text-xs rounded-lg py-2">Rate Performance</DropdownMenuItem>
                                                     )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>

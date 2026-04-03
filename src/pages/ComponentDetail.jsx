@@ -64,6 +64,7 @@ export default function ComponentDetail() {
     const [showRequestForm, setShowRequestForm] = useState(false);
     const [requestForm, setRequestForm] = useState({ quantity: 1, project_title: '', project_description: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [imgError, setImgError] = useState(false);
 
     // Pre-book state
     const [prebookInfo, setPrebookInfo] = useState(null); // { in_queue, prebook_id, position, status, hold_expires_at }
@@ -275,11 +276,12 @@ export default function ComponentDetail() {
                         <div className="grid grid-cols-1 md:grid-cols-2">
                             {/* Image Container */}
                             <div className="relative h-[250px] md:h-full min-h-[300px] overflow-hidden bg-muted/20 border-b md:border-b-0 md:border-r border-border">
-                                {item.image_url ? (
+                                {item.image_url && !imgError ? (
                                     <img
                                         src={item.image_url}
                                         alt={item.name}
-                                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-[2000ms] group-hover:scale-110"
+                                        className="absolute inset-0 w-full h-full object-contain transition-transform duration-[2000ms] group-hover:scale-110"
+                                        onError={() => setImgError(true)}
                                     />
                                 ) : (
                                     <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">

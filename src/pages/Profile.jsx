@@ -163,9 +163,9 @@ export default function Profile() {
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             {data.is_verified_email ? (
-                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-foreground text-background border-foreground"><CheckCircle2 className="w-3 h-3 mr-1" /> Profile Verified</Badge>
+                                <Badge variant="outline" className="text-[12px] font-black uppercase tracking-widest bg-foreground text-background border-foreground h-7 px-4"><CheckCircle2 className="w-3 h-3 mr-1" /> Profile Verified</Badge>
                             ) : (
-                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-dashed text-muted-foreground border-border">Pending Verification</Badge>
+                                <Badge variant="outline" className="text-[12px] font-black uppercase tracking-widest border-dashed text-muted-foreground border-border h-7 px-4">Pending Verification</Badge>
                             )}
                         </div>
                         {!isEditing && (

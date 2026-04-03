@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function ResetPassword() {
     const { updatePassword, user } = useAuth();
@@ -29,10 +29,6 @@ export default function ResetPassword() {
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    // If no user is present, it means the recovery link didn't work or expired
-    // However, Supabase usually logs the user in automatically when they click the recovery link
-    // We'll check for user in a bit.
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -62,62 +58,64 @@ export default function ResetPassword() {
 
     if (success) {
         return (
-            <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
-                <Card className="w-full max-w-[460px] mx-4 border border-border bg-card shadow-xl relative z-10 rounded-[2.5rem] overflow-hidden text-center p-12">
+            <div className="dark min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden font-sans">
+                <Card className="w-full max-w-sm mx-4 border border-border bg-card/50 backdrop-blur-xl shadow-2xl relative z-10 rounded-xl overflow-hidden text-center py-12 px-8">
                     <div className="flex justify-center mb-6">
-                        <div className="p-4 rounded-3xl bg-green-500/10 text-green-600 border border-green-500/20 shadow-sm">
+                        <div className="p-4 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shadow-lg">
                             <CheckCircle2 className="h-10 w-10" />
                         </div>
                     </div>
-                    <h2 className="text-3xl font-black mb-4">Password Updated!</h2>
-                    <p className="text-muted-foreground font-medium mb-8">Your security credentials have been successfully reset. Redirecting you to the lab entrance...</p>
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" />
+                    <h2 className="text-2xl font-bold mb-3 tracking-tight font-inter-tight uppercase tracking-widest text-foreground">Updated!</h2>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide leading-relaxed mb-8 opacity-60">
+                        Your security credentials have been successfully reset. Redirecting you to the lab entrance...
+                    </p>
+                    <div className="flex justify-center">
+                        <Loader2 className="h-5 w-5 animate-spin text-foreground opacity-50" />
+                    </div>
                 </Card>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 relative overflow-hidden font-sans">
-            <div className="absolute top-0 left-0 w-full h-full">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[150px]" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-blue-500/5 rounded-full blur-[120px]" />
+        <div className="dark min-h-screen w-full flex items-center justify-center bg-background relative overflow-hidden font-sans">
+            {/* ── Ambient background gradients ────────────────── */}
+            <div className="pointer-events-none absolute inset-0 z-0">
+                <div className="absolute top-[-10%] left-[-10%] h-[40vh] w-[40vh] rounded-full bg-white/[0.03] blur-[100px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] h-[30vh] w-[30vh] rounded-full bg-white/[0.02] blur-[80px]" />
             </div>
 
-            <Card className="w-full max-w-[460px] mx-4 border border-border bg-card shadow-xl relative z-10 animate-in fade-in zoom-in-95 duration-700 rounded-[2.5rem] overflow-hidden">
-                <CardHeader className="space-y-6 pt-12 pb-8 text-center bg-muted/5 border-b border-border relative">
+            <Card className="w-full max-w-sm mx-4 border border-border bg-card/50 backdrop-blur-xl shadow-2xl relative z-10 animate-in fade-in zoom-in-95 duration-500 rounded-xl overflow-hidden">
+                <CardHeader className="space-y-4 pt-10 pb-8 text-center border-b border-border/50">
                     <div className="flex justify-center">
-                        <div className="p-4 rounded-3xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
-                            <Cpu className="h-10 w-10" />
+                        <div className="p-3 bg-white text-black rounded-xl shadow-lg">
+                            <Cpu className="h-6 w-6" />
                         </div>
                     </div>
-                    <div className="space-y-1">
-                        <CardTitle className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Secure Reset</CardTitle>
-                        <CardDescription className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">Set your new laboratory access code</CardDescription>
+                    <div className="space-y-1.5">
+                        <CardTitle className="text-2xl font-bold tracking-tight text-foreground font-inter-tight uppercase tracking-widest leading-none">Security</CardTitle>
+                        <CardDescription className="text-xs font-medium text-muted-foreground mt-2 uppercase tracking-wide opacity-60">Set new laboratory access code</CardDescription>
                     </div>
                 </CardHeader>
 
-                <CardContent className="px-10 pb-10 pt-8">
+                <CardContent className="px-8 pb-8 pt-8">
                     {error && (
-                        <Alert variant="destructive" className="mb-8 border-none bg-destructive/10 rounded-2xl animate-in slide-in-from-top-2 duration-300">
-                            <AlertCircle className="h-5 w-5" />
-                            <AlertTitle className="font-bold tracking-tight">System Error</AlertTitle>
-                            <AlertDescription className="font-medium text-xs">{error}</AlertDescription>
+                        <Alert variant="destructive" className="mb-6 border border-destructive/20 bg-destructive/10 text-destructive rounded-lg animate-in slide-in-from-top-2 duration-200">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertDescription className="text-xs font-semibold">{error}</AlertDescription>
                         </Alert>
                     )}
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-3">
-                            <Label htmlFor="password" className="text-xs font-black uppercase tracking-widest text-muted-foreground">New Access Code</Label>
+                    <form onSubmit={handleSubmit} className="space-y-5">
+                        <div className="space-y-2">
+                            <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-0.5">New Access Code</Label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
-                                    <Lock className="h-4 w-4" />
-                                </span>
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
                                 <Input
                                     id="password"
                                     type="password"
                                     placeholder="••••••••"
-                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors tracking-widest"
+                                    className="pl-11 h-11 bg-muted/20 border-border rounded-lg focus-visible:ring-1 focus-visible:ring-foreground text-sm font-medium transition-all"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required
@@ -125,17 +123,15 @@ export default function ResetPassword() {
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <Label htmlFor="confirmPassword" className="text-xs font-black uppercase tracking-widest text-muted-foreground">Verify Code</Label>
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword" className="text-xs font-bold uppercase tracking-wider text-muted-foreground pl-0.5">Verify Code</Label>
                             <div className="relative group">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground group-focus-within:text-primary transition-colors">
-                                    <Lock className="h-4 w-4" />
-                                </span>
+                                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
                                 <Input
                                     id="confirmPassword"
                                     type="password"
                                     placeholder="••••••••"
-                                    className="pl-16 h-14 bg-muted/30 border border-border rounded-2xl focus-visible:ring-primary/20 text-lg font-bold shadow-sm transition-colors tracking-widest"
+                                    className="pl-11 h-11 bg-muted/20 border-border rounded-lg focus-visible:ring-1 focus-visible:ring-foreground text-sm font-medium transition-all"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     required
@@ -144,25 +140,19 @@ export default function ResetPassword() {
                         </div>
 
                         <Button
-                            className="w-full mt-4 h-16 rounded-2xl font-black uppercase text-sm tracking-widest shadow-[0_20px_40px_-15px_rgba(var(--primary),0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all bg-primary text-primary-foreground flex items-center gap-3"
+                            className="w-full h-11 rounded-full font-bold text-sm bg-primary text-primary-foreground hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4 shadow-xl"
                             disabled={loading}
                             type="submit"
                         >
                             {loading ? (
-                                <>
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    Updating...
-                                </>
+                                <><Loader2 className="h-4 w-4 animate-spin" /> Updating...</>
                             ) : (
-                                <>
-                                    Update Credentials
-                                    <ArrowRight className="h-5 w-5" />
-                                </>
+                                <>Update Password <ArrowRight className="h-4 w-4" /></>
                             )}
                         </Button>
                     </form>
                 </CardContent>
             </Card>
-        </div >
+        </div>
     );
 }

@@ -4,19 +4,11 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, MapPin, UploadCloud, Trash, Loader2 } from 'lucide-react';
+import { MapPin, UploadCloud, Trash, Loader2 } from 'lucide-react';
 
 const CATEGORIES = [
     'Microcontroller',
@@ -50,24 +42,17 @@ export default function AddComponentForm() {
     const [previews, setPreviews] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    // Manage image previews to prevent memory leaks and performance issues
     useEffect(() => {
         if (images.length === 0) {
             setPreviews([]);
             return;
         }
-
         const newPreviews = images.map(file => ({
             file,
             url: URL.createObjectURL(file)
         }));
-
         setPreviews(newPreviews);
-
-        // Cleanup function to revoke URLs
-        return () => {
-            newPreviews.forEach(p => URL.revokeObjectURL(p.url));
-        };
+        return () => newPreviews.forEach(p => URL.revokeObjectURL(p.url));
     }, [images]);
 
     const handleChange = (name, value) => {
@@ -99,79 +84,23 @@ export default function AddComponentForm() {
 
     const fillLocation = () => {
         if (!navigator.geolocation) {
-            toast({
-                variant: 'destructive',
-                title: 'Geolocation Unsupported',
-                description: 'Your browser does not support geolocation.',
-            });
+            toast({ variant: 'destructive', title: 'Geolocation Unsupported', description: 'Your browser does not support geolocation.' });
             return;
         }
         navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                setLocation(`${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)}`);
-            },
-            (err) => {
-                toast({
-                    variant: 'destructive',
-                    title: 'Location Error',
-                    description: err.message,
-                });
-            }
+            (pos) => setLocation(`${pos.coords.latitude.toFixed(3)}, ${pos.coords.longitude.toFixed(3)}`),
+            (err) => toast({ variant: 'destructive', title: 'Location Error', description: err.message })
         );
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!profile) {
-            toast({
-                variant: 'destructive',
-                title: 'Profile missing',
-                description: 'Could not determine your user profile. Please reload and try again.',
-            });
+            toast({ variant: 'destructive', title: 'Profile missing', description: 'Could not determine your user profile.' });
             return;
         }
-
-        // check role for insert permission
-        if (profile.role && !['provider', 'admin'].includes(profile.role)) {
-            toast({
-                variant: 'destructive',
-                title: 'Permission denied',
-                description: 'Only providers or admins may add components.',
-            });
-            return;
-        }
-
         setLoading(true);
-
         try {
-            console.log('[ADD_COMPONENT] Starting diagnostics...');
-            console.log('[ADD_COMPONENT] Current profile:', profile);
-
-            // Connection Test
-            console.log('[ADD_COMPONENT] Connection Test: Fetching count...');
-            try {
-                const { count, error: countErr } = await Promise.race([
-                    supabase.from('hardware_items').select('*', { count: 'exact', head: true }),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('CONNECTION_TEST_TIMEOUT')), 10000))
-                ]);
-
-                if (countErr) {
-                    console.error('[ADD_COMPONENT] Connection Test Result: ERROR', countErr);
-                } else {
-                    console.log('[ADD_COMPONENT] Connection Test Result: SUCCESS, Total items:', count);
-                }
-            } catch (ctErr) {
-                console.error('[ADD_COMPONENT] Connection Test Result: FAILED (Hang/Timeout)', ctErr);
-                toast({
-                    variant: 'destructive',
-                    title: 'Connection Issue',
-                    description: 'Supabase is not responding. Please try hard-refreshing (Ctrl+F5) and ensure you only have ONE terminal running.',
-                });
-                return;
-            }
-
-            // parse specs
             let specsObj = {};
             if (form.specs.trim()) {
                 const pairs = form.specs.split(/,|\n/);
@@ -180,14 +109,11 @@ export default function AddComponentForm() {
                     if (colonIdx > 0) {
                         const key = pair.substring(0, colonIdx).trim();
                         const val = pair.substring(colonIdx + 1).trim();
-                        if (key && val) {
-                            specsObj[key] = val;
-                        }
+                        if (key && val) specsObj[key] = val;
                     }
                 });
             }
 
-            // prepared item data
             const itemData = {
                 name: form.name,
                 category: form.category,
@@ -202,317 +128,174 @@ export default function AddComponentForm() {
                 delivery_offline: delivery.offline,
             };
 
-            // 1. Insert item
-            console.log('[ADD_COMPONENT] DB Insert START', {
-                table: 'hardware_items',
-                owner: profile.id,
-                role: profile.role
-            });
+            const { data: insertData, error: insertError } = await supabase
+                .from('hardware_items')
+                .insert(itemData)
+                .select('id');
 
-            // Create a timeout promise to catch hangs
-            const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('DATABASE_INSERT_HANG: The request was sent but the database did not respond within 10 seconds. This usually happens due to RLS policy conflicts or browser extensions blocking the request.')), 10000);
-            });
+            if (insertError) throw insertError;
+            const createdId = insertData?.[0]?.id;
 
-            const insertPromise = (async () => {
-                try {
-                    console.log('[ADD_COMPONENT] Executing insert...');
-                    const result = await supabase
-                        .from('hardware_items')
-                        .insert(itemData)
-                        .select('id');
-                    console.log('[ADD_COMPONENT] Insert settled.');
-                    return result;
-                } catch (pe) {
-                    console.error('[ADD_COMPONENT] Internal query error:', pe);
-                    throw pe;
-                }
-            })();
-
-            const { data: insertData, error: insertError } = await Promise.race([
-                insertPromise,
-                timeoutPromise
-            ]);
-
-            console.log('[ADD_COMPONENT] DB Insert RESPONSE', { data: insertData, error: insertError });
-
-            if (insertError) {
-                console.error('[ADD_COMPONENT] Supabase Error:', insertError);
-                throw insertError;
-            }
-
-            const created = insertData && insertData.length > 0 ? insertData[0] : null;
-            if (!created) {
-                console.warn('[ADD_COMPONENT] No data returned');
-                throw new Error('Record created but no ID returned. Please check if you have Provider permissions.');
-            }
-
-            console.log('[ADD_COMPONENT] Record created with ID:', created.id);
-
-            // 2. Upload image if exists
-            if (images.length > 0) {
-                try {
-                    console.log('[ADD_COMPONENT] Found images, starting upload...');
-                    const file = images[0];
-                    // Sanitize file name
-                    const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
-                    const fileName = `${profile.id}/${Date.now()}-${cleanName}`;
-
-                    console.log('[ADD_COMPONENT] Uploading to Storage bit:', fileName);
-                    const { error: uploadError } = await supabase.storage
-                        .from('component-images')
-                        .upload(fileName, file, { cacheControl: '3600', upsert: false });
-
-                    if (uploadError) throw uploadError;
-
-                    console.log('[ADD_COMPONENT] Upload successful, getting public URL...');
-                    const { data: { publicUrl } } = supabase.storage
-                        .from('component-images')
-                        .getPublicUrl(fileName);
-
-                    // 3. Update item with image URL
-                    console.log('[ADD_COMPONENT] Updating record with image URL:', publicUrl);
-                    await supabase
-                        .from('hardware_items')
-                        .update({ image_url: publicUrl })
-                        .eq('id', created.id);
-
-                } catch (imgErr) {
-                    console.error('[ADD_COMPONENT] Image sequence failed:', imgErr);
-                    toast({
-                        variant: 'default', // Using default since warning isn't supported
-                        title: 'Component added without image',
-                        description: 'The item was created but the image failed to upload.',
-                    });
+            if (createdId && images.length > 0) {
+                const file = images[0];
+                const cleanName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                const fileName = `${profile.id}/${Date.now()}-${cleanName}`;
+                const { error: uploadError } = await supabase.storage.from('component-images').upload(fileName, file);
+                if (!uploadError) {
+                    const { data: { publicUrl } } = supabase.storage.from('component-images').getPublicUrl(fileName);
+                    await supabase.from('hardware_items').update({ image_url: publicUrl }).eq('id', createdId);
                 }
             }
-
-            console.log('[ADD_COMPONENT] Success! Navigating...');
-            toast({
-                title: 'Success',
-                description: `${form.name} has been added to the lab.`,
-            });
-
+            toast({ title: 'Success', description: `${form.name} has been added.` });
             navigate('/components');
         } catch (error) {
-            console.error('[ADD_COMPONENT] Fatal Submit Error:', error);
-            toast({
-                variant: 'destructive',
-                title: 'Add failed',
-                description: error.message || 'An unexpected error occurred.',
-            });
+            toast({ variant: 'destructive', title: 'Add failed', description: error.message });
         } finally {
-            console.log('[ADD_COMPONENT] Submission process finished.');
             setLoading(false);
         }
     };
 
+    // Shared input classes
+    const inputBase = "w-full h-10 px-3 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:ring-1 focus:ring-primary focus:outline-none transition-all";
+
     return (
-        <Card className="border border-border bg-card shadow-lg rounded-[2.5rem] overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-16 opacity-5 pointer-events-none">
-                <PlusCircle size={250} />
+        <div className="max-w-2xl mx-auto px-6 py-8">
+            <div className="mb-8">
+                <h1 className="text-2xl font-semibold text-foreground">Hardware Details</h1>
+                <p className="text-sm text-muted-foreground mt-1">Register new components or boards for the community.</p>
             </div>
-            <CardHeader className="py-8 px-10 border-b border-border bg-muted/20 relative">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-sm">
-                        <PlusCircle className="h-6 w-6" />
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Item Name */}
+                <div className="space-y-1.5">
+                    <Label htmlFor="name" className="text-sm font-medium text-foreground">Item Name *</Label>
+                    <Input
+                        id="name"
+                        placeholder="e.g. NVIDIA Jetson Nano"
+                        value={form.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
+                        className={inputBase}
+                        required
+                    />
+                </div>
+
+                {/* Category */}
+                <div className="space-y-1.5">
+                    <Label htmlFor="category" className="text-sm font-medium text-foreground">Category *</Label>
+                    <select
+                        id="category"
+                        value={form.category}
+                        onChange={(e) => handleChange('category', e.target.value)}
+                        className={inputBase}
+                    >
+                        {CATEGORIES.map((c) => <option key={c} value={c} className="bg-card text-foreground">{c}</option>)}
+                    </select>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-1.5">
+                    <Label htmlFor="description" className="text-sm font-medium text-foreground">Description</Label>
+                    <Textarea
+                        id="description"
+                        placeholder="Brief description or notes"
+                        value={form.description}
+                        onChange={(e) => handleChange('description', e.target.value)}
+                        className={`${inputBase} min-h-[100px] h-auto py-2`}
+                    />
+                </div>
+
+                {/* Specifications */}
+                <div className="space-y-1.5">
+                    <Label htmlFor="specs" className="text-sm font-medium text-foreground">Specifications</Label>
+                    <Input
+                        id="specs"
+                        placeholder="e.g. RAM: 8GB, Storage: 128GB"
+                        value={form.specs}
+                        onChange={(e) => handleChange('specs', e.target.value)}
+                        className={inputBase}
+                    />
+                </div>
+
+                {/* Quantity and Days Row */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="quantity" className="text-sm font-medium text-foreground">No. of units *</Label>
+                        <Input id="quantity" type="number" min="1" value={form.quantity_total} onChange={(e) => handleChange('quantity_total', e.target.value)} className={inputBase} required />
                     </div>
-                    <div>
-                        <CardTitle className="text-2xl font-black tracking-tight">Hardware Details</CardTitle>
-                        <CardDescription className="text-sm font-medium">
-                            Tell us about this new device.
-                        </CardDescription>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="days" className="text-sm font-medium text-foreground">Max Lending Days</Label>
+                        <Input id="days" type="number" min="1" value={form.max_lending_days} onChange={(e) => handleChange('max_lending_days', e.target.value)} className={inputBase} />
                     </div>
                 </div>
-            </CardHeader>
-            <CardContent className="p-8">
-                <form id="add-component-form" onSubmit={handleSubmit} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="name"
-                                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-                            >
-                                Item Name <span className="text-destructive">*</span>
-                            </Label>
-                            <Input
-                                id="name"
-                                placeholder="e.g. NVIDIA Jetson Nano"
-                                value={form.name}
-                                onChange={(e) => handleChange('name', e.target.value)}
-                                className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
-                                required
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label
-                                htmlFor="category"
-                                className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-                            >
-                                Category <span className="text-destructive">*</span>
-                            </Label>
-                            <select
-                                value={form.category}
-                                onChange={(e) => handleChange('category', e.target.value)}
-                                className="h-10 w-full rounded-md bg-background border border-border px-3 text-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-foreground shadow-sm"
-                            >
-                                {CATEGORIES.map((c) => (
-                                    <option key={c} value={c}>
-                                        {c}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
 
-                    {/* description and specs */}
-                    <div className="space-y-2">
-                        <Label
-                            htmlFor="description"
-                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-                        >
-                            Description
-                        </Label>
-                        <Textarea
-                            id="description"
-                            placeholder="Brief description or notes"
-                            value={form.description}
-                            onChange={(e) => handleChange('description', e.target.value)}
-                            className="bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground shadow-sm text-sm"
-                            rows={3}
-                        />
+                {/* Delivery Options */}
+                <div className="space-y-2 pt-2">
+                    <Label className="text-sm font-medium text-foreground mb-1 block">Delivery Methods</Label>
+                    <div className="flex flex-col gap-3 p-4 bg-muted/20 border border-border rounded-lg">
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <Checkbox id="courier" checked={delivery.courier} onCheckedChange={() => handleDeliveryChange('courier')} />
+                            <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors selection:bg-transparent">Courier Delivery</span>
+                        </label>
+                        <label className="flex items-center gap-3 cursor-pointer group">
+                            <Checkbox id="offline" checked={delivery.offline} onCheckedChange={() => handleDeliveryChange('offline')} />
+                            <span className="text-sm text-foreground/80 group-hover:text-foreground transition-colors selection:bg-transparent">Offline Pickup</span>
+                        </label>
                     </div>
-                    <div className="space-y-2">
-                        <Label
-                            htmlFor="specs"
-                            className="text-xs font-bold uppercase tracking-widest text-muted-foreground"
-                        >
-                            Specifications
-                        </Label>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-1.5 pt-2">
+                    <Label htmlFor="location" className="text-sm font-medium text-foreground">Location</Label>
+                    <div className="relative group">
                         <Input
-                            id="specs"
-                            placeholder="e.g. RAM: 8GB, Storage: 128GB"
-                            value={form.specs}
-                            onChange={(e) => handleChange('specs', e.target.value)}
-                            className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
+                            id="location"
+                            placeholder="City / Campus Name"
+                            value={location}
+                            onChange={(e) => setLocation(e.target.value)}
+                            className={`${inputBase} pr-10`}
                         />
+                        <button type="button" onClick={fillLocation} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-all">
+                            <MapPin size={16} />
+                        </button>
                     </div>
+                </div>
 
-                    {/* delivery checkboxes */}
-                    <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                            Delivery Method(s)
-                        </Label>
-                        <div className="flex items-center gap-6">
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="courier"
-                                    checked={delivery.courier}
-                                    onCheckedChange={() => handleDeliveryChange('courier')}
-                                />
-                                <Label htmlFor="courier" className="text-sm">
-                                    Courier Delivery
-                                </Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Checkbox
-                                    id="offline"
-                                    checked={delivery.offline}
-                                    onCheckedChange={() => handleDeliveryChange('offline')}
-                                />
-                                <Label htmlFor="offline" className="text-sm">
-                                    Offline Pickup
-                                </Label>
-                            </div>
+                {/* Images */}
+                <div className="space-y-2 pt-2">
+                    <Label className="text-sm font-medium text-foreground">Images (optional)</Label>
+                    <div
+                        onDrop={handleDrop}
+                        onDragOver={(e) => e.preventDefault()}
+                        onClick={() => document.getElementById('image-input').click()}
+                        className="border-dashed border-2 border-border rounded-lg p-8 text-center cursor-pointer bg-muted/10 hover:bg-muted/20 transition-all group"
+                    >
+                        <input type="file" id="image-input" className="hidden" accept="image/*" multiple onChange={handleInputChange} />
+                        <UploadCloud className="mx-auto h-10 w-10 text-muted-foreground group-hover:text-foreground transition-colors mb-2" />
+                        <p className="text-sm font-medium text-foreground group-hover:text-foreground">Drag & drop or click to upload</p>
+                        <p className="text-xs text-muted-foreground/60 mt-1">Maximum 5 images supported</p>
+                    </div>
+                    {previews.length > 0 && (
+                        <div className="flex gap-3 flex-wrap mt-4">
+                            {previews.map((p, i) => (
+                                <div key={i} className="relative w-20 h-20 group rounded-md overflow-hidden border border-border shadow-sm">
+                                    <img src={p.url} className="w-full h-full object-cover" />
+                                    <button onClick={(e) => { e.stopPropagation(); removeImage(i); }} className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Trash size={18} className="text-white" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    )}
+                </div>
 
-                    {/* location input */}
-                    <div className="space-y-2">
-                        <Label htmlFor="location" className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                            Location
-                        </Label>
-                        <div className="flex gap-2 items-center">
-                            <Input
-                                id="location"
-                                placeholder="City / Campus Name"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') e.preventDefault();
-                                }}
-                                className="h-10 bg-background border border-border rounded-md focus-visible:ring-1 focus-visible:ring-foreground text-sm px-3 shadow-sm transition-colors"
-                            />
-                            <Button variant="ghost" type="button" size="icon" onClick={fillLocation} title="Use My Location" className="h-10 w-10">
-                                <MapPin className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-
-                    {/* image upload */}
-                    <div className="space-y-2">
-                        <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                            Images (optional)
-                        </Label>
-                        <div
-                            onDrop={handleDrop}
-                            onDragOver={(e) => e.preventDefault()}
-                            className="border-dashed border-2 border-border rounded-md p-6 text-center cursor-pointer bg-muted/10 hover:bg-muted/30 transition-colors"
-                            onClick={() => document.getElementById('image-input').click()}
-                        >
-                            <input
-                                type="file"
-                                id="image-input"
-                                className="hidden"
-                                accept="image/*"
-                                multiple
-                                onChange={handleInputChange}
-                            />
-                            <UploadCloud className="mx-auto h-6 w-6 text-muted-foreground" />
-                            <p className="text-sm text-muted-foreground mt-2">
-                                Drag & drop or click to upload (max 5)
-                            </p>
-                        </div>
-                        {previews.length > 0 && (
-                            <div className="flex gap-4 flex-wrap">
-                                {previews.map((preview, idx) => (
-                                    <div key={idx} className="relative w-24 h-24">
-                                        <img
-                                            src={preview.url}
-                                            alt="preview"
-                                            className="object-cover w-full h-full rounded-lg"
-                                        />
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full h-8 w-8 shadow-md hover:bg-destructive/90"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                removeImage(idx);
-                                            }}
-                                        >
-                                            <Trash className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    <CardFooter className="pt-4">
-                        <Button type="submit" disabled={loading} className="w-full">
-                            {loading ? (
-                                <>
-                                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                                    Adding...
-                                </>
-                            ) : (
-                                'Add component'
-                            )}
-                        </Button>
-                    </CardFooter>
-                </form>
-            </CardContent>
-        </Card>
+                {/* Submit */}
+                <div className="mt-8 pt-4">
+                    <Button type="submit" disabled={loading} className="w-full h-11 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs shadow-lg transition-all active:scale-[0.98]">
+                        {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : null}
+                        {loading ? 'Adding component...' : 'Add component'}
+                    </Button>
+                </div>
+            </form>
+        </div>
     );
 }
