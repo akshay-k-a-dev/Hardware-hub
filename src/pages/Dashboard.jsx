@@ -170,6 +170,8 @@ export default function Dashboard() {
         e.preventDefault();
         if (searchQuery.trim()) {
             navigate(`/components?search=${encodeURIComponent(searchQuery.trim())}`);
+        } else {
+            navigate('/components');
         }
     };
 
@@ -292,34 +294,34 @@ export default function Dashboard() {
 
     // Student Dashboard View (Action-Driven & Minimal)
     return (
-        <div className="space-y-8 max-w-7xl mx-auto pb-12">
+        <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-8 sm:pb-12">
             
             {/* 1. Hero Action Section */}
-            <div className="relative overflow-hidden bg-foreground text-background rounded-sm p-8 md:p-12 flex flex-col items-center text-center gap-8 shadow-2xl border border-border">
+            <div className="relative overflow-hidden bg-foreground text-background rounded-sm p-5 sm:p-8 md:p-12 flex flex-col items-center text-center gap-5 sm:gap-8 shadow-2xl border border-border">
                 <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-white rounded-full -mr-48 -mt-48 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-white rounded-full -ml-48 -mb-48 blur-3xl"></div>
+                    <div className="absolute top-0 right-0 w-60 sm:w-96 h-60 sm:h-96 bg-white rounded-full -mr-32 sm:-mr-48 -mt-32 sm:-mt-48 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-60 sm:w-96 h-60 sm:h-96 bg-white rounded-full -ml-32 sm:-ml-48 -mb-32 sm:-mb-48 blur-3xl"></div>
                 </div>
 
-                <div className="relative space-y-2">
-                    <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none italic">
+                <div className="relative space-y-1.5 sm:space-y-2">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none italic">
                         Hardware Inventory
                     </h2>
-                    <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] opacity-60">
-                        Professional Microcontrollers, Sensors, and Lab Equipment
+                    <p className="text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-60">
+                        Microcontrollers, Sensors, and Lab Equipment
                     </p>
                 </div>
 
                 <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
+                    <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
                     <Input 
-                        placeholder="Search processors, robotics, or components..." 
-                        className="h-14 pl-14 bg-background border-none text-foreground placeholder:text-muted-foreground/50 text-sm md:text-base rounded-sm focus-visible:ring-4 focus-visible:ring-white/10 shadow-xl"
+                        placeholder="Search components..." 
+                        className="h-11 sm:h-14 pl-11 sm:pl-14 pr-3 sm:pr-28 bg-background border-none text-foreground placeholder:text-muted-foreground/50 text-sm rounded-sm focus-visible:ring-4 focus-visible:ring-white/10 shadow-xl"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Button type="submit" size="sm" className="h-10 px-4 bg-foreground text-background hover:bg-foreground/90 font-black uppercase text-[10px] tracking-widest rounded-sm hidden sm:flex">
+                        <Button type="submit" size="sm" className="h-8 sm:h-10 px-3 sm:px-4 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase text-[10px] tracking-widest rounded-sm hidden sm:flex">
                             Explore
                         </Button>
                     </div>
@@ -327,80 +329,81 @@ export default function Dashboard() {
             </div>
 
             {/* 2. Simplified Stats Row */}
-            <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2">
                 <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Pending Approval</p>
-                            <p className="text-4xl font-black text-foreground tabular-nums group-hover:scale-110 transition-transform origin-left">{stats.pending}</p>
+                    <CardContent className="p-4 sm:p-6 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.2em] text-muted-foreground truncate">Pending</p>
+                            <p className="text-2xl sm:text-4xl font-black text-foreground tabular-nums">{stats.pending}</p>
                         </div>
-                        <div className="p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
-                            <Clock className="h-8 w-8" />
+                        <div className="p-2.5 sm:p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors shrink-0">
+                            <Clock className="h-5 w-5 sm:h-8 sm:w-8" />
                         </div>
                     </CardContent>
                 </Card>
                 <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
-                    <CardContent className="p-6 flex items-center justify-between">
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Currently Borrowed</p>
-                            <p className="text-4xl font-black text-foreground tabular-nums group-hover:scale-110 transition-transform origin-left">{stats.active}</p>
+                    <CardContent className="p-4 sm:p-6 flex items-center justify-between gap-3">
+                        <div className="space-y-0.5 sm:space-y-1 min-w-0">
+                            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.2em] text-muted-foreground truncate">Borrowed</p>
+                            <p className="text-2xl sm:text-4xl font-black text-foreground tabular-nums">{stats.active}</p>
                         </div>
-                        <div className="p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors">
-                            <Package className="h-8 w-8" />
+                        <div className="p-2.5 sm:p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors shrink-0">
+                            <Package className="h-5 w-5 sm:h-8 sm:w-8" />
                         </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <div className="grid gap-8 lg:grid-cols-12">
+            <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
                 
                 {/* 3. Your Active Hardware (Main Focus) */}
-                <div className="lg:col-span-8 space-y-4">
+                <div className="lg:col-span-8 space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-                            <Zap className="h-4 w-4" /> Your Active Hardware
+                        <h3 className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+                            <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Active Hardware
                         </h3>
-                        <Button asChild variant="link" size="sm" className="h-auto p-0 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">
-                            <Link to="/my-requests">View History <ArrowRight className="ml-1 h-3 w-3" /></Link>
+                        <Button asChild variant="link" size="sm" className="h-auto p-0 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">
+                            <Link to="/my-requests">History <ArrowRight className="ml-1 h-3 w-3" /></Link>
                         </Button>
                     </div>
 
                     <Card className="border border-border bg-card shadow-none rounded-sm overflow-hidden">
                         <CardContent className="p-0">
                             {activeHardware.length === 0 ? (
-                                <div className="p-16 text-center bg-muted/10">
-                                    <div className="h-16 w-16 rounded-sm bg-muted border border-border flex items-center justify-center mx-auto mb-6 text-muted-foreground/30 italic">
-                                        <Package size={32} />
+                                <div className="p-10 sm:p-16 text-center bg-muted/10">
+                                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-sm bg-muted border border-border flex items-center justify-center mx-auto mb-4 sm:mb-6 text-muted-foreground/30 italic">
+                                        <Package size={24} className="sm:hidden" />
+                                        <Package size={32} className="hidden sm:block" />
                                     </div>
-                                    <h4 className="text-sm font-black uppercase tracking-widest text-foreground">No active loans</h4>
-                                    <p className="text-[10px] font-black uppercase tracking-tighter text-muted-foreground mt-2 max-w-[240px] mx-auto opacity-60">
-                                        Ready for your next project? Browse the lab to reserve equipment.
+                                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest text-foreground">No active loans</h4>
+                                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-muted-foreground mt-2 max-w-[240px] mx-auto opacity-60">
+                                        Browse the lab to reserve equipment.
                                     </p>
-                                    <Button asChild variant="outline" size="sm" className="mt-6 rounded-sm border-foreground hover:bg-foreground hover:text-background text-[10px] font-black uppercase tracking-widest px-8">
+                                    <Button asChild variant="outline" size="sm" className="mt-5 sm:mt-6 rounded-sm border-foreground hover:bg-foreground hover:text-background text-[10px] font-bold uppercase tracking-widest px-6 sm:px-8">
                                         <Link to="/components">Request Now</Link>
                                     </Button>
                                 </div>
                             ) : (
                                 <div className="divide-y divide-border/60">
                                     {activeHardware.map((hw) => (
-                                        <div key={hw.id} className="p-5 flex items-center justify-between hover:bg-muted/30 transition-colors group">
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-10 w-10 bg-muted/40 rounded-sm flex items-center justify-center text-foreground font-black border border-border group-hover:bg-foreground group-hover:text-background transition-colors uppercase text-lg italic">
+                                        <div key={hw.id} className="p-3 sm:p-5 flex items-center justify-between hover:bg-muted/30 transition-colors group">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted/40 rounded-sm flex items-center justify-center text-foreground font-black border border-border group-hover:bg-foreground group-hover:text-background transition-colors uppercase text-sm sm:text-lg italic shrink-0">
                                                     {hw.hardware?.name?.[0]}
                                                 </div>
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="text-sm font-black uppercase tracking-tight text-foreground">{hw.hardware?.name}</span>
-                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground">
-                                                        <span>Due: {formatDate(hw.expected_return_date)}</span>
-                                                        <span>•</span>
-                                                        <span className={hw.status === 'overdue' ? 'text-destructive' : 'text-foreground'}>
-                                                            {hw.status === 'overdue' ? 'Overdue Action Needed' : 'In Possession'}
+                                                <div className="flex flex-col gap-0.5 min-w-0">
+                                                    <span className="text-xs sm:text-sm font-black uppercase tracking-tight text-foreground truncate">{hw.hardware?.name}</span>
+                                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-bold uppercase text-muted-foreground">
+                                                        <span className="shrink-0">Due: {formatDate(hw.expected_return_date)}</span>
+                                                        <span className="hidden sm:inline">•</span>
+                                                        <span className={`hidden sm:inline ${hw.status === 'overdue' ? 'text-destructive' : 'text-foreground'}`}>
+                                                            {hw.status === 'overdue' ? 'Overdue' : 'In Possession'}
                                                         </span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <Button asChild size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Link to={`/components/${hw.hardware_id}`}><ArrowUpRight size={16} /></Link>
+                                            <Button asChild size="sm" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm opacity-50 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                                                <Link to={`/components/${hw.hardware_id}`}><ArrowUpRight size={14} /></Link>
                                             </Button>
                                         </div>
                                     ))}
@@ -411,23 +414,23 @@ export default function Dashboard() {
                 </div>
 
                 {/* 4. Actions & Dynamic Alerts */}
-                <div className="lg:col-span-4 space-y-8">
+                <div className="lg:col-span-4 space-y-6 sm:space-y-8">
                     
                     {/* Dynamic Alerts */}
                     {alerts.length > 0 && (
-                        <div className="space-y-3">
-                            <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Recent Updates</h3>
+                        <div className="space-y-2 sm:space-y-3">
+                            <h3 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Recent Updates</h3>
                             <div className="space-y-2">
                                 {alerts.map((alert) => (
                                     <div 
                                         key={alert.id} 
-                                        className={`p-3 rounded-sm border flex items-start gap-3 animate-in slide-in-from-right-4 duration-500
+                                        className={`p-2.5 sm:p-3 rounded-sm border flex items-start gap-2.5 sm:gap-3 animate-in slide-in-from-right-4 duration-500
                                             ${alert.type === 'destructive' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 
                                               alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-200 text-yellow-700' : 
                                               'bg-foreground/5 border-border text-foreground'}`}
                                     >
-                                        <div className="mt-0.5">{alert.icon}</div>
-                                        <p className="text-[10px] font-black uppercase tracking-tighter leading-tight flex-1 font-bold">
+                                        <div className="mt-0.5 shrink-0">{alert.icon}</div>
+                                        <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-tight leading-tight flex-1">
                                             {alert.message}
                                         </p>
                                     </div>
@@ -437,30 +440,30 @@ export default function Dashboard() {
                     )}
 
                     {/* Quick Navigation */}
-                    <div className="space-y-4">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground px-1">Navigation Console</h3>
+                    <div className="space-y-3 sm:space-y-4">
+                        <h3 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Quick Actions</h3>
                         <div className="grid gap-2">
-                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
+                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
                                 <Link to="/components" className="flex items-center w-full">
-                                    <SearchCode className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
-                                    Request Hardware
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                                    <SearchCode className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
+                                    <span className="truncate">Request Hardware</span>
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
                                 </Link>
                             </Button>
 
-                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
+                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
                                 <Link to="/my-requests" className="flex items-center w-full">
-                                    <History className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
-                                    View My Items
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                                    <History className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
+                                    <span className="truncate">View My Items</span>
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
                                 </Link>
                             </Button>
 
-                            <Button asChild variant="outline" className="w-full justify-start h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-4 text-xs font-black uppercase tracking-widest">
-                                <Link to="/my-requests" className="flex items-center w-full">
-                                    <ClipboardList className="mr-3 h-4 w-4 opacity-50 group-hover:opacity-100" />
-                                    Track Requests
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
+                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                                <Link to="/my-prebooks" className="flex items-center w-full">
+                                    <ClipboardList className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
+                                    <span className="truncate">My Pre-Books</span>
+                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
                                 </Link>
                             </Button>
                         </div>

@@ -8,26 +8,22 @@ export default function Landing() {
     const [visible, setVisible] = useState(false);
 
     useEffect(() => {
-        // Trigger the entrance animation on mount
         const t = requestAnimationFrame(() => setVisible(true));
         return () => cancelAnimationFrame(t);
     }, []);
 
     return (
-        <div className="relative min-h-screen w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
+        <div className="relative min-h-screen min-h-[100dvh] w-full flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a]">
             {/* ── Ambient background gradients ────────────────── */}
             <div className="pointer-events-none absolute inset-0 z-0">
-                {/* Top-left warm glow */}
-                <div className="absolute -top-[30%] -left-[20%] h-[70vh] w-[70vh] rounded-full bg-white/[0.015] blur-[120px]" />
-                {/* Bottom-right cool glow */}
-                <div className="absolute -bottom-[20%] -right-[15%] h-[60vh] w-[60vh] rounded-full bg-white/[0.02] blur-[100px]" />
-                {/* Center subtle radial */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[80vh] w-[80vh] rounded-full bg-white/[0.008] blur-[160px]" />
+                <div className="absolute -top-[30%] -left-[20%] h-[50vh] w-[50vh] md:h-[70vh] md:w-[70vh] rounded-full bg-white/[0.015] blur-[80px] md:blur-[120px]" />
+                <div className="absolute -bottom-[20%] -right-[15%] h-[40vh] w-[40vh] md:h-[60vh] md:w-[60vh] rounded-full bg-white/[0.02] blur-[60px] md:blur-[100px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[60vh] w-[60vh] md:h-[80vh] md:w-[80vh] rounded-full bg-white/[0.008] blur-[100px] md:blur-[160px]" />
             </div>
 
-            {/* ── Noise texture overlay (optional elegance) ───── */}
+            {/* ── Noise texture overlay ───── */}
             <div
-                className="pointer-events-none absolute inset-0 z-[1] opacity-[0.025]"
+                className="pointer-events-none absolute inset-0 z-[1] opacity-[0.02]"
                 style={{
                     backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E")`,
                 }}
@@ -35,52 +31,52 @@ export default function Landing() {
 
             {/* ── Main content ────────────────────────────────── */}
             <div
-                className={`relative z-10 flex flex-col items-center text-center px-6
+                className={`relative z-10 flex flex-col items-center text-center px-5 sm:px-6
                     transition-all duration-[1400ms] ease-out
                     ${visible
                         ? 'opacity-100 translate-y-0 scale-100'
-                        : 'opacity-0 translate-y-8 scale-[0.96]'
+                        : 'opacity-0 translate-y-6 scale-[0.97]'
                     }`}
             >
                 {/* Chip badge */}
-                <div className="mb-8 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-1.5 backdrop-blur-sm">
-                    <Cpu className="h-3.5 w-3.5 text-white/50" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50">
+                <div className="mb-6 sm:mb-8 flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3.5 py-1.5 backdrop-blur-sm">
+                    <Cpu className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-white/50" />
+                    <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.2em] text-white/50">
                         HardwareHub
                     </span>
                 </div>
 
                 {/* Static heading */}
-                <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white leading-[0.9]">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-semibold tracking-tight text-white leading-[0.95]">
                     For Makers
                 </h1>
 
                 {/* Gooey animated subheading */}
-                <div className="mt-4 sm:mt-6">
+                <div className="mt-3 sm:mt-5">
                     <GooeyText
-                        texts={['Who Build', 'Who Experiment', 'Who Innovate']}
-                        morphTime={1.2}
-                        cooldownTime={0.3}
+                        texts={['Who Build', 'Who Explore', 'Who Innovate']}
+                        morphTime={1.8}
+                        cooldownTime={0.6}
                     />
                 </div>
 
                 {/* Soft glowing underline accent */}
-                <div className="mt-6 h-px w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="mt-5 sm:mt-6 h-px w-16 sm:w-24 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
                 {/* Tagline */}
-                <p className="mt-8 max-w-md text-sm sm:text-base font-medium leading-relaxed text-white/40">
+                <p className="mt-6 sm:mt-8 max-w-sm sm:max-w-md text-xs sm:text-sm md:text-base font-medium leading-relaxed text-white/40 px-2">
                     The inventory platform that gets out of your way.
                     <br className="hidden sm:block" />
                     Request, track, and manage lab hardware—effortlessly.
                 </p>
 
                 {/* CTA buttons */}
-                <div className="mt-10 flex flex-col sm:flex-row items-center gap-3">
+                <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-4 sm:px-0">
                     <Button
                         asChild
-                        className="h-12 px-8 rounded-lg bg-white text-black font-bold text-sm
+                        className="h-11 sm:h-12 w-full sm:w-auto px-8 rounded-lg bg-white text-black font-semibold text-sm
                                    hover:bg-white/90 transition-all duration-300
-                                   shadow-[0_0_40px_rgba(255,255,255,0.08)]"
+                                   shadow-[0_0_40px_rgba(255,255,255,0.06)]"
                     >
                         <Link to="/register">
                             Get Started
@@ -90,7 +86,7 @@ export default function Landing() {
                     <Button
                         asChild
                         variant="ghost"
-                        className="h-12 px-8 rounded-lg text-white/60 font-bold text-sm
+                        className="h-11 sm:h-12 w-full sm:w-auto px-8 rounded-lg text-white/60 font-semibold text-sm
                                    border border-white/10 hover:bg-white/[0.04] hover:text-white
                                    transition-all duration-300"
                     >
@@ -102,7 +98,7 @@ export default function Landing() {
             </div>
 
             {/* ── Bottom fade-out gradient ─────────────────────── */}
-            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-[2]" />
+            <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-t from-[#0a0a0a] to-transparent z-[2]" />
         </div>
     );
 }

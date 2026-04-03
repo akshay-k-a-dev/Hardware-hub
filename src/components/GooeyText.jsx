@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
 /**
  * GooeyText — A liquid-morphing text animation component.
@@ -8,14 +8,14 @@ import { useEffect, useRef, useCallback, useState } from 'react';
  *
  * Props:
  *   texts        — string[]  phrases to cycle through
- *   morphTime    — number    seconds for each morph transition  (default 1.2)
- *   cooldownTime — number    seconds to hold before next morph  (default 0.3)
+ *   morphTime    — number    seconds for each morph transition  (default 1.8)
+ *   cooldownTime — number    seconds to hold before next morph  (default 0.6)
  *   className    — string    extra Tailwind classes on the wrapper
  */
 export default function GooeyText({
-    texts = ['Who Build', 'Who Experiment', 'Who Innovate'],
-    morphTime = 1.2,
-    cooldownTime = 0.3,
+    texts = ['Who Build', 'Who Explore', 'Who Innovate'],
+    morphTime = 1.8,
+    cooldownTime = 0.6,
     className = '',
 }) {
     const text1Ref = useRef(null);
@@ -25,24 +25,27 @@ export default function GooeyText({
     const indexRef = useRef(0);       // current phrase index
     const rafRef = useRef(null);
     const lastFrameRef = useRef(performance.now());
-    const [rendered, setRendered] = useState(false);
 
     // ── helpers ──────────────────────────────────────────────
     const setMorphStyles = useCallback((frac) => {
-        // frac 0 → 1 : text1 fully visible → text2 fully visible
-        // We use blur to create the gooey "melt" between the two layers;
-        // the SVG feColorMatrix then sharpens the blurred edges back,
-        // producing the signature gooey merge.
-        const blur1 = Math.min(4 / (1 - frac) - 4, 100);   // → ∞ as frac→1
-        const blur2 = Math.min(4 / frac - 4, 100);          // → ∞ as frac→0
+        // Apply a smooth easing curve (power ~0.7) so the transition
+        // spends more time in the readable mid-range and less time
+        // at the harsh fully-blurred extremes.
+        const eased = Math.pow(frac, 0.7);
+
+        // Clamp blur to a lower max (30px) to avoid harsh flicker spikes.
+        // The formula ramps blur up as each layer fades out, but the clamp
+        // keeps it readable throughout.
+        const blur1 = Math.min(3 / (1 - eased + 0.01) - 3, 30);
+        const blur2 = Math.min(3 / (eased + 0.01) - 3, 30);
 
         if (text1Ref.current) {
             text1Ref.current.style.filter = `blur(${blur1}px)`;
-            text1Ref.current.style.opacity = `${1 - frac}`;
+            text1Ref.current.style.opacity = `${1 - eased}`;
         }
         if (text2Ref.current) {
             text2Ref.current.style.filter = `blur(${blur2}px)`;
-            text2Ref.current.style.opacity = `${frac}`;
+            text2Ref.current.style.opacity = `${eased}`;
         }
     }, []);
 
@@ -90,15 +93,11 @@ export default function GooeyText({
         if (text1Ref.current) text1Ref.current.textContent = texts[0];
         if (text2Ref.current) text2Ref.current.textContent = texts[1] ?? texts[0];
 
-        // small delay so the initial state paints first
-        const t = setTimeout(() => setRendered(true), 50);
-
         lastFrameRef.current = performance.now();
         rafRef.current = requestAnimationFrame(tick);
 
         return () => {
             cancelAnimationFrame(rafRef.current);
-            clearTimeout(t);
         };
     }, [texts, tick]);
 
@@ -115,14 +114,9 @@ export default function GooeyText({
             >
                 <defs>
                     <filter id={filterId}>
-                        {/*
-                          feGaussianBlur softens, then feColorMatrix with
-                          a high alpha-channel multiplier (19) sharpens the
-                          edges back, giving the liquid-merge effect.
-                        */}
                         <feGaussianBlur
                             in="SourceGraphic"
-                            stdDeviation="1"
+                            stdDeviation="0.8"
                             result="blur"
                         />
                         <feColorMatrix
@@ -131,7 +125,7 @@ export default function GooeyText({
                             values="1 0 0 0 0
                                     0 1 0 0 0
                                     0 0 1 0 0
-                                    0 0 0 19 -9"
+                                    0 0 0 18 -8"
                             result="gooey"
                         />
                         <feComposite
@@ -153,7 +147,7 @@ export default function GooeyText({
                     aria-hidden="true"
                     className="col-start-1 row-start-1 select-none
                                text-3xl sm:text-4xl md:text-5xl lg:text-6xl
-                               font-black tracking-tight text-white
+                               font-semibold tracking-tight leading-tight text-white
                                whitespace-nowrap"
                 />
                 <span
@@ -161,7 +155,7 @@ export default function GooeyText({
                     aria-hidden="true"
                     className="col-start-1 row-start-1 select-none
                                text-3xl sm:text-4xl md:text-5xl lg:text-6xl
-                               font-black tracking-tight text-white
+                               font-semibold tracking-tight leading-tight text-white
                                whitespace-nowrap"
                     style={{ opacity: 0 }}
                 />
