@@ -51,9 +51,11 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const { profile, isProvider, isAdmin, updateProfile } = useAuth();
     const { toast } = useToast();
-    const [stats, setStats] = useState({ available: 0, pending: 0, active: 0, total: 0 });
+    const [stats, setStats] = useState({ available: 0, pending: 0, active: 0, total: 0, overdue: 0, totalHistory: 0 });
     const [activeHardware, setActiveHardware] = useState([]);
     const [recentRequests, setRecentRequests] = useState([]);
+    const [activityHistory, setActivityHistory] = useState([]);
+    const [featuredHardware, setFeaturedHardware] = useState([]);
     const [alerts, setAlerts] = useState([]);
     const [borrowerRatings, setBorrowerRatings] = useState({});
     const [loading, setLoading] = useState(true);
@@ -96,16 +98,40 @@ export default function Dashboard() {
             { data: activeHw },
             { data: recentApproved },
             { data: dueSoon },
+            { data: pendingReqs },
+            { data: historyData },
+            { data: featuredHw }
         ] = await Promise.all([
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).eq('status', 'pending'),
             supabase.from('requests').select('*', { count: 'exact', head: true }).eq('user_id', profile.id).in('status', ['issued', 'overdue']),
-            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').eq('user_id', profile.id).in('status', ['issued', 'overdue']).order('expected_return_date', { ascending: true }),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category, specs, image_url)').eq('user_id', profile.id).in('status', ['issued', 'overdue']).order('expected_return_date', { ascending: true }),
             supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name)').eq('user_id', profile.id).eq('status', 'approved').gte('updated_at', threeDaysAgo.toISOString()),
             supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name)').eq('user_id', profile.id).eq('status', 'issued').lte('expected_return_date', nextThreeDays.toISOString()),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category, specs, image_url)').eq('user_id', profile.id).eq('status', 'pending').order('created_at', { ascending: false }),
+            supabase.from('requests').select('*, hardware:hardware_items!requests_hardware_id_fkey(id, name, category)').eq('user_id', profile.id).in('status', ['returned', 'rejected', 'cancelled']).order('updated_at', { ascending: false }).limit(5),
+            supabase.from('hardware_items').select('*').limit(4)
         ]);
 
-        setStats({ pending: pendingCount || 0, active: activeCount || 0 });
+        const overdueCount = (activeHw || []).filter(r => r.status === 'overdue').length;
+
+        setStats({ 
+            pending: pendingCount || 0, 
+            active: activeCount || 0,
+            overdue: overdueCount || 0,
+            totalHistory: (historyData || []).length 
+        });
+        
         setActiveHardware(activeHw || []);
+        setRecentRequests(pendingReqs || []);
+        
+        // Use history data for activities
+        const activities = (historyData || []).map(h => ({
+            id: h.id,
+            type: 'history',
+            message: `${h.hardware?.name} was ${h.status}`,
+            date: h.updated_at,
+            icon: <History className="h-3 w-3" />
+        }));
 
         const dynamicAlerts = [];
         (activeHw || []).filter(r => r.status === 'overdue').forEach(r => {
@@ -117,7 +143,10 @@ export default function Dashboard() {
         (recentApproved || []).forEach(r => {
             dynamicAlerts.push({ id: `app-${r.id}`, type: 'success', message: `${r.hardware.name} request was approved!`, icon: <CheckCircle2 className="h-3 w-3" /> });
         });
+
         setAlerts(dynamicAlerts);
+        setActivityHistory(activities);
+        setFeaturedHardware(featuredHw || []);
     };
 
     const loadProviderDashboard = async () => {
@@ -182,11 +211,11 @@ export default function Dashboard() {
 
     if (loading) {
         return (
-            <div className="space-y-8 animate-in fade-in duration-500 max-w-7xl mx-auto">
-                <Skeleton className="h-48 w-full rounded-sm" />
+            <div className="flex flex-col gap-8 max-w-[1400px] mx-auto animate-in fade-in duration-500 p-4 md:p-6 lg:px-0">
+                <Skeleton className="h-48 w-full rounded-2xl" />
                 <div className="grid gap-6 md:grid-cols-2">
-                    <Skeleton className="h-32 w-full rounded-sm" />
-                    <Skeleton className="h-32 w-full rounded-sm" />
+                    <Skeleton className="h-32 w-full rounded-2xl" />
+                    <Skeleton className="h-32 w-full rounded-2xl" />
                 </div>
             </div>
         );
@@ -195,7 +224,7 @@ export default function Dashboard() {
     if (isProvider || isAdmin) {
         // Provider Dashboard View (Keep existing logic but apply minimal styling)
         return (
-            <div className="space-y-6 max-w-7xl mx-auto">
+            <div className="flex flex-col gap-6 max-w-[1400px] mx-auto p-4 md:p-6 lg:px-0">
                 <header className="flex items-center justify-between pb-4 border-b border-border">
                     <div>
                         <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Lab Administrator</h1>
@@ -218,7 +247,7 @@ export default function Dashboard() {
                         { label: 'Issued Items', value: stats.active, icon: <CheckCircle2 size={14} /> },
                         { label: 'Total Logs', value: stats.total, icon: <History size={14} /> }
                     ].map((s) => (
-                        <Card key={s.label} className="border border-border bg-card shadow-sm rounded-sm">
+                        <Card key={s.label} className="border border-border bg-card shadow-sm rounded-xl overflow-hidden">
                             <CardContent className="p-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{s.label}</p>
@@ -231,9 +260,9 @@ export default function Dashboard() {
                 </div>
 
                 <div className="grid gap-6 lg:grid-cols-7">
-                    <Card className="lg:col-span-4 border border-border bg-card rounded-sm overflow-hidden">
+                    <Card className="lg:col-span-4 border border-border bg-card rounded-xl overflow-hidden">
                         <CardHeader className="p-4 border-b border-border bg-muted/20">
-                            <CardTitle className="text-xs font-black uppercase tracking-widest">Recent Activity Pool</CardTitle>
+                            <CardTitle className="text-xs font-semibold uppercase tracking-widest leading-none text-muted-foreground">Recent Activity Pool</CardTitle>
                         </CardHeader>
                         <CardContent className="p-0">
                             {recentRequests.length === 0 ? (
@@ -257,8 +286,10 @@ export default function Dashboard() {
                         </CardContent>
                     </Card>
                     <div className="lg:col-span-3 space-y-4">
-                        <Card className="border border-border rounded-sm">
-                            <CardHeader className="p-4 border-b border-border bg-muted/20"><CardTitle className="text-xs font-black uppercase tracking-widest">Actions</CardTitle></CardHeader>
+                        <Card className="border border-border rounded-xl overflow-hidden bg-card">
+                            <CardHeader className="p-4 border-b border-border bg-muted/20">
+                                <CardTitle className="text-xs font-semibold uppercase tracking-widest leading-none text-muted-foreground">Quick Actions</CardTitle>
+                            </CardHeader>
                             <CardContent className="p-3 grid gap-2">
                                 <Button asChild variant="outline" className="w-full justify-start h-9 rounded-sm border-border hover:bg-muted text-[10px] font-black uppercase tracking-widest">
                                     <Link to="/add-component"><Plus size={14} className="mr-2" /> Add Hardware</Link>
@@ -294,180 +325,215 @@ export default function Dashboard() {
 
     // Student Dashboard View (Action-Driven & Minimal)
     return (
-        <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-8 sm:pb-12">
+        <div className="flex flex-col gap-10 max-w-[1400px] mx-auto p-4 md:p-8 lg:px-0 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-700">
             
-            {/* 1. Hero Action Section */}
-            <div className="relative overflow-hidden bg-foreground text-background rounded-sm p-5 sm:p-8 md:p-12 flex flex-col items-center text-center gap-5 sm:gap-8 shadow-2xl border border-border">
-                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                    <div className="absolute top-0 right-0 w-60 sm:w-96 h-60 sm:h-96 bg-white rounded-full -mr-32 sm:-mr-48 -mt-32 sm:-mt-48 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-60 sm:w-96 h-60 sm:h-96 bg-white rounded-full -ml-32 sm:-ml-48 -mb-32 sm:-mb-48 blur-3xl"></div>
-                </div>
-
-                <div className="relative space-y-1.5 sm:space-y-2">
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl font-black uppercase tracking-tighter leading-none italic">
-                        Hardware Inventory
-                    </h2>
-                    <p className="text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] opacity-60">
-                        Microcontrollers, Sensors, and Lab Equipment
-                    </p>
-                </div>
-
-                <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
-                    <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-focus-within:text-foreground transition-colors" />
-                    <Input 
-                        placeholder="Search components..." 
-                        className="h-11 sm:h-14 pl-11 sm:pl-14 pr-3 sm:pr-28 bg-background border-none text-foreground placeholder:text-muted-foreground/50 text-sm rounded-sm focus-visible:ring-4 focus-visible:ring-white/10 shadow-xl"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                        <Button type="submit" size="sm" className="h-8 sm:h-10 px-3 sm:px-4 bg-foreground text-background hover:bg-foreground/90 font-bold uppercase text-[10px] tracking-widest rounded-sm hidden sm:flex">
-                            Explore
+            {/* 1. Overview / At-a-Glance */}
+            <div className="flex flex-col gap-6">
+                <div className="flex items-end justify-between">
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tighter uppercase italic">Hardware Hub</h1>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Borrow what you need. Build what matters.</p>
+                    </div>
+                    <div className="hidden md:flex gap-2">
+                        <Button asChild variant="outline" size="sm" className="rounded-sm border-border text-[9px] font-black uppercase tracking-widest h-8">
+                            <Link to="/settings"><User size={12} className="mr-2" /> Profile</Link>
+                        </Button>
+                        <Button asChild variant="outline" size="sm" className="rounded-sm border-border text-[9px] font-black uppercase tracking-widest h-8">
+                            <Link to="/history"><History size={12} className="mr-2" /> Full History</Link>
                         </Button>
                     </div>
-                </form>
-            </div>
+                </div>
 
-            {/* 2. Simplified Stats Row */}
-            <div className="grid gap-3 sm:gap-4 grid-cols-2">
-                <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
-                    <CardContent className="p-4 sm:p-6 flex items-center justify-between gap-3">
-                        <div className="space-y-0.5 sm:space-y-1 min-w-0">
-                            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.2em] text-muted-foreground truncate">Pending</p>
-                            <p className="text-2xl sm:text-4xl font-black text-foreground tabular-nums">{stats.pending}</p>
-                        </div>
-                        <div className="p-2.5 sm:p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors shrink-0">
-                            <Clock className="h-5 w-5 sm:h-8 sm:w-8" />
-                        </div>
-                    </CardContent>
-                </Card>
-                <Card className="border border-border bg-card shadow-sm rounded-sm overflow-hidden group hover:border-foreground/30 transition-all duration-300">
-                    <CardContent className="p-4 sm:p-6 flex items-center justify-between gap-3">
-                        <div className="space-y-0.5 sm:space-y-1 min-w-0">
-                            <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider sm:tracking-[0.2em] text-muted-foreground truncate">Borrowed</p>
-                            <p className="text-2xl sm:text-4xl font-black text-foreground tabular-nums">{stats.active}</p>
-                        </div>
-                        <div className="p-2.5 sm:p-4 rounded-sm bg-muted text-muted-foreground group-hover:bg-foreground group-hover:text-background transition-colors shrink-0">
-                            <Package className="h-5 w-5 sm:h-8 sm:w-8" />
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <div className="grid gap-6 sm:gap-8 lg:grid-cols-12">
-                
-                {/* 3. Your Active Hardware (Main Focus) */}
-                <div className="lg:col-span-8 space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                        <h3 className="text-[11px] sm:text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-                            <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Active Hardware
-                        </h3>
-                        <Button asChild variant="link" size="sm" className="h-auto p-0 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground">
-                            <Link to="/my-requests">History <ArrowRight className="ml-1 h-3 w-3" /></Link>
-                        </Button>
-                    </div>
-
-                    <Card className="border border-border bg-card shadow-none rounded-sm overflow-hidden">
-                        <CardContent className="p-0">
-                            {activeHardware.length === 0 ? (
-                                <div className="p-10 sm:p-16 text-center bg-muted/10">
-                                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-sm bg-muted border border-border flex items-center justify-center mx-auto mb-4 sm:mb-6 text-muted-foreground/30 italic">
-                                        <Package size={24} className="sm:hidden" />
-                                        <Package size={32} className="hidden sm:block" />
-                                    </div>
-                                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-widest text-foreground">No active loans</h4>
-                                    <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-tight text-muted-foreground mt-2 max-w-[240px] mx-auto opacity-60">
-                                        Browse the lab to reserve equipment.
-                                    </p>
-                                    <Button asChild variant="outline" size="sm" className="mt-5 sm:mt-6 rounded-sm border-foreground hover:bg-foreground hover:text-background text-[10px] font-bold uppercase tracking-widest px-6 sm:px-8">
-                                        <Link to="/components">Request Now</Link>
-                                    </Button>
+                <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+                    {[
+                        { label: 'Borrowed', value: stats.active, icon: <Package size={16} />, color: 'text-foreground' },
+                        { label: 'Pending', value: stats.pending, icon: <Clock size={16} />, color: 'text-amber-500' },
+                        { label: 'Overdue', value: stats.overdue, icon: <AlertCircle size={16} />, color: 'text-destructive' },
+                        { label: 'Activity', value: stats.totalHistory, icon: <TrendingUp size={16} />, color: 'text-foreground/40' }
+                    ].map((s) => (
+                        <Card key={s.label} className="border border-border bg-card/50 backdrop-blur-sm rounded-xl overflow-hidden group hover:border-foreground/20 transition-all duration-300">
+                            <CardContent className="p-5">
+                                <div className="flex items-center justify-between mb-3">
+                                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">{s.label}</p>
+                                    <div className={`${s.color} opacity-30 group-hover:opacity-100 transition-opacity`}>{s.icon}</div>
                                 </div>
-                            ) : (
-                                <div className="divide-y divide-border/60">
-                                    {activeHardware.map((hw) => (
-                                        <div key={hw.id} className="p-3 sm:p-5 flex items-center justify-between hover:bg-muted/30 transition-colors group">
-                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                                                <div className="h-8 w-8 sm:h-10 sm:w-10 bg-muted/40 rounded-sm flex items-center justify-center text-foreground font-black border border-border group-hover:bg-foreground group-hover:text-background transition-colors uppercase text-sm sm:text-lg italic shrink-0">
+                                <p className={`text-3xl font-black tabular-nums tracking-tighter ${s.value > 0 && s.label === 'Overdue' ? 'text-destructive animate-pulse' : 'text-foreground'}`}>
+                                    {s.value}
+                                </p>
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2. Quick Actions / Shortcuts */}
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-3">
+                <Button asChild className="h-16 rounded-xl bg-foreground text-background hover:scale-[1.02] active:scale-95 transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                    <Link to="/components"><Zap size={18} fill="currentColor" /> Borrow Hardware Now</Link>
+                </Button>
+                <Button asChild variant="outline" className="h-16 rounded-xl border-2 border-border hover:border-foreground hover:bg-transparent transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                    <Link to="/my-requests"><CheckCircle2 size={18} /> Return Items</Link>
+                </Button>
+                <Button variant="outline" onClick={() => toast({ title: "Coming Soon", description: "Batch renewal will be implemented in the next interaction." })} className="h-16 rounded-xl border-dashed border-2 border-border hover:border-foreground hover:bg-transparent transition-all font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3">
+                    <History size={18} /> Renew All active
+                </Button>
+            </div>
+
+            <div className="grid gap-10 lg:grid-cols-12">
+                
+                {/* Left Column: Inventory & Requests */}
+                <div className="lg:col-span-8 space-y-10">
+                    
+                    {/* Hardware Catalog / Browse (Snapshot) */}
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
+                                <SearchCode size={14} /> Hardware Catalog
+                            </h3>
+                            <Link to="/components" className="text-[9px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground">Explore Lab →</Link>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {featuredHardware.slice(0, 4).map(item => (
+                                <Card key={item.id} className="border border-border/60 bg-card hover:border-foreground/20 transition-all rounded-xl overflow-hidden flex h-28 group">
+                                    <div className="w-28 bg-muted/30 flex items-center justify-center border-r border-border/40 overflow-hidden">
+                                        {item.image_url ? (
+                                            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all" />
+                                        ) : (
+                                            <Package size={24} className="text-muted-foreground/20" />
+                                        )}
+                                    </div>
+                                    <CardContent className="flex-1 p-4 flex flex-col justify-between min-w-0">
+                                        <div className="min-w-0">
+                                            <h4 className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{item.name}</h4>
+                                            <p className="text-[8px] font-black uppercase text-muted-foreground opacity-60 truncate">
+                                                {item.category} • {item.specs ? Object.values(item.specs).join(' • ').slice(0, 30) : 'Standard Specs'}...
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center justify-between mt-2">
+                                            <span className="text-[9px] font-black uppercase opacity-40">Qty: {item.quantity}</span>
+                                            <Button asChild size="sm" variant="ghost" className="h-6 px-2 text-[8px] font-black uppercase tracking-widest rounded-sm border border-border group-hover:bg-foreground group-hover:text-background">
+                                                <Link to={`/components/${item.id}`}>Request</Link>
+                                            </Button>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </section>
+
+                    {/* Current Borrowings / My Items */}
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between px-1">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
+                                <Zap size={14} className="text-blue-500" /> Current Borrowings
+                            </h3>
+                            <span className="text-[9px] font-black uppercase text-muted-foreground opacity-40">{activeHardware.length} Items Total</span>
+                        </div>
+                        {activeHardware.length === 0 ? (
+                            <Card className="border border-dashed border-border bg-transparent rounded-2xl h-32 flex items-center justify-center">
+                                <div className="text-center italic opacity-30">
+                                    <p className="text-[10px] font-black uppercase tracking-widest">No active loans found</p>
+                                </div>
+                            </Card>
+                        ) : (
+                            <div className="grid gap-3">
+                                {activeHardware.map(hw => (
+                                    <Card key={hw.id} className={`border rounded-xl overflow-hidden ${hw.status === 'overdue' ? 'border-destructive/40 bg-destructive/5' : 'border-border bg-card'}`}>
+                                        <CardContent className="p-4 flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-4 min-w-0">
+                                                <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-black text-sm italic shrink-0 border ${hw.status === 'overdue' ? 'bg-destructive text-destructive-foreground border-destructive' : 'bg-muted border-border'}`}>
                                                     {hw.hardware?.name?.[0]}
                                                 </div>
                                                 <div className="flex flex-col gap-0.5 min-w-0">
-                                                    <span className="text-xs sm:text-sm font-black uppercase tracking-tight text-foreground truncate">{hw.hardware?.name}</span>
-                                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-bold uppercase text-muted-foreground">
-                                                        <span className="shrink-0">Due: {formatDate(hw.expected_return_date)}</span>
-                                                        <span className="hidden sm:inline">•</span>
-                                                        <span className={`hidden sm:inline ${hw.status === 'overdue' ? 'text-destructive' : 'text-foreground'}`}>
-                                                            {hw.status === 'overdue' ? 'Overdue' : 'In Possession'}
-                                                        </span>
+                                                    <span className="text-sm font-black uppercase truncate">{hw.hardware?.name}</span>
+                                                    <div className="flex items-center gap-2 text-[9px] font-black uppercase opacity-60">
+                                                        <span>Due {formatDate(hw.expected_return_date)}</span>
+                                                        <span className="opacity-30">•</span>
+                                                        <span className={hw.status === 'overdue' ? 'text-destructive' : 'text-foreground'}>{hw.status}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <Button asChild size="sm" variant="ghost" className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-sm opacity-50 sm:opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                                                <Link to={`/components/${hw.hardware_id}`}><ArrowUpRight size={14} /></Link>
-                                            </Button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                            <div className="flex gap-2">
+                                                <Button size="sm" variant="outline" className="h-8 rounded-sm text-[8px] font-black uppercase border-border">Extend</Button>
+                                                <Button size="sm" className="h-8 rounded-sm text-[8px] font-black uppercase bg-foreground text-background">Return</Button>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </section>
                 </div>
 
-                {/* 4. Actions & Dynamic Alerts */}
-                <div className="lg:col-span-4 space-y-6 sm:space-y-8">
+                {/* Right Column: Pending & Activity */}
+                <div className="lg:col-span-4 space-y-10">
                     
-                    {/* Dynamic Alerts */}
+                    {/* Pending Requests */}
+                    <section className="space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 px-1">
+                            <Clock size={14} className="text-amber-500" /> Pending Requests
+                        </h3>
+                        <div className="grid gap-2">
+                            {recentRequests.length === 0 ? (
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-30 italic p-4 text-center border border-dashed border-border rounded-xl">Queue Clear</p>
+                            ) : (
+                                recentRequests.map(req => (
+                                    <div key={req.id} className="p-3 bg-muted/20 border border-border/40 rounded-xl flex items-center justify-between group">
+                                        <div className="flex flex-col gap-0.5 min-w-0">
+                                            <span className="text-[10px] font-black uppercase truncate">{req.hardware?.name}</span>
+                                            <span className="text-[8px] font-black uppercase opacity-40">Req: {formatDate(req.created_at)}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <StatusBadge status={req.status} className="h-4 px-1.5 text-[7px] font-black uppercase" />
+                                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-destructive opacity-0 group-hover:opacity-100"><Plus className="rotate-45 h-3 w-3" /></Button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </section>
+
+                    {/* Notifications / Alerts */}
                     {alerts.length > 0 && (
-                        <div className="space-y-2 sm:space-y-3">
-                            <h3 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Recent Updates</h3>
-                            <div className="space-y-2">
-                                {alerts.map((alert) => (
-                                    <div 
-                                        key={alert.id} 
-                                        className={`p-2.5 sm:p-3 rounded-sm border flex items-start gap-2.5 sm:gap-3 animate-in slide-in-from-right-4 duration-500
-                                            ${alert.type === 'destructive' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 
-                                              alert.type === 'warning' ? 'bg-yellow-500/10 border-yellow-200 text-yellow-700' : 
-                                              'bg-foreground/5 border-border text-foreground'}`}
-                                    >
-                                        <div className="mt-0.5 shrink-0">{alert.icon}</div>
-                                        <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-tight leading-tight flex-1">
-                                            {alert.message}
-                                        </p>
+                        <section className="space-y-4">
+                            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 px-1">
+                                <Bell size={14} /> Notifications
+                            </h3>
+                            <div className="grid gap-2">
+                                {alerts.map(alert => (
+                                    <div key={alert.id} className={`p-3 rounded-xl border flex items-start gap-3 ${alert.type === 'destructive' ? 'bg-destructive/10 border-destructive/20 text-destructive' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'}`}>
+                                        <div className="mt-0.5">{alert.icon}</div>
+                                        <p className="text-[9px] font-black uppercase leading-tight tracking-tight">{alert.message}</p>
                                     </div>
                                 ))}
                             </div>
-                        </div>
+                        </section>
                     )}
 
-                    {/* Quick Navigation */}
-                    <div className="space-y-3 sm:space-y-4">
-                        <h3 className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Quick Actions</h3>
-                        <div className="grid gap-2">
-                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                                <Link to="/components" className="flex items-center w-full">
-                                    <SearchCode className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
-                                    <span className="truncate">Request Hardware</span>
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
-                                </Link>
-                            </Button>
-
-                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                                <Link to="/my-requests" className="flex items-center w-full">
-                                    <History className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
-                                    <span className="truncate">View My Items</span>
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
-                                </Link>
-                            </Button>
-
-                            <Button asChild variant="outline" className="w-full justify-start h-10 sm:h-12 rounded-sm border-border bg-card hover:bg-foreground hover:text-background transition-all group px-3 sm:px-4 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                                <Link to="/my-prebooks" className="flex items-center w-full">
-                                    <ClipboardList className="mr-2.5 sm:mr-3 h-3.5 w-3.5 sm:h-4 sm:w-4 opacity-50 group-hover:opacity-100 shrink-0" />
-                                    <span className="truncate">My Pre-Books</span>
-                                    <ArrowRight className="ml-auto h-3 w-3 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all shrink-0" />
-                                </Link>
-                            </Button>
+                    {/* Activity History Snapshot */}
+                    <section className="space-y-4">
+                        <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2 px-1">
+                            <History size={14} /> History
+                        </h3>
+                        <div className="space-y-3 relative before:absolute before:left-[7px] before:top-2 before:bottom-2 before:w-[1px] before:bg-border/60">
+                            {activityHistory.length === 0 ? (
+                                <p className="text-[10px] font-black uppercase opacity-20 pl-6">No recent interactions</p>
+                            ) : (
+                                activityHistory.map(act => (
+                                    <div key={act.id} className="relative pl-6 flex flex-col gap-1">
+                                        <div className="absolute left-0 top-1.5 w-3.5 h-3.5 rounded-full bg-background border-2 border-border z-10" />
+                                        <span className="text-[10px] font-black uppercase tracking-tight text-foreground leading-tight">{act.message}</span>
+                                        <span className="text-[8px] font-black uppercase opacity-40">{formatDate(act.date)}</span>
+                                    </div>
+                                ))
+                            )}
                         </div>
-                    </div>
+                        {activityHistory.length > 0 && (
+                            <Button variant="outline" className="w-full h-8 rounded-sm text-[8px] font-black uppercase tracking-widest border-border hover:bg-muted">
+                                <ArrowRight size={12} className="mr-2" /> Export Interaction Log
+                            </Button>
+                        )}
+                    </section>
                 </div>
             </div>
         </div>
