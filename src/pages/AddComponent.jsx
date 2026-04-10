@@ -9,23 +9,23 @@ export default function AddComponent() {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     return (
-        <div className="flex flex-col gap-6 w-full animate-in fade-in slide-in-from-bottom-6 duration-1000">
-            <header className="flex items-center gap-4 max-w-[1400px] mx-auto w-full px-4 md:p-6 lg:px-0 pt-8 md:pt-12">
+        <div className="flex flex-col gap-6 max-w-[1400px] mx-auto p-4 md:p-6 lg:px-0 w-full animate-in fade-in slide-in-from-bottom-6 duration-1000">
+            <header className="flex items-center gap-4 pb-4 border-b border-border w-full">
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-12 w-12 rounded-2xl bg-card border border-border/40 hover:bg-muted/50 hover:border-border transition-all shrink-0 shadow-sm group"
+                    className="h-10 w-10 rounded-xl bg-card border border-border/40 hover:bg-muted/50 hover:border-border transition-all shrink-0 shadow-sm group"
                     onClick={() => navigate('/components')}
                 >
                     <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
                 </Button>
-                <div className="flex flex-col gap-1.5">
-                    <h1 className="text-xl md:text-2xl font-black tracking-tighter text-foreground uppercase tracking-widest leading-none font-inter-tight">Add to Lab</h1>
-                    <p className="text-[10px] md:text-xs font-bold text-muted-foreground uppercase tracking-[0.15em] opacity-40">Register new components or boards for the community.</p>
+                <div className="flex flex-col gap-0.5">
+                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">Add to Lab</h1>
+                    <p className="text-[10px] md:text-xs font-black text-muted-foreground uppercase opacity-70">Register new components or boards for the community.</p>
                 </div>
             </header>
 
-            <div className="pb-24 max-w-[1400px] mx-auto w-full px-4 md:px-6 lg:px-0 flex flex-col pt-12">
+            <div className="pb-24 w-full flex flex-col pt-6">
                 <div className="p-4 sm:p-5 border border-border/50 bg-card/60 backdrop-blur-xl rounded-[var(--card-radius)] max-w-[280px] w-full group hover:bg-card/80 hover:border-foreground/20 hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col items-center text-center">
                     <div className="h-16 w-16 rounded-2xl bg-foreground text-background mb-6 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
                         <Plus size={24} />

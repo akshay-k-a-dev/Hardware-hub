@@ -69,9 +69,11 @@ export default function ManageRequests() {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('pending');
     const [ratingDialog, setRatingDialog] = useState({ open: false, requestId: null, borrowerId: null, borrowerName: '' });
+    const [returnDialog, setReturnDialog] = useState({ open: false, requestId: null, condition: 'Good', notes: '' });
     const [ratingValue, setRatingValue] = useState(5);
     const [ratingComment, setRatingComment] = useState('');
     const [borrowerRatings, setBorrowerRatings] = useState({});
+    const [borrowerTrust, setBorrowerTrust] = useState({});
     const [actionLoading, setActionLoading] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -117,6 +119,13 @@ export default function ManageRequests() {
                     ratingsData.forEach(r => ratingMap[r.user_id] = r);
                     setBorrowerRatings(ratingMap);
                 }
+                
+                const { data: trustData } = await supabase.from('trust_scores').select('user_id, score, band, on_time_returns, late_returns, damages_reported').in('user_id', uniqueBorrowerIds);
+                if (trustData) {
+                    const trustMap = {};
+                    trustData.forEach(t => trustMap[t.user_id] = t);
+                    setBorrowerTrust(trustMap);
+                }
             }
         } catch (error) {
             console.error('Error loading request inbox:', error);
@@ -150,13 +159,36 @@ export default function ManageRequests() {
         }
     };
 
+    const submitReturn = async () => {
+        setActionLoading(returnDialog.requestId);
+        try {
+            const { error } = await supabase.rpc('return_request', { 
+                p_request_id: returnDialog.requestId,
+                p_notes: returnDialog.notes,
+                p_condition: returnDialog.condition
+            });
+            if (error) throw error;
+            
+            toast({ title: 'Hardware Returned', description: 'The item has been returned and logged.' });
+            setReturnDialog({ open: false, requestId: null, condition: 'Good', notes: '' });
+            loadRequests();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Return Failed', description: error.message });
+        }
+        setActionLoading(null);
+    };
+
     const handleAction = async (action, requestId) => {
+        if (action === 'return') {
+            setReturnDialog({ open: true, requestId, condition: 'Good', notes: '' });
+            return;
+        }
+
         setActionLoading(requestId);
         const rpcMap = {
             approve: 'approve_request',
             reject: 'reject_request',
             issue: 'issue_request',
-            return: 'return_request',
         };
 
         const { error } = await supabase.rpc(rpcMap[action], { p_request_id: requestId });
@@ -306,7 +338,21 @@ export default function ManageRequests() {
                                                             <div className="flex items-center gap-2">
                                                                 <span className="font-black text-sm md:text-base text-inherit truncate tracking-tight">{req.project_title}</span>
                                                             </div>
-                                                            <span className="text-xs font-bold text-inherit opacity-80">{req.borrower?.name}</span>
+                                                            <div className="flex items-center gap-2 mt-0.5">
+                                                                <span className="text-xs font-bold text-inherit opacity-80">{req.borrower?.name}</span>
+                                                                {borrowerTrust[req.user_id] && (
+                                                                    <div className="flex items-center gap-1.5 opacity-90">
+                                                                        <Badge variant="outline" className={`text-[8px] h-[18px] px-1.5 font-bold border-dashed ${borrowerTrust[req.user_id].score >= 70 ? 'text-emerald-500 border-emerald-500/40' : borrowerTrust[req.user_id].score >= 40 ? 'text-amber-500 border-amber-500/40' : 'text-destructive border-destructive/40'}`}>
+                                                                            Score: {borrowerTrust[req.user_id].score}
+                                                                        </Badge>
+                                                                        <span className="text-[9px] font-bold text-muted-foreground flex gap-1">
+                                                                            <span className="text-emerald-500" title="On-Time Returns">{borrowerTrust[req.user_id].on_time_returns}✓</span>
+                                                                            <span className="text-amber-500" title="Late Returns">{borrowerTrust[req.user_id].late_returns}⚠</span>
+                                                                            <span className="text-destructive" title="Damages Reported">{borrowerTrust[req.user_id].damages_reported}✗</span>
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </TableCell>
@@ -328,7 +374,7 @@ export default function ManageRequests() {
                                                 </TableCell>
                                                 <TableCell className="px-6 py-4 align-middle text-center">
                                                     <div className="flex justify-center">
-                                                        <StatusBadge status={req.status} className="h-6 px-3" />
+                                                        <StatusBadge status={(req.status === 'issued' && req.expected_return_date && new Date(req.expected_return_date) < new Date()) ? 'overdue' : req.status} className="h-6 px-3" />
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6 py-4 align-middle">
@@ -416,10 +462,17 @@ export default function ManageRequests() {
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-black uppercase tracking-tight leading-none">{req.project_title}</span>
-                                                    <span className="text-[10px] font-bold text-muted-foreground uppercase mt-1 opacity-70">{req.borrower?.name}</span>
+                                                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-80">{req.borrower?.name}</span>
+                                                        {borrowerTrust[req.user_id] && (
+                                                            <Badge variant="outline" className={`text-[8px] h-3 px-1 border-dashed ${borrowerTrust[req.user_id].score >= 70 ? 'text-emerald-500 border-emerald-500/40' : 'text-amber-500 border-amber-500/40'}`}>
+                                                                {borrowerTrust[req.user_id].score} TS
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <StatusBadge status={req.status} className="h-5 px-3 text-[9px] font-black" />
+                                            <StatusBadge status={(req.status === 'issued' && req.expected_return_date && new Date(req.expected_return_date) < new Date()) ? 'overdue' : req.status} className="h-5 px-3 text-[9px] font-black" />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-3 mb-5">
@@ -497,9 +550,9 @@ export default function ManageRequests() {
                                         key={star}
                                         type="button"
                                         onClick={() => setRatingValue(star)}
-                                        className={`p-2 rounded-md transition-all ${ratingValue >= star ? 'bg-foreground text-background' : 'bg-muted/50 text-muted-foreground hover:bg-muted'}`}
+                                        className={`p-1 transition-all hover:scale-110 ${ratingValue >= star ? 'text-foreground' : 'text-muted-foreground/30 hover:text-muted-foreground'}`}
                                     >
-                                        <Star size={20} className={ratingValue >= star ? 'fill-background' : ''} />
+                                        <Star size={32} strokeWidth={1.5} className={ratingValue >= star ? 'fill-foreground' : 'fill-transparent'} />
                                     </button>
                                 ))}
                             </div>
@@ -519,6 +572,52 @@ export default function ManageRequests() {
                     <DialogFooter className="gap-2 sm:space-x-0">
                         <Button variant="outline" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-9 flex-1 font-bold rounded-sm border-border hover:bg-muted text-xs uppercase tracking-widest">Cancel</Button>
                         <Button onClick={submitRating} className="h-9 flex-1 font-black text-xs bg-foreground text-background hover:bg-foreground/90 transition-all rounded-sm uppercase tracking-widest">Submit Rating</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Post-Return Condition Dialog */}
+            <Dialog open={returnDialog.open} onOpenChange={(v) => !v && setReturnDialog({ ...returnDialog, open: false })}>
+                <DialogContent className="sm:max-w-md rounded-lg">
+                    <DialogHeader>
+                        <div className="h-12 w-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
+                            <CornerUpLeft size={24} className="text-emerald-600" />
+                        </div>
+                        <DialogTitle className="text-xl font-bold tracking-tight">Confirm Return</DialogTitle>
+                        <DialogDescription className="text-sm">
+                            Marking this hardware as returned. Please note the condition of the item. This affects the student's trust score.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="py-4 space-y-6">
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Return Condition</Label>
+                            <select 
+                                value={returnDialog.condition}
+                                onChange={(e) => setReturnDialog({ ...returnDialog, condition: e.target.value })}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-foreground"
+                            >
+                                <option value="Good">Good (No new issues)</option>
+                                <option value="Poor">Poor (Minor wear or missing small parts)</option>
+                                <option value="Broken">Broken / Damaged</option>
+                            </select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Provider Notes</Label>
+                            <Textarea
+                                placeholder="Any additional notes about the return..."
+                                value={returnDialog.notes}
+                                onChange={(e) => setReturnDialog({ ...returnDialog, notes: e.target.value })}
+                                className="min-h-[80px] rounded-md bg-background border-border text-sm"
+                            />
+                        </div>
+                    </div>
+
+                    <DialogFooter className="gap-2 sm:space-x-0">
+                        <Button variant="outline" onClick={() => setReturnDialog({ ...returnDialog, open: false })} disabled={actionLoading} className="h-9 flex-1 font-bold rounded-sm border-border hover:bg-muted text-xs uppercase tracking-widest">Cancel</Button>
+                        <Button onClick={submitReturn} disabled={actionLoading} className="h-9 flex-1 font-black text-xs bg-emerald-600 text-white hover:bg-emerald-700 transition-all rounded-sm uppercase tracking-widest">
+                            {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Return"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

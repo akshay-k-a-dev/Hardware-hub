@@ -161,11 +161,16 @@ export default function Profile() {
                 {/* Left Column: Identity */}
                 <Card className="md:col-span-2 shadow-sm border-border/50 bg-card/50 backdrop-blur-sm">
                     <CardHeader className="flex flex-row items-center justify-between pb-4">
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground w-full">
                             {data.is_verified_email ? (
-                                <Badge variant="outline" className="text-[12px] font-black uppercase tracking-widest bg-foreground text-background border-foreground h-7 px-4"><CheckCircle2 className="w-3 h-3 mr-1" /> Profile Verified</Badge>
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-foreground text-background border-foreground h-7 px-3"><CheckCircle2 className="w-3 h-3 mr-1.5" /> Email Verified</Badge>
                             ) : (
-                                <Badge variant="outline" className="text-[12px] font-black uppercase tracking-widest border-dashed text-muted-foreground border-border h-7 px-4">Pending Verification</Badge>
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-dashed text-muted-foreground border-border h-7 px-3">Email Pending</Badge>
+                            )}
+                            {data.is_verified_phone ? (
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-foreground text-background border-foreground h-7 px-3"><CheckCircle2 className="w-3 h-3 mr-1.5" /> Phone Verified</Badge>
+                            ) : (
+                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-black uppercase tracking-widest border-dashed text-primary hover:text-primary border-primary/50 bg-primary/5 px-3" onClick={() => toast({title: "OTP Sent", description: "A mock OTP has been sent to your phone."})}>Verify Phone (OTP)</Button>
                             )}
                         </div>
                         {!isEditing && (
