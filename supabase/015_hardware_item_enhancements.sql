@@ -28,7 +28,9 @@ UPDATE profiles SET full_name = name WHERE full_name IS NULL;
 
 -- 4. Update the trigger to handle both full_name and name
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, name, full_name, email, role, status, email_verified)
   VALUES (
@@ -54,7 +56,9 @@ CREATE OR REPLACE FUNCTION create_user_profile(
   user_email TEXT,
   user_role TEXT DEFAULT 'student'
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, name, full_name, email, role, status, email_verified)
   VALUES (

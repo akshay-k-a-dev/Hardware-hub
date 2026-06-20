@@ -7,7 +7,9 @@ ALTER TABLE profiles ALTER COLUMN status SET DEFAULT 'active';
 ALTER TABLE profiles ALTER COLUMN email_verified SET DEFAULT false;
 
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, name, email, role, status, email_verified)
   VALUES (

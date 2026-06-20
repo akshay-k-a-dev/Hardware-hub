@@ -20,5 +20,4 @@ export const getDbLogs = () => {
 
 export const clearDbLogs = () => {
   localStorage.removeItem('db_logs');
-  console.log('[DB] Logs cleared');
 };

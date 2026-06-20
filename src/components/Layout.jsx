@@ -87,16 +87,16 @@ function LayoutInner() {
 
     const studentLinks = [
         { to: '/dashboard', icon: <LayoutDashboard size={15} />, label: 'Dashboard' },
-        { to: '/', icon: <Wrench size={15} />, label: 'Hardware Lab' },
+        { to: '/', icon: <Wrench size={15} />, label: 'Items' },
         { to: '/my-requests', icon: <ClipboardList size={15} />, label: 'My Requests' },
-        { to: '/my-prebooks', icon: <BookmarkCheck size={15} />, label: 'My Pre-Books' },
+        { to: '/my-prebooks', icon: <BookmarkCheck size={15} />, label: 'My Waitlist' },
     ];
 
     const providerLinks = [
         { to: '/dashboard', icon: <LayoutDashboard size={15} />, label: 'Dashboard' },
-        { to: '/', icon: <Wrench size={15} />, label: 'Hardware Lab' },
+        { to: '/', icon: <Wrench size={15} />, label: 'Items' },
         { to: '/manage-requests', icon: <FileCheck size={15} />, label: 'Manage Requests' },
-        { to: '/add-component', icon: <PlusSquare size={15} />, label: 'Add Hardware' },
+        { to: '/add-component', icon: <PlusSquare size={15} />, label: 'Add Item' },
     ];
 
     const links = (isProvider || isAdmin) ? providerLinks : studentLinks;
@@ -247,7 +247,7 @@ function LayoutInner() {
                 <div className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-background/95 backdrop-blur-md border-t border-border flex items-center justify-between px-6 z-[100] pb-safe">
                     {[
                         { label: 'Dash', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-                        { label: 'Lab', path: '/', icon: <Wrench size={20} /> },
+                        { label: 'Items', path: '/', icon: <Wrench size={20} /> },
                         { label: 'Activity', path: '/my-requests', icon: <History size={20} /> },
                         { label: 'Profile', path: '/profile', icon: <User size={20} /> }
                     ].map((item) => {

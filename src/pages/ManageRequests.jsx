@@ -119,11 +119,24 @@ export default function ManageRequests() {
                     ratingsData.forEach(r => ratingMap[r.user_id] = r);
                     setBorrowerRatings(ratingMap);
                 }
-                
-                const { data: trustData } = await supabase.from('trust_scores').select('user_id, score, band, on_time_returns, late_returns, damages_reported').in('user_id', uniqueBorrowerIds);
+                const { data: trustData } = await supabase.from('trust_scores').select('user_id, score, band, total_borrows, on_time_returns, late_returns, damages_reported').in('user_id', uniqueBorrowerIds);
+
+                const { data: domains } = await supabase.from('institutional_domains').select('domain_pattern');
+                const domainRegexes = (domains || []).map(d => new RegExp('^' + d.domain_pattern.replace(/%/g, '.*').replace(/\./g, '\\.') + '$', 'i'));
+
+                const verifiedMap = {};
+                uniqueBorrowerIds.forEach(id => {
+                    const req = (data || []).find(r => r.user_id === id);
+                    if (req && req.borrower && req.borrower.email) {
+                        verifiedMap[id] = domainRegexes.some(rx => rx.test(req.borrower.email));
+                    }
+                });
+
                 if (trustData) {
                     const trustMap = {};
-                    trustData.forEach(t => trustMap[t.user_id] = t);
+                    trustData.forEach(t => {
+                        trustMap[t.user_id] = { ...t, is_verified_student: verifiedMap[t.user_id] };
+                    });
                     setBorrowerTrust(trustMap);
                 }
             }
@@ -131,8 +144,8 @@ export default function ManageRequests() {
             console.error('Error loading request inbox:', error);
             toast({
                 variant: 'destructive',
-                title: 'Sync Error',
-                description: 'Could not update your request inbox.',
+                title: 'Loading Error',
+                description: 'Could not update your requests.',
             });
         } finally {
             setLoading(false);
@@ -151,11 +164,11 @@ export default function ManageRequests() {
 
             if (error) throw error;
 
-            toast({ title: 'Rating Submitted', description: `Thanks for rating ${ratingDialog.borrowerName}!` });
+            toast({ title: 'Feedback Sent', description: `Thanks for your feedback on ${ratingDialog.borrowerName}.` });
             setRatingDialog({ open: false, requestId: null, borrowerId: null, borrowerName: '' });
             loadRequests(); // Refresh to update avg rating if displayed
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Rating Failed', description: error.message });
+            toast({ variant: 'destructive', title: 'Feedback Failed', description: error.message });
         }
     };
 
@@ -169,7 +182,7 @@ export default function ManageRequests() {
             });
             if (error) throw error;
             
-            toast({ title: 'Hardware Returned', description: 'The item has been returned and logged.' });
+            toast({ title: 'Item Returned', description: 'The item has been marked as returned.' });
             setReturnDialog({ open: false, requestId: null, condition: 'Good', notes: '' });
             loadRequests();
         } catch (error) {
@@ -249,7 +262,7 @@ export default function ManageRequests() {
                 <div>
                     <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Manage Requests</h1>
                     <p className="text-[10px] md:text-xs font-black text-muted-foreground mt-0.5 uppercase tracking-tight opacity-70">
-                        Review and approve student hardware requests
+                        Review and approve borrow requests
                     </p>
                 </div>
             </header>
@@ -259,7 +272,7 @@ export default function ManageRequests() {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
-                            placeholder="Find borrower, project, or hardware..."
+                            placeholder="Find borrower, project, or item..."
                             className="h-9 pl-10 bg-card border-border rounded-md text-sm font-medium focus-visible:ring-1 focus-visible:ring-foreground"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -289,7 +302,7 @@ export default function ManageRequests() {
                 <CardHeader className="py-4 px-6 md:py-6 md:px-8 border-b border-border bg-background">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-xl md:text-2xl font-black flex items-center gap-2 text-foreground">
-                            Request Inbox
+                            All Requests
                         </CardTitle>
                         <div className="flex items-center gap-3">
                             <Badge variant="outline" className="font-black uppercase tracking-widest border border-border bg-background text-foreground h-6 text-[8px] md:text-[10px] rounded-none">
@@ -306,7 +319,7 @@ export default function ManageRequests() {
                             </div>
                             <h3 className="text-2xl font-black text-foreground tracking-tight">Queue Clear</h3>
                             <p className="text-foreground max-w-sm mt-3 text-sm font-bold leading-relaxed">
-                                {searchTerm ? "No specific records match your search query." : "There are currently no active requests requiring manual intervention in this category."}
+                                {searchTerm ? "No requests match your search." : "There are no requests in this category right now."}
                             </p>
                         </div>
                     ) : (
@@ -317,7 +330,7 @@ export default function ManageRequests() {
                                     <TableHeader className="bg-background border-b border-border">
                                         <TableRow className="hover:bg-transparent border-none h-12">
                                             <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Student / Project</TableHead>
-                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Hardware Item</TableHead>
+                                            <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Item</TableHead>
                                             <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground">Request Dates</TableHead>
                                             <TableHead className="font-black px-6 text-[10px] uppercase tracking-[0.2em] text-foreground text-center w-32">Status</TableHead>
                                             <TableHead className="font-black text-right pr-6 text-[10px] uppercase tracking-[0.2em] text-foreground w-24">Actions</TableHead>
@@ -345,10 +358,19 @@ export default function ManageRequests() {
                                                                         <Badge variant="outline" className={`text-[8px] h-[18px] px-1.5 font-bold border-dashed ${borrowerTrust[req.user_id].score >= 70 ? 'text-emerald-500 border-emerald-500/40' : borrowerTrust[req.user_id].score >= 40 ? 'text-amber-500 border-amber-500/40' : 'text-destructive border-destructive/40'}`}>
                                                                             Score: {borrowerTrust[req.user_id].score}
                                                                         </Badge>
-                                                                        <span className="text-[9px] font-bold text-muted-foreground flex gap-1">
-                                                                            <span className="text-emerald-500" title="On-Time Returns">{borrowerTrust[req.user_id].on_time_returns}✓</span>
-                                                                            <span className="text-amber-500" title="Late Returns">{borrowerTrust[req.user_id].late_returns}⚠</span>
-                                                                            <span className="text-destructive" title="Damages Reported">{borrowerTrust[req.user_id].damages_reported}✗</span>
+                                                                        <span className="text-[9px] font-bold text-muted-foreground flex gap-1 items-center">
+                                                                            {borrowerTrust[req.user_id].total_borrows === 0 ? (
+                                                                                <Badge variant="outline" className="text-[8px] h-[18px] px-1.5 font-bold border-dashed text-muted-foreground border-border">New Borrower</Badge>
+                                                                            ) : (
+                                                                                <Badge variant="outline" className={`text-[8px] h-[18px] px-1.5 font-bold border-dashed ${(borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) >= 0.9 ? 'text-emerald-500 border-emerald-500/40' : (borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) >= 0.7 ? 'text-amber-500 border-amber-500/40' : 'text-destructive border-destructive/40'}`}>
+                                                                                    {Math.round((borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) * 100)}% Reliable
+                                                                                </Badge>
+                                                                            )}
+                                                                            {borrowerTrust[req.user_id].is_verified_student && (
+                                                                                <Badge variant="outline" className="text-[8px] h-[18px] px-1.5 font-bold border-dashed text-emerald-600 border-emerald-500/40 ml-1">
+                                                                            Verified
+                                                                                </Badge>
+                                                                            )}
                                                                         </span>
                                                                     </div>
                                                                 )}
@@ -394,7 +416,7 @@ export default function ManageRequests() {
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end" className="w-56 p-1 bg-card border border-border rounded-sm animate-in zoom-in-95 duration-200">
-                                                            <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quick Actions</DropdownMenuLabel>
+                                                            <DropdownMenuLabel className="px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Actions</DropdownMenuLabel>
                                                             <DropdownMenuSeparator className="bg-border/40" />
 
                                                             {req.status === 'pending' && (
@@ -420,14 +442,14 @@ export default function ManageRequests() {
                                                             {(req.status === 'issued' || req.status === 'overdue') && (
                                                                 <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="h-10 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
                                                                     <CornerUpLeft size={14} />
-                                                                    Confirm Return
+                                                                    Mark as Returned
                                                                 </DropdownMenuItem>
                                                             )}
 
                                                             {req.status === 'returned' && (
                                                                 <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="h-10 rounded-sm focus:bg-foreground focus:text-background font-bold px-3 cursor-pointer gap-2">
                                                                     <ThumbsUp size={14} />
-                                                                    Rate Student
+                                                                    Leave Feedback
                                                                 </DropdownMenuItem>
                                                             )}
 
@@ -436,7 +458,7 @@ export default function ManageRequests() {
                                                                 <div className="h-8 w-8 rounded-lg bg-muted/40 flex items-center justify-center group-hover/item:bg-primary/20 transition-colors">
                                                                     <ChevronRight size={18} />
                                                                 </div>
-                                                                Full Transaction Detail
+                                                                View Details
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
@@ -465,9 +487,23 @@ export default function ManageRequests() {
                                                     <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                                         <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-80">{req.borrower?.name}</span>
                                                         {borrowerTrust[req.user_id] && (
-                                                            <Badge variant="outline" className={`text-[8px] h-3 px-1 border-dashed ${borrowerTrust[req.user_id].score >= 70 ? 'text-emerald-500 border-emerald-500/40' : 'text-amber-500 border-amber-500/40'}`}>
-                                                                {borrowerTrust[req.user_id].score} TS
-                                                            </Badge>
+                                                            <>
+                                                                <Badge variant="outline" className={`text-[8px] h-3 px-1 border-dashed ${borrowerTrust[req.user_id].score >= 70 ? 'text-emerald-500 border-emerald-500/40' : 'text-amber-500 border-amber-500/40'}`}>
+                                                                    {borrowerTrust[req.user_id].score} TS
+                                                                </Badge>
+                                                                {borrowerTrust[req.user_id].total_borrows === 0 ? (
+                                                                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-dashed text-muted-foreground border-border">New Borrower</Badge>
+                                                                ) : (
+                                                                    <Badge variant="outline" className={`text-[8px] h-3 px-1 border-dashed ${(borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) >= 0.9 ? 'text-emerald-500 border-emerald-500/40' : (borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) >= 0.7 ? 'text-amber-500 border-amber-500/40' : 'text-destructive border-destructive/40'}`}>
+                                                                        {Math.round((borrowerTrust[req.user_id].on_time_returns / borrowerTrust[req.user_id].total_borrows) * 100)}% Reliable
+                                                                    </Badge>
+                                                                )}
+                                                                {borrowerTrust[req.user_id].is_verified_student && (
+                                                                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-dashed text-emerald-600 border-emerald-500/40 ml-1">
+                                                                        Verified
+                                                                    </Badge>
+                                                                )}
+                                                            </>
                                                         )}
                                                     </div>
                                                 </div>
@@ -477,7 +513,7 @@ export default function ManageRequests() {
 
                                         <div className="grid grid-cols-2 gap-3 mb-5">
                                             <div className="flex flex-col gap-1 p-3 rounded-2xl bg-muted/20 border border-border/10">
-                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Hardware</span>
+                                                <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">Item</span>
                                                 <span className="text-[11px] font-bold truncate leading-none">{req.hardware?.name}</span>
                                             </div>
                                             <div className="flex flex-col gap-1 p-3 rounded-2xl bg-muted/20 border border-border/10">
@@ -499,7 +535,7 @@ export default function ManageRequests() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl border-border bg-card shadow-2xl animate-in zoom-in-95 duration-200">
-                                                    <DropdownMenuLabel className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Contextual Actions</DropdownMenuLabel>
+                                                    <DropdownMenuLabel className="px-3 py-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground">Actions</DropdownMenuLabel>
                                                     <DropdownMenuSeparator className="bg-border/40" />
 
                                                     {req.status === 'pending' && (
@@ -512,10 +548,10 @@ export default function ManageRequests() {
                                                         <DropdownMenuItem onClick={() => handleAction('issue', req.id)} className="font-bold text-xs rounded-lg py-2">Mark as Issued</DropdownMenuItem>
                                                     )}
                                                     {(req.status === 'issued' || req.status === 'overdue') && (
-                                                        <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="font-bold text-xs rounded-lg py-2">Confirm Return</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleAction('return', req.id)} className="font-bold text-xs rounded-lg py-2">Mark as Returned</DropdownMenuItem>
                                                     )}
                                                     {req.status === 'returned' && (
-                                                        <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="font-bold text-xs rounded-lg py-2">Rate Performance</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => setRatingDialog({ open: true, requestId: req.id, borrowerId: req.user_id, borrowerName: req.borrower.name })} className="font-bold text-xs rounded-lg py-2">Leave Feedback</DropdownMenuItem>
                                                     )}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -535,15 +571,15 @@ export default function ManageRequests() {
                         <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center text-muted-foreground mb-4">
                             <Star size={24} className="fill-muted-foreground" />
                         </div>
-                        <DialogTitle className="text-xl font-bold tracking-tight">Rate Borrower</DialogTitle>
+                        <DialogTitle className="text-xl font-bold tracking-tight">Leave Feedback</DialogTitle>
                         <DialogDescription className="text-sm">
-                            How was your experience with <strong>{ratingDialog.borrowerName}</strong>? This helps other lenders trust this student.
+                            How was your experience with <strong>{ratingDialog.borrowerName}</strong>? This helps others make lending decisions.
                         </DialogDescription>
                     </DialogHeader>
 
                     <div className="py-4 space-y-6">
                         <div className="space-y-2">
-                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rating Quality</Label>
+                            <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Your Rating</Label>
                             <div className="flex gap-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
@@ -571,7 +607,7 @@ export default function ManageRequests() {
 
                     <DialogFooter className="gap-2 sm:space-x-0">
                         <Button variant="outline" onClick={() => setRatingDialog({ ...ratingDialog, open: false })} className="h-9 flex-1 font-bold rounded-sm border-border hover:bg-muted text-xs uppercase tracking-widest">Cancel</Button>
-                        <Button onClick={submitRating} className="h-9 flex-1 font-black text-xs bg-foreground text-background hover:bg-foreground/90 transition-all rounded-sm uppercase tracking-widest">Submit Rating</Button>
+                        <Button onClick={submitRating} className="h-9 flex-1 font-black text-xs bg-foreground text-background hover:bg-foreground/90 transition-all rounded-sm uppercase tracking-widest">Send Feedback</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -583,9 +619,9 @@ export default function ManageRequests() {
                         <div className="h-12 w-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-4">
                             <CornerUpLeft size={24} className="text-emerald-600" />
                         </div>
-                        <DialogTitle className="text-xl font-bold tracking-tight">Confirm Return</DialogTitle>
+                        <DialogTitle className="text-xl font-bold tracking-tight">Mark as Returned</DialogTitle>
                         <DialogDescription className="text-sm">
-                            Marking this hardware as returned. Please note the condition of the item. This affects the student's trust score.
+                            Mark this item as returned and note its condition.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -616,7 +652,7 @@ export default function ManageRequests() {
                     <DialogFooter className="gap-2 sm:space-x-0">
                         <Button variant="outline" onClick={() => setReturnDialog({ ...returnDialog, open: false })} disabled={actionLoading} className="h-9 flex-1 font-bold rounded-sm border-border hover:bg-muted text-xs uppercase tracking-widest">Cancel</Button>
                         <Button onClick={submitReturn} disabled={actionLoading} className="h-9 flex-1 font-black text-xs bg-emerald-600 text-white hover:bg-emerald-700 transition-all rounded-sm uppercase tracking-widest">
-                            {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Return"}
+                            {actionLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Mark as Returned"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

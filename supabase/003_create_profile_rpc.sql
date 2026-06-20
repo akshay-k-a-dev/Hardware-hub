@@ -9,7 +9,9 @@ CREATE OR REPLACE FUNCTION create_user_profile(
   user_email TEXT,
   user_role TEXT DEFAULT 'student'
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, name, email, role, status, email_verified)
   VALUES (

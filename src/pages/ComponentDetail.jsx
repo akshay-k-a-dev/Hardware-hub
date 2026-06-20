@@ -65,11 +65,100 @@ export default function ComponentDetail() {
     const [requestForm, setRequestForm] = useState({ quantity: 1, project_title: '', project_description: '' });
     const [submitting, setSubmitting] = useState(false);
     const [imgError, setImgError] = useState(false);
+    const [borrowCheck, setBorrowCheck] = useState(null);
 
     // Pre-book state
     const [prebookInfo, setPrebookInfo] = useState(null); // { in_queue, prebook_id, position, status, hold_expires_at }
     const [prebookCount, setPrebookCount] = useState(0);
     const [prebooking, setPrebooking] = useState(false);
+
+    const getBorrowErrorMessage = (error) => {
+        const message = error?.message || '';
+        if (message.includes('User profile not found')) {
+            return 'Your profile is not ready yet. Please refresh and try again.';
+        }
+        if (message.includes('account has been suspended')) {
+            return 'Your account cannot borrow items right now.';
+        }
+        if (message.includes('trust score is too low')) {
+            return 'Your account cannot borrow items right now.';
+        }
+        if (message.includes('1 active request at a time')) {
+            return 'Please finish your current request before borrowing another item.';
+        }
+        if (message.includes('Only students can create borrow requests')) {
+            return 'Only student accounts can borrow items.';
+        }
+        if (message.includes('Maximum concurrent active requests reached')) {
+            return 'You already have the maximum number of active requests.';
+        }
+        if (message.includes('Caution band users cannot borrow High-Value items')) {
+            return 'Your account cannot borrow expensive items right now.';
+        }
+        if (message.includes('Too many requests')) {
+            return 'You sent too many requests quickly. Please try again in a minute.';
+        }
+        if (message.includes('row-level security')) {
+            return 'Your account is not allowed to send this request right now.';
+        }
+        if (message.includes('violates check constraint')) {
+            return 'Please check the quantity and try again.';
+        }
+        return message || 'Something went wrong while sending your request.';
+    };
+
+    const readRecentBorrowAttempts = () => {
+        try {
+            const cutoff = Date.now() - 60_000;
+            return JSON.parse(localStorage.getItem('borrow_request_attempts') || '[]')
+                .filter((timestamp) => Number.isFinite(timestamp) && timestamp > cutoff);
+        } catch {
+            return [];
+        }
+    };
+
+    const rememberBorrowAttempt = () => {
+        const attempts = [...readRecentBorrowAttempts(), Date.now()];
+        localStorage.setItem('borrow_request_attempts', JSON.stringify(attempts));
+    };
+
+    const getBorrowPreflightError = async () => {
+        const recentAttempts = readRecentBorrowAttempts();
+        if (recentAttempts.length >= 5) {
+            return 'You sent too many requests quickly. Please try again in a minute.';
+        }
+
+        const { data: gate, error: gateError } = await supabase.rpc('can_user_borrow', {
+            p_user_id: profile.id,
+        });
+
+        if (gateError) {
+            return 'Could not check your borrowing status. Please try again.';
+        }
+
+        setBorrowCheck(gate);
+
+        if (gate && gate.allowed === false) {
+            return getBorrowErrorMessage({ message: gate.reason });
+        }
+
+        if (item.is_high_value && gate?.band === 'caution') {
+            return 'Your account cannot borrow expensive items right now.';
+        }
+
+        const { data: limits } = await supabase
+            .from('platform_limits')
+            .select('max_active_requests')
+            .eq('id', 1)
+            .maybeSingle();
+
+        const maxActiveRequests = limits?.max_active_requests ?? 10;
+        if ((gate?.active_requests ?? 0) >= maxActiveRequests) {
+            return 'You already have the maximum number of active requests.';
+        }
+
+        return null;
+    };
 
     useEffect(() => {
         loadItem();
@@ -126,14 +215,14 @@ export default function ComponentDetail() {
             });
             if (error) throw error;
             toast({
-                title: "Pre-Book Confirmed!",
+                title: "Joined Waitlist",
                 description: `You are #${data.position} in the waitlist. We'll notify you when it's available.`,
             });
             loadPrebookInfo();
         } catch (error) {
             toast({
                 variant: "destructive",
-                title: "Pre-Book Failed",
+                title: "Waitlist Failed",
                 description: error.message,
             });
         } finally {
@@ -150,7 +239,7 @@ export default function ComponentDetail() {
             });
             if (error) throw error;
             toast({
-                title: "Pre-Book Cancelled",
+                title: "Waitlist Cancelled",
                 description: data?.message || "Your reservation has been removed.",
             });
             setPrebookInfo(null);
@@ -187,21 +276,79 @@ export default function ComponentDetail() {
 
     const handleRequest = async (e) => {
         e.preventDefault();
+        if (!profile) {
+            toast({
+                variant: "destructive",
+                title: "Please sign in",
+                description: "Sign in before sending a borrow request.",
+            });
+            return;
+        }
+
+        if (profile.role !== 'student') {
+            toast({
+                variant: "destructive",
+                title: "Cannot send request",
+                description: "Only student accounts can borrow items.",
+            });
+            return;
+        }
+
+        if (profile.status && profile.status !== 'active') {
+            toast({
+                variant: "destructive",
+                title: "Cannot send request",
+                description: "Your account must be active before you can borrow items.",
+            });
+            return;
+        }
+
+        const quantity = Number.parseInt(requestForm.quantity, 10);
+        if (!Number.isFinite(quantity) || quantity < 1 || quantity > item.quantity_available) {
+            toast({
+                variant: "destructive",
+                title: "Check quantity",
+                description: `Choose between 1 and ${item.quantity_available}.`,
+            });
+            return;
+        }
+
+        if (!requestForm.project_title.trim()) {
+            toast({
+                variant: "destructive",
+                title: "Add project name",
+                description: "Please add a short project name before sending.",
+            });
+            return;
+        }
+
         setSubmitting(true);
 
+        const preflightError = await getBorrowPreflightError();
+        if (preflightError) {
+            toast({
+                variant: "destructive",
+                title: "Request not sent",
+                description: preflightError,
+            });
+            setSubmitting(false);
+            return;
+        }
+
+        rememberBorrowAttempt();
         const { error } = await supabase.from('requests').insert({
             user_id: profile.id,
             hardware_id: item.id,
-            quantity: parseInt(requestForm.quantity),
-            project_title: requestForm.project_title,
-            project_description: requestForm.project_description,
+            quantity,
+            project_title: requestForm.project_title.trim(),
+            project_description: requestForm.project_description.trim(),
         });
 
         if (error) {
             toast({
                 variant: "destructive",
-                title: "Request Failed",
-                description: error.message,
+                title: "Request not sent",
+                description: getBorrowErrorMessage(error),
             });
         } else {
             toast({
@@ -243,7 +390,7 @@ export default function ComponentDetail() {
                     onClick={() => navigate('/components')}
                 >
                     <ArrowLeft className="h-4 w-4 mr-2 transition-transform group-hover:-translate-x-1" />
-                    Back to Lab
+                    Back
                 </Button>
 
                 <div className="flex items-center gap-3">
@@ -288,7 +435,7 @@ export default function ComponentDetail() {
                                         <div className="p-6 rounded-md bg-muted border border-border mb-4">
                                             <Cpu size={48} className="text-muted-foreground" />
                                         </div>
-                                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Visual reference unavailable</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">No image</p>
                                     </div>
                                 )}
                             </div>
@@ -301,6 +448,11 @@ export default function ComponentDetail() {
 
                                 <div className="relative space-y-8">
                                     <div className="flex flex-wrap items-center gap-2">
+                                        {item.is_high_value && (
+                                            <Badge variant="outline" className="h-6 px-3 font-black uppercase tracking-widest border-amber-500 text-amber-600 bg-amber-500/10">
+                                                Expensive
+                                            </Badge>
+                                        )}
                                         <Badge variant="outline" className="h-6 px-3 font-bold uppercase tracking-widest border-border bg-muted">
                                             {item.category}
                                         </Badge>
@@ -317,14 +469,14 @@ export default function ComponentDetail() {
                                     </h1>
 
                                     <p className="text-sm text-muted-foreground font-medium leading-relaxed max-w-3xl border-l-2 border-border pl-4">
-                                        {item.description || "Experimental hardware reserved for advanced laboratory research and development projects."}
+                                        {item.description || "No description provided."}
                                     </p>
 
                                     <div className="flex flex-wrap items-center gap-4 pt-2">
                                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-muted/50 border border-border">
                                             <MapPin size={12} className="text-muted-foreground" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Location: </span>
-                                            <span className="text-[10px] font-bold uppercase text-foreground">{item.location || item.owner?.lab_name || 'Main Lab'}</span>
+                                            <span className="text-[10px] font-bold uppercase text-foreground">{item.location || item.owner?.lab_name || 'Main Room'}</span>
                                         </div>
                                         
                                         {(item.delivery_courier || item.delivery_offline) && (
@@ -333,7 +485,7 @@ export default function ComponentDetail() {
                                                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Delivery: </span>
                                                 <div className="flex gap-1">
                                                      {item.delivery_courier && <Badge variant="outline" className="text-[9px] h-4 px-1 border-border font-black uppercase text-foreground">Courier</Badge>}
-                                                     {item.delivery_offline && <Badge variant="outline" className="text-[9px] h-4 px-1 border-border font-black uppercase text-foreground">Offline</Badge>}
+                                                     {item.delivery_offline && <Badge variant="outline" className="text-[9px] h-4 px-1 border-border font-black uppercase text-foreground">Pickup</Badge>}
                                                  </div>
                                             </div>
                                         )}
@@ -349,7 +501,7 @@ export default function ComponentDetail() {
                                 <span className="p-1 px-1.5 rounded-sm bg-muted text-muted-foreground border border-border">
                                     <ShieldCheck className="h-4 w-4" />
                                 </span>
-                                Technical Specs
+                                Details
                             </h3>
                         </div>
 
@@ -371,7 +523,7 @@ export default function ComponentDetail() {
                             ) : (
                                 <div className="flex flex-col items-center justify-center py-12 bg-muted/10 rounded-md border border-dashed border-border opacity-80">
                                     <Info size={24} className="text-muted-foreground mb-2" />
-                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Specifics not listed</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">No details added</p>
                                 </div>
                             )}
 
@@ -380,7 +532,7 @@ export default function ComponentDetail() {
                                     <FileText size={16} />
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className="font-bold text-sm tracking-tight">Laboratory Note</h4>
+                                    <h4 className="font-bold text-sm tracking-tight">Important Note</h4>
                                     <p className="text-sm text-muted-foreground leading-relaxed">
                                         Use ESD protection when handling. Make sure you've read the basic setup guide before borrowing.
                                     </p>
@@ -393,7 +545,7 @@ export default function ComponentDetail() {
                 <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-10 self-start">
                     <Card className="border border-border bg-card shadow-sm rounded-md overflow-hidden">
                         <CardHeader className="py-4 px-6 border-b border-border bg-muted/50">
-                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-foreground">Live Lab Stock</CardTitle>
+                            <CardTitle className="text-sm font-bold uppercase tracking-widest text-foreground">Availability</CardTitle>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
                             <div className="relative text-center p-6 rounded-md bg-muted/30 border border-border shadow-sm">
@@ -401,7 +553,7 @@ export default function ComponentDetail() {
                                     {item.quantity_available}
                                 </div>
                                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                                    Units in Lab
+                                    Available
                                 </div>
                                 <div className="mt-6 h-2 w-full bg-border rounded-full overflow-hidden">
                                     <div
@@ -423,7 +575,7 @@ export default function ComponentDetail() {
                                         <Clock size={16} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Loan Duration</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Borrow Period</span>
                                         <span className="text-sm font-semibold text-foreground">{item.max_lending_days} Days</span>
                                     </div>
                                 </div>
@@ -432,10 +584,21 @@ export default function ComponentDetail() {
                                         <User size={16} />
                                     </div>
                                     <div className="flex flex-col">
-                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Lab In Charge</span>
+                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Owner</span>
                                         <span className="text-sm font-semibold text-foreground">{item.owner?.name}</span>
                                     </div>
                                 </div>
+                                {borrowCheck?.active_requests > 0 && (
+                                    <div className="flex items-center gap-3 p-3 rounded-md bg-muted/30 border border-border">
+                                        <div className="h-8 w-8 shrink-0 rounded-md bg-background border border-border flex items-center justify-center text-foreground">
+                                            <History size={16} />
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Current Requests</span>
+                                            <span className="text-sm font-semibold text-foreground">{borrowCheck.active_requests}</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                         <CardFooter className="p-6 pt-0">
@@ -458,7 +621,7 @@ export default function ComponentDetail() {
 
                                             <div className="grid gap-4">
                                                 <div className="space-y-1.5">
-                                                    <Label htmlFor="quantity" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quantity Needed (Max: {item.quantity_available})</Label>
+                                                    <Label htmlFor="quantity" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Quantity (Max: {item.quantity_available})</Label>
                                                     <Input
                                                         id="quantity"
                                                         type="number"
@@ -564,7 +727,7 @@ export default function ComponentDetail() {
                                                     onClick={handleCancelPrebook}
                                                     disabled={prebooking}
                                                 >
-                                                    {prebooking ? 'Cancelling...' : 'Cancel Pre-Book'}
+                                                    {prebooking ? 'Cancelling...' : 'Leave Waitlist'}
                                                 </Button>
                                             )}
                                         </div>
@@ -579,7 +742,7 @@ export default function ComponentDetail() {
                                             ) : (
                                                 <>
                                                     <BookmarkCheck className="mr-2 h-4 w-4" />
-                                                    Pre-Book / Hold Item
+                                                    Join Waitlist
                                                 </>
                                             )}
                                         </Button>
@@ -595,7 +758,7 @@ export default function ComponentDetail() {
                                         {item.quantity_available === 0 ? 'Out of Stock' : 'Admin Only'}
                                     </Button>
                                     <p className="text-[10px] text-center font-bold uppercase tracking-widest text-muted-foreground leading-tight">
-                                        Laboratory access restricted for this item.
+                                        Only the owner can manage this.
                                     </p>
                                 </div>
                             )}

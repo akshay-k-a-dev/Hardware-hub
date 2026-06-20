@@ -228,8 +228,8 @@ export default function Dashboard() {
             <div className="flex flex-col gap-6 max-w-[1400px] mx-auto p-4 md:p-6 lg:px-0">
                 <header className="flex items-center justify-between pb-4 border-b border-border">
                     <div>
-                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Lab Administrator</h1>
-                        <p className="text-[10px] md:text-xs font-black uppercase text-muted-foreground mt-0.5 tracking-tight opacity-70">Inventory and Request Management Console</p>
+                        <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest">Admin Dashboard</h1>
+                        <p className="text-[10px] md:text-xs font-black uppercase text-muted-foreground mt-0.5 tracking-tight opacity-70">Manage your items and borrow requests</p>
                     </div>
                     <Button
                         variant="outline"
@@ -246,7 +246,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Overview</h2>
                         <Badge variant="outline" className="rounded-full border-border/40 text-[9px] font-black uppercase tracking-widest px-2 h-5">
-                            Lab Capacity: {stats.available + stats.active}
+                            Item Capacity: {stats.available + stats.active}
                         </Badge>
                     </div>
                     
@@ -272,10 +272,10 @@ export default function Dashboard() {
                 {/* ── Desktop Stats Grid ── */}
                 <div className="hidden md:grid gap-4 grid-cols-2 lg:grid-cols-4">
                     {[
-                        { label: 'Managed Items', value: stats.available, icon: <Package size={14} /> },
+                        { label: 'Your Items', value: stats.available, icon: <Package size={14} /> },
                         { label: 'Pending Approval', value: stats.pending, icon: <Clock size={14} /> },
                         { label: 'Issued Items', value: stats.active, icon: <CheckCircle2 size={14} /> },
-                        { label: 'Total Logs', value: stats.total, icon: <History size={14} /> }
+                        { label: 'Total Records', value: stats.total, icon: <History size={14} /> }
                     ].map((stat, i) => (
                         <Card key={i} className="border border-border/40 bg-card/60 backdrop-blur-xl hover:bg-card/80 transition-all duration-300 rounded-2xl group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -397,17 +397,17 @@ export default function Dashboard() {
                 <Dialog open={showLabSettings} onOpenChange={setShowLabSettings}>
                     <DialogContent className="sm:max-w-md rounded-[2.5rem] border-none bg-card p-0 shadow-2xl">
                         <DialogHeader className="p-6 pb-2">
-                            <DialogTitle className="text-xl font-black uppercase tracking-tight">Lab Management</DialogTitle>
+                            <DialogTitle className="text-xl font-black uppercase tracking-tight">Item Settings</DialogTitle>
                             <DialogDescription className="text-xs">Update your branding and operational settings.</DialogDescription>
                         </DialogHeader>
                         <div className="p-8 space-y-6">
                             <div className="space-y-3">
-                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 ml-1">Lab Branding Name</Label>
-                                <Input value={labName} onChange={(e) => setLabName(e.target.value)} placeholder="Robotics Lab" className="h-14 rounded-3xl border-border bg-background/50 px-6 font-black text-sm uppercase focus-visible:ring-1 focus-visible:ring-foreground" />
+                                <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-60 ml-1">Display Name</Label>
+                                <Input value={labName} onChange={(e) => setLabName(e.target.value)} placeholder="Robotics Room" className="h-14 rounded-3xl border-border bg-background/50 px-6 font-black text-sm uppercase focus-visible:ring-1 focus-visible:ring-foreground" />
                             </div>
                         </div>
                         <DialogFooter className="p-6 pt-0">
-                            <Button onClick={handleUpdateLabName} className="w-full h-14 rounded-3xl bg-foreground text-background font-black uppercase tracking-widest text-xs shadow-xl shadow-black/10">Save Configuration</Button>
+                            <Button onClick={handleUpdateLabName} className="w-full h-14 rounded-3xl bg-foreground text-background font-black uppercase tracking-widest text-xs shadow-xl shadow-black/10">Save</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -442,7 +442,7 @@ export default function Dashboard() {
                 <form onSubmit={handleSearch} className="relative mt-2">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-background/60" />
                     <Input 
-                        placeholder="Search hardware..." 
+                        placeholder="Search items..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="h-12 w-full bg-background/10 border-none rounded-2xl pl-11 text-xs font-black placeholder:text-background/40 focus-visible:ring-1 focus-visible:ring-background/20 transition-all text-background"
@@ -454,7 +454,7 @@ export default function Dashboard() {
             <div className="hidden md:flex flex-col gap-4 mb-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight uppercase">Hardware Hub</h1>
+                        <h1 className="text-3xl font-black tracking-tight uppercase">Available Items</h1>
                         <p className="text-[12px] font-black uppercase tracking-[0.2em] opacity-40">Borrow what you need. Build what matters.</p>
                     </div>
                 </div>
@@ -523,9 +523,9 @@ export default function Dashboard() {
                     ) : (
                         <div className="w-full h-32 bg-muted/20 border border-dashed border-border/60 rounded-[28px] flex flex-col items-center justify-center text-center p-4">
                             <Package className="h-6 w-6 text-muted-foreground/20 mb-2" />
-                            <p className="text-[10px] font-black uppercase text-muted-foreground opacity-40">Your lab inventory is empty</p>
+                            <p className="text-[10px] font-black uppercase text-muted-foreground opacity-40">You have no borrowed items</p>
                             <Button asChild variant="link" className="text-[9px] font-black uppercase tracking-widest mt-2 p-0 h-auto">
-                                <Link to="/components">Browse Lab →</Link>
+                                <Link to="/components">Browse Items →</Link>
                             </Button>
                         </div>
                     )}
@@ -618,9 +618,9 @@ export default function Dashboard() {
                     <section className="space-y-4">
                         <div className="flex items-center justify-between px-1">
                             <h3 className="text-xs font-black uppercase tracking-[0.2em] text-foreground flex items-center gap-2">
-                                <SearchCode size={14} /> Hardware Catalog
+                                <SearchCode size={14} /> Available Items
                             </h3>
-                            <Link to="/components" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground py-2 px-3 bg-muted/20 rounded-lg">Explore Lab →</Link>
+                            <Link to="/components" className="text-[11px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground py-2 px-3 bg-muted/20 rounded-lg">See All Items →</Link>
                         </div>
                         <div className="grid gap-4 sm:grid-cols-2">
                             {featuredHardware.slice(0, 4).map(item => (

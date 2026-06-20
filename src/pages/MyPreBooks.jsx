@@ -103,7 +103,7 @@ export default function MyPreBooks() {
             toast({
                 variant: "destructive",
                 title: "Load Failed",
-                description: "Could not retrieve your pre-books.",
+                description: "Could not retrieve your waitlist items.",
             });
         } finally {
             setLoading(false);
@@ -115,7 +115,7 @@ export default function MyPreBooks() {
             const { data, error } = await supabase.rpc('cancel_prebook', { p_prebook_id: prebookId });
             if (error) throw error;
             toast({
-                title: "Pre-Book Cancelled",
+                title: "Waitlist Cancelled",
                 description: data?.message || "Your reservation has been removed.",
             });
             loadPrebooks();
@@ -136,7 +136,7 @@ export default function MyPreBooks() {
         try {
             const { data, error } = await supabase.rpc('claim_prebook', {
                 p_prebook_id: claimDialog.prebook.id,
-                p_project_title: claimForm.project_title || 'Pre-Booked Item',
+                p_project_title: claimForm.project_title || 'Waitlist Item',
                 p_project_description: claimForm.project_description || null,
             });
             if (error) throw error;
@@ -215,15 +215,15 @@ export default function MyPreBooks() {
                             </button>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2.5">
-                                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground uppercase leading-none tracking-widest">Pre-Book Queue</h1>
+                                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground uppercase leading-none tracking-widest">My Waitlist</h1>
                                 </div>
                                 <p className="text-[9px] font-black text-muted-foreground uppercase opacity-40 mt-1.5 tracking-tight">
-                                    Track waitlist reservations & claim ready items
+                                    Items you're waiting for
                                 </p>
                             </div>
                         </div>
                         <span className="text-[10px] font-bold text-muted-foreground bg-muted/20 px-3 py-1 rounded-full border border-border/40 uppercase tracking-widest shrink-0">
-                            {prebooks.length} Entries
+                            {prebooks.length} Items
                         </span>
                     </div>
                 </div>
@@ -232,7 +232,7 @@ export default function MyPreBooks() {
             {/* Active Pre-Books */}
             {activePrebooks.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Active Reservations</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Waiting For</h2>
                     <div className="grid gap-3.5 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 pb-8 px-1">
                         {activePrebooks.map((pb, idx) => (
                             <Card
@@ -309,13 +309,13 @@ export default function MyPreBooks() {
                                                         <div className="p-4 w-fit rounded-2xl bg-destructive/10 text-destructive mb-4">
                                                             <AlertTriangle className="h-8 w-8" />
                                                         </div>
-                                                        <AlertDialogTitle className="text-xl font-black tracking-tight text-foreground mb-2 leading-none">Cancel Pre-Book?</AlertDialogTitle>
+                                                        <AlertDialogTitle className="text-xl font-black tracking-tight text-foreground mb-2 leading-none">Cancel Waitlist?</AlertDialogTitle>
                                                         <AlertDialogDescription className="text-sm font-medium text-muted-foreground leading-relaxed">
                                                             You'll lose your #{pb.position} position in the queue for <strong>"{pb.hardware?.name}"</strong>. This cannot be undone.
                                                         </AlertDialogDescription>
                                                     </AlertDialogHeader>
                                                     <AlertDialogFooter className="mt-10 gap-4">
-                                                        <AlertDialogCancel className="h-12 px-8 rounded-2xl font-black text-xs uppercase border-2 border-border/60 hover:bg-muted/20">Keep Reservation</AlertDialogCancel>
+                                                        <AlertDialogCancel className="h-12 px-8 rounded-2xl font-black text-xs uppercase border-2 border-border/60 hover:bg-muted/20">Keep It</AlertDialogCancel>
                                                         <AlertDialogAction
                                                             className="h-12 px-10 rounded-2xl font-black text-xs uppercase bg-destructive hover:bg-destructive/90 shadow-xl shadow-destructive/20"
                                                             onClick={() => handleCancel(pb.id)}
@@ -351,9 +351,9 @@ export default function MyPreBooks() {
                     <div className="p-6 rounded-2xl bg-muted/40 mb-6 ring-4 ring-muted/10">
                         <BookmarkCheck className="h-12 w-12 text-muted-foreground/30" />
                     </div>
-                    <h3 className="text-xl font-black text-foreground tracking-tight uppercase">No Active Pre-Books</h3>
+                    <h3 className="text-xl font-black text-foreground tracking-tight uppercase">No Waitlist Items</h3>
                     <p className="text-muted-foreground max-w-sm mt-4 text-[10px] font-black uppercase leading-relaxed opacity-60">
-                        When items are out of stock, you can pre-book them to join the waitlist. You'll be notified when they're available.
+                        When items are out of stock, you can join the waitlist. You'll be notified when they're available.
                     </p>
                     <Button
                         variant="outline"
@@ -361,7 +361,7 @@ export default function MyPreBooks() {
                         className="mt-10 h-14 px-10 rounded-2xl font-bold border-2 hover:bg-muted/40 border-border/60"
                         onClick={() => navigate('/components')}
                     >
-                        Browse Hardware Lab
+                        Browse Items
                     </Button>
                 </div>
             )}
@@ -369,7 +369,7 @@ export default function MyPreBooks() {
             {/* Past Pre-Books */}
             {pastPrebooks.length > 0 && (
                 <div className="space-y-4">
-                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Past Reservations</h2>
+                    <h2 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 px-1">Past Waitlist</h2>
                     <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
                         <CardContent className="p-0">
                             <div className="divide-y divide-border/20">
@@ -410,7 +410,7 @@ export default function MyPreBooks() {
                     <Info size={20} />
                 </div>
                 <div className="space-y-0.5 flex-1 text-center md:text-left">
-                    <h4 className="text-sm font-bold text-primary tracking-tight font-inter-tight uppercase leading-none">How Pre-Booking Works</h4>
+                    <h4 className="text-sm font-bold text-primary tracking-tight font-inter-tight uppercase leading-none">How Waitlists Work</h4>
                     <p className="text-[10px] text-muted-foreground font-medium leading-relaxed max-w-3xl">
                         Join waitlists for out-of-stock items. When notified, you have a 24-hour window to claim it before it moves to the next person.
                     </p>

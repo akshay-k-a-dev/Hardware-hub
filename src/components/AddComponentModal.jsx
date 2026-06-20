@@ -42,6 +42,7 @@ export default function AddComponentModal({ open, onOpenChange }) {
         quantity_total: 1,
         max_lending_days: 14,
         specs: '',
+        is_high_value: false,
     });
 
     const [delivery, setDelivery] = useState({ courier: false, offline: true });
@@ -49,6 +50,7 @@ export default function AddComponentModal({ open, onOpenChange }) {
     const [images, setImages] = useState([]);
     const [previews, setPreviews] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     useEffect(() => {
         if (images.length === 0) {
@@ -79,7 +81,13 @@ export default function AddComponentModal({ open, onOpenChange }) {
 
     const handleDrop = (e) => {
         e.preventDefault();
+        setIsDragging(false);
         handleFiles(e.dataTransfer.files);
+    };
+
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        setIsDragging(true);
     };
 
     const handleInputChange = (e) => {
@@ -134,6 +142,7 @@ export default function AddComponentModal({ open, onOpenChange }) {
                 location: location,
                 delivery_courier: delivery.courier,
                 delivery_offline: delivery.offline,
+                is_high_value: form.is_high_value,
             };
 
             const { data: insertData, error: insertError } = await supabase
@@ -174,8 +183,8 @@ export default function AddComponentModal({ open, onOpenChange }) {
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg w-full bg-background rounded-xl p-0 overflow-hidden border-border shadow-2xl">
                 <DialogHeader className="p-5 border-b border-border bg-muted/20">
-                    <DialogTitle className="text-xl font-bold text-foreground">Hardware Details</DialogTitle>
-                    <DialogDescription className="text-sm text-muted-foreground">Register new components or boards for the community.</DialogDescription>
+                    <DialogTitle className="text-xl font-bold text-foreground">Item Details</DialogTitle>
+                    <DialogDescription className="text-sm text-muted-foreground">Add a new hardware item for others to borrow.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="p-5 space-y-3 max-h-[70vh] overflow-y-auto custom-scrollbar">
@@ -208,14 +217,14 @@ export default function AddComponentModal({ open, onOpenChange }) {
                             <Input id="quantity" type="number" min="1" value={form.quantity_total} onChange={(e) => handleChange('quantity_total', e.target.value)} className={inputBase} />
                         </div>
                         <div className="space-y-1.5">
-                            <Label htmlFor="days" className="text-sm font-medium text-foreground">Lending Days</Label>
+                            <Label htmlFor="days" className="text-sm font-medium text-foreground">Max Borrow Days</Label>
                             <Input id="days" type="number" min="1" value={form.max_lending_days} onChange={(e) => handleChange('max_lending_days', e.target.value)} className={inputBase} />
                         </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-1">
                         <div className="space-y-1.5">
-                            <Label className="text-sm font-medium text-foreground block">Delivery</Label>
+                            <Label className="text-sm font-medium text-foreground block">How to Get It</Label>
                             <div className="flex flex-col gap-1.5 p-2.5 bg-muted/20 border border-border rounded-lg">
                                 <label className="flex items-center gap-2.5 cursor-pointer group">
                                     <Checkbox id="courier" checked={delivery.courier} onCheckedChange={() => handleDeliveryChange('courier')} />
@@ -228,9 +237,19 @@ export default function AddComponentModal({ open, onOpenChange }) {
                             </div>
                         </div>
                         <div className="space-y-1.5">
+                            <Label className="text-sm font-medium text-foreground block">Item Value</Label>
+                            <div className="flex flex-col gap-1.5 p-2.5 bg-muted/20 border border-border rounded-lg">
+                                <label className="flex items-center gap-2.5 cursor-pointer group">
+                                    <Checkbox id="high_value" checked={form.is_high_value} onCheckedChange={(val) => handleChange('is_high_value', val)} />
+                                    <span className="text-[10px] font-bold uppercase text-amber-500/80 group-hover:text-amber-500">Expensive Item</span>
+                                </label>
+                                <p className="text-[9px] text-muted-foreground ml-6 leading-tight">Check this if the item is expensive and should have stricter borrow limits.</p>
+                            </div>
+                        </div>
+                        <div className="space-y-1.5 col-span-2 sm:col-span-1">
                             <Label htmlFor="location" className="text-sm font-medium text-foreground">Location</Label>
                             <div className="relative group">
-                                <Input id="location" placeholder="City / Lab" value={location} onChange={(e) => setLocation(e.target.value)} className={`${inputBase} pr-10`} />
+                                <Input id="location" placeholder="City / room" value={location} onChange={(e) => setLocation(e.target.value)} className={`${inputBase} pr-10`} />
                                 <button type="button" onClick={fillLocation} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                                     <MapPin size={13} />
                                 </button>
@@ -240,10 +259,16 @@ export default function AddComponentModal({ open, onOpenChange }) {
 
                     <div className="space-y-2 pt-2">
                         <Label className="text-sm font-medium text-foreground">Images (optional)</Label>
-                        <div onClick={() => document.getElementById('image-input-modal').click()} className="border-dashed border border-border rounded-lg p-6 text-center cursor-pointer bg-muted/10 hover:bg-muted/20 transition-all">
+                        <div
+                            onClick={() => document.getElementById('image-input-modal').click()}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragLeave={() => setIsDragging(false)}
+                            className={`border-dashed border rounded-lg p-6 text-center cursor-pointer transition-all ${isDragging ? 'border-foreground bg-muted/30' : 'border-border bg-muted/10 hover:bg-muted/20'}`}
+                        >
                             <input type="file" id="image-input-modal" className="hidden" accept="image/*" multiple onChange={handleInputChange} />
                             <UploadCloud className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                            <p className="text-xs font-medium text-foreground">Click to upload assets (Max 5)</p>
+                            <p className="text-xs font-medium text-foreground">Drop, click, or paste image (Max 5)</p>
                         </div>
                         {previews.length > 0 && (
                             <div className="flex gap-2 flex-wrap mt-2">
@@ -263,7 +288,7 @@ export default function AddComponentModal({ open, onOpenChange }) {
                 <DialogFooter className="p-5 border-t border-border bg-muted/10">
                     <Button variant="ghost" onClick={() => onOpenChange(false)} className="text-xs font-bold uppercase tracking-widest">Cancel</Button>
                     <Button onClick={handleSubmit} disabled={loading} className="h-10 px-8 rounded-lg bg-foreground text-background hover:bg-foreground/90 font-bold uppercase tracking-widest text-xs">
-                        {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : 'Register Component'}
+                        {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : 'Add Item'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

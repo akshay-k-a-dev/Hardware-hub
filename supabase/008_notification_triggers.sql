@@ -4,7 +4,9 @@
 
 -- Function to handle request notifications
 CREATE OR REPLACE FUNCTION notify_on_request_event()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 DECLARE
   v_item_name TEXT;
   v_owner_id UUID;

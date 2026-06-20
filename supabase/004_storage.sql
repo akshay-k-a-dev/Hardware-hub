@@ -9,10 +9,23 @@ VALUES ('component-images', 'component-images', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Set up RLS for Storage (Optional but recommended)
--- Allow anyone to view images
-CREATE POLICY "Public Access"
+-- The bucket is public, so object URLs remain accessible without broad listing.
+-- Restrict metadata listing to owner folders and admins.
+CREATE POLICY "Component image metadata access"
 ON storage.objects FOR SELECT
-USING ( bucket_id = 'component-images' );
+TO authenticated
+USING (
+  bucket_id = 'component-images'
+  AND (
+    name LIKE (auth.uid()::TEXT || '/%')
+    OR EXISTS (
+      SELECT 1
+      FROM public.profiles p
+      WHERE p.id = auth.uid()
+        AND p.role = 'admin'
+    )
+  )
+);
 
 -- Allow authenticated users with provider/admin role to upload
 CREATE POLICY "Provider Upload Access"

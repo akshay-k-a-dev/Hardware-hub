@@ -74,7 +74,9 @@ ALTER TABLE notifications ADD CONSTRAINT notifications_type_check
 
 -- ─── Pre-Book an Item ───────────────────────────────────────
 CREATE OR REPLACE FUNCTION prebook_item(p_hardware_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_user_id UUID := auth.uid();
   v_hardware hardware_items%ROWTYPE;
@@ -136,7 +138,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─── Cancel Pre-Book ────────────────────────────────────────
 CREATE OR REPLACE FUNCTION cancel_prebook(p_prebook_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_prebook prebook_queue%ROWTYPE;
   v_hardware_name TEXT;
@@ -179,7 +183,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─── Process Pre-Book Queue (notify next user) ─────────────
 CREATE OR REPLACE FUNCTION process_prebook_queue(p_hardware_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_next prebook_queue%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -244,7 +250,9 @@ CREATE OR REPLACE FUNCTION claim_prebook(
   p_project_title TEXT DEFAULT 'Pre-Booked Item',
   p_project_description TEXT DEFAULT NULL
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_prebook prebook_queue%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -295,7 +303,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─── Expire Stale Holds (call periodically or via cron) ────
 CREATE OR REPLACE FUNCTION expire_stale_prebooks()
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_expired RECORD;
   v_count INTEGER := 0;
@@ -337,7 +347,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- ═════════════════════════════════════════════════════════════
 
 CREATE OR REPLACE FUNCTION on_stock_increase()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
   -- Only fire when quantity_available goes from 0 to > 0
   -- or increases and there are people waiting
@@ -360,7 +372,9 @@ CREATE TRIGGER trg_stock_increase
 
 -- ─── Helper: Get queue count for a hardware item ────────────
 CREATE OR REPLACE FUNCTION get_prebook_count(p_hardware_id UUID)
-RETURNS INTEGER AS $$
+RETURNS INTEGER
+SET search_path = public
+AS $$
 BEGIN
   RETURN (
     SELECT COUNT(*) FROM prebook_queue
@@ -371,7 +385,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─── Helper: Get user's position in queue ───────────────────
 CREATE OR REPLACE FUNCTION get_user_prebook_position(p_hardware_id UUID, p_user_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_prebook prebook_queue%ROWTYPE;
 BEGIN

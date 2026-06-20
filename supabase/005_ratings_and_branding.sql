@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS user_ratings (
 
 -- 3. Function to get average rating for a user
 CREATE OR REPLACE FUNCTION get_user_rating(p_user_id UUID)
-RETURNS JSONB AS $$
+RETURNS JSONB
+SET search_path = public
+AS $$
 DECLARE
   v_avg_rating NUMERIC;
   v_total_ratings INTEGER;

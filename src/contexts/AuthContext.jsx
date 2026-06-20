@@ -54,8 +54,6 @@ export function AuthProvider({ children }) {
     const initializeAuth = async () => {
       if (initInProgress.current) return;
       initInProgress.current = true;
-      console.log("[AUTH] Initializing session...");
-
       if (abortController.current) abortController.current.abort();
       abortController.current = new AbortController();
 
@@ -113,8 +111,6 @@ export function AuthProvider({ children }) {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
-
-      console.log("[AUTH] State event:", event, session?.user?.id ? "(User found)" : "(No user)");
 
       // Force route to reset password if we detect recovery link flow
       if (event === 'PASSWORD_RECOVERY') {
@@ -203,16 +199,12 @@ export function AuthProvider({ children }) {
   // SIGN OUT
   const signOut = async () => {
     try {
-      console.log("[AUTH] Signing out...");
       await supabase.auth.signOut();
-      console.log("[AUTH] Supabase sign out completed");
 
       // Immediately clear state
       setUser(null);
       setProfile(null);
       setLoading(false);
-
-      console.log("[AUTH] User and profile reset, loading set to false");
     } catch (err) {
       if (err.message?.includes('Lock broken') || err.message?.includes('AbortError')) {
         console.warn("[AUTH] Sign out aborted (likely React Strict Mode), clearing state anyway");

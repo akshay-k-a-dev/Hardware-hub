@@ -44,12 +44,8 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
     });
     const [imageFile, setImageFile] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
-     const [isSubmitting, setIsSubmitting] = useState(false);
-
     useEffect(() => {
         if (item && open) {
-            console.log("Editing component ID:", item.id);
-            console.log("Initial data:", item);
             setForm({
                 name: item.name || '',
                 category: item.category || 'Microcontroller',
@@ -99,7 +95,7 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
                     const file = item.getAsFile();
                     setImageFile(file);
                     setPreviewUrl(URL.createObjectURL(file));
-                    toast({ title: 'Image Pasted', description: 'New asset image captured from clipboard.' });
+                    toast({ title: 'Image pasted', description: 'New item image added from clipboard.' });
                     break;
                 }
             }
@@ -121,7 +117,6 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        console.log("Form data before update:", form);
 
         try {
             let specsObj = {};
@@ -175,8 +170,6 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
                 updates.image_url = publicUrl;
             }
 
-            console.log("Submitting updates to Supabase:", updates);
-
             const { data, error } = await supabase
                 .from('hardware_items')
                 .update(updates)
@@ -185,9 +178,7 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
 
             if (error) throw error;
             
-            console.log("Update response:", data);
-
-            toast({ title: 'Success', description: 'Component updated successfully.' });
+            toast({ title: 'Saved', description: 'Item updated successfully.' });
             onSave();
             onOpenChange(false);
         } catch (err) {
@@ -206,15 +197,15 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto bg-card border-border/50 text-foreground rounded-[var(--card-radius)] p-0 shadow-2xl backdrop-blur-xl">
                 <DialogHeader className="p-6 border-b border-border/10 bg-muted/20">
-                    <DialogTitle className="text-xl font-semibold tracking-tight font-inter-tight text-foreground">Edit Component</DialogTitle>
-                    <DialogDescription className="text-xs text-muted-foreground mt-1">Update component details and active inventory.</DialogDescription>
+                    <DialogTitle className="text-xl font-semibold tracking-tight font-inter-tight text-foreground">Edit Item</DialogTitle>
+                    <DialogDescription className="text-xs text-muted-foreground mt-1">Update item details.</DialogDescription>
                 </DialogHeader>
                 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Primary Info */}
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium text-foreground/80">Component Name</Label>
+                            <Label className="text-sm font-medium text-foreground/80">Item Name</Label>
                             <Input 
                                 value={form.name} 
                                 onChange={(e) => handleChange('name', e.target.value)}
@@ -258,7 +249,7 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label className="text-sm font-medium text-foreground/80">Borrow Duration (Days)</Label>
+                            <Label className="text-sm font-medium text-foreground/80">Max Borrow Days</Label>
                             <Input 
                                 type="number"
                                 value={form.max_lending_days} 
@@ -358,7 +349,7 @@ export default function EditComponentModal({ item, open, onOpenChange, onSave })
                             >
                                 <div className="flex items-center gap-3 text-muted-foreground group-hover:text-foreground transition-colors">
                                     <UploadCloud className="h-5 w-5" />
-                                    <span className="text-xs font-medium">Drag / Drop / Paste</span>
+                                    <span className="text-xs font-medium">Drop, click, or paste image</span>
                                 </div>
                                 <input id="edit-image-input" type="file" className="hidden" onChange={handleFileChange} accept="image/*" />
                             </div>

@@ -17,7 +17,9 @@ CREATE TABLE IF NOT EXISTS profiles (
 
 -- Auto-create profile on signup
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO profiles (id, name, email, role, status)
   VALUES (
@@ -120,7 +122,9 @@ CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(user_id, is_r
 
 -- ─── Updated_at Trigger ─────────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SET search_path = public
+AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
@@ -245,7 +249,9 @@ CREATE OR REPLACE FUNCTION approve_request(
   p_notes TEXT DEFAULT NULL,
   p_lending_days INTEGER DEFAULT NULL
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_request requests%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -281,7 +287,9 @@ CREATE OR REPLACE FUNCTION reject_request(
   p_request_id UUID,
   p_notes TEXT DEFAULT NULL
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_request requests%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -306,7 +314,9 @@ CREATE OR REPLACE FUNCTION issue_request(
   p_notes TEXT DEFAULT NULL,
   p_condition TEXT DEFAULT 'Good'
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_request requests%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -332,7 +342,9 @@ CREATE OR REPLACE FUNCTION return_request(
   p_notes TEXT DEFAULT NULL,
   p_condition TEXT DEFAULT 'Good'
 )
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_request requests%ROWTYPE;
   v_hardware hardware_items%ROWTYPE;
@@ -355,7 +367,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ─── Cancel Request ─────────────────────────────────────────
 CREATE OR REPLACE FUNCTION cancel_request(p_request_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON
+SET search_path = public
+AS $$
 DECLARE
   v_request requests%ROWTYPE;
 BEGIN

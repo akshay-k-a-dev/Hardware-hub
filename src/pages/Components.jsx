@@ -164,7 +164,7 @@ export default function Components() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-lg md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest flex items-center gap-2">
                                 <LayoutDashboard className="h-5 w-5 md:hidden" />
-                                Hardware Lab
+                                Available Items
                             </h1>
                             <span className="text-[10px] font-bold text-muted-foreground bg-muted/20 px-2 py-0.5 rounded-full border border-border/40 uppercase tracking-widest">
                                 {summary.total}
@@ -177,7 +177,7 @@ export default function Components() {
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
                             <Input
-                                placeholder="Search hardware components..."
+                                placeholder="Search items..."
                                 className="pl-11 h-12 md:h-11 text-xs bg-muted/40 border-border/50 shadow-none rounded-2xl md:rounded-xl focus-visible:ring-1 focus-visible:ring-foreground transition-all"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
@@ -313,9 +313,9 @@ export default function Components() {
                         <div className="p-6 border border-border/50 rounded-2xl mb-4 bg-background shadow-xl">
                             <Package className="h-10 w-10 text-muted-foreground/40" />
                         </div>
-                        <h3 className="text-xl font-black text-foreground tracking-tight uppercase">Empty Lab</h3>
+                        <h3 className="text-xl font-black text-foreground tracking-tight uppercase">No Items</h3>
                         <p className="text-muted-foreground max-w-sm mt-3 text-xs font-medium leading-relaxed px-6">
-                            No hardware found matching your criteria.
+                            No items match your search.
                         </p>
                         {hasActiveFilters && (
                             <Button

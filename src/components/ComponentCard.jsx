@@ -84,6 +84,11 @@ export default function ComponentCard({ item = {}, onClick, onUpdate }) {
                         <div className="space-y-1 md:space-y-1.5">
                             {/* Category & Lab */}
                             <div className="flex items-center gap-2 text-[9px] md:text-[10px] text-muted-foreground font-bold uppercase tracking-[0.15em] md:tracking-[0.2em]">
+                                {item.is_high_value && (
+                                    <Badge variant="outline" className="text-[7px] h-4 px-1 border-amber-500 text-amber-600 bg-amber-500/10 tracking-widest font-black uppercase shrink-0 rounded-sm">
+                                        Expensive
+                                    </Badge>
+                                )}
                                 <span className="truncate">{category}</span>
                                 {(owner?.lab_name || item.location) && (
                                     <>
@@ -116,8 +121,8 @@ export default function ComponentCard({ item = {}, onClick, onUpdate }) {
                             ) : isOutOfStock ? (
                                 <Button className="w-full h-10 md:h-11 rounded-lg md:rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500 hover:text-black font-bold uppercase text-[9px] md:text-[10px] tracking-widest transition-all duration-300">
                                     <BookmarkCheck className="h-3 w-3 md:h-3.5 md:w-3.5 md:mr-2" />
-                                    <span className="hidden sm:inline">Prebook Now</span>
-                                    <span className="sm:hidden">Prebook</span>
+                                    <span className="hidden sm:inline">Join Waitlist</span>
+                                    <span className="sm:hidden">Waitlist</span>
                                 </Button>
                             ) : (
                                 <Button className="w-full h-10 md:h-11 rounded-lg md:rounded-xl bg-foreground text-background hover:bg-foreground/90 font-bold uppercase text-[10px] tracking-widest transition-all duration-300 shadow-xl shadow-foreground/5">

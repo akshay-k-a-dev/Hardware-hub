@@ -4,7 +4,9 @@ RETURNS TABLE (
   user_id UUID,
   average_rating NUMERIC,
   total_ratings BIGINT
-) AS $$
+)
+SET search_path = public
+AS $$
 BEGIN
   RETURN QUERY
   SELECT 

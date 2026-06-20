@@ -161,8 +161,8 @@ export default function AddComponentForm() {
     return (
         <div className="max-w-2xl mx-auto px-6 py-8">
             <div className="mb-8">
-                <h1 className="text-2xl font-semibold text-foreground">Hardware Details</h1>
-                <p className="text-sm text-muted-foreground mt-1">Register new components or boards for the community.</p>
+                <h1 className="text-2xl font-semibold text-foreground">Item Details</h1>
+                <p className="text-sm text-muted-foreground mt-1">Add a new hardware item for others to borrow.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -223,14 +223,14 @@ export default function AddComponentForm() {
                         <Input id="quantity" type="number" min="1" value={form.quantity_total} onChange={(e) => handleChange('quantity_total', e.target.value)} className={inputBase} required />
                     </div>
                     <div className="space-y-1.5">
-                        <Label htmlFor="days" className="text-sm font-medium text-foreground">Max Lending Days</Label>
+                        <Label htmlFor="days" className="text-sm font-medium text-foreground">Max Borrow Days</Label>
                         <Input id="days" type="number" min="1" value={form.max_lending_days} onChange={(e) => handleChange('max_lending_days', e.target.value)} className={inputBase} />
                     </div>
                 </div>
 
                 {/* Delivery Options */}
                 <div className="space-y-2 pt-2">
-                    <Label className="text-sm font-medium text-foreground mb-1 block">Delivery Methods</Label>
+                    <Label className="text-sm font-medium text-foreground mb-1 block">How to Get It</Label>
                     <div className="flex flex-col gap-3 p-4 bg-muted/20 border border-border rounded-lg">
                         <label className="flex items-center gap-3 cursor-pointer group">
                             <Checkbox id="courier" checked={delivery.courier} onCheckedChange={() => handleDeliveryChange('courier')} />
@@ -271,7 +271,7 @@ export default function AddComponentForm() {
                     >
                         <input type="file" id="image-input" className="hidden" accept="image/*" multiple onChange={handleInputChange} />
                         <UploadCloud className="mx-auto h-10 w-10 text-muted-foreground group-hover:text-foreground transition-colors mb-2" />
-                        <p className="text-sm font-medium text-foreground group-hover:text-foreground">Drag & drop or click to upload</p>
+                        <p className="text-sm font-medium text-foreground group-hover:text-foreground">Drop or click to upload</p>
                         <p className="text-xs text-muted-foreground/60 mt-1">Maximum 5 images supported</p>
                     </div>
                     {previews.length > 0 && (

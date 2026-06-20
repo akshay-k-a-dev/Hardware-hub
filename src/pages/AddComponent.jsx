@@ -20,8 +20,8 @@ export default function AddComponent() {
                     <ArrowLeft size={20} className="group-hover:-translate-x-0.5 transition-transform" />
                 </Button>
                 <div className="flex flex-col gap-0.5">
-                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">Add to Lab</h1>
-                    <p className="text-[10px] md:text-xs font-black text-muted-foreground uppercase opacity-70">Register new components or boards for the community.</p>
+                    <h1 className="text-xl md:text-2xl font-black tracking-tight text-foreground uppercase tracking-widest leading-none">Add New Item</h1>
+                    <p className="text-[10px] md:text-xs font-black text-muted-foreground uppercase opacity-70">Add a new hardware item for others to borrow.</p>
                 </div>
             </header>
 
@@ -30,8 +30,8 @@ export default function AddComponent() {
                     <div className="h-16 w-16 rounded-2xl bg-foreground text-background mb-6 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
                         <Plus size={24} />
                     </div>
-                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-2">Add New Hardware</h3>
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-8 leading-relaxed opacity-60">Fill in the details to add new hardware</p>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-foreground mb-2">Add New Item</h3>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mb-8 leading-relaxed opacity-60">Fill in the details to add a new item</p>
                     
                     <Button 
                         size="sm" 

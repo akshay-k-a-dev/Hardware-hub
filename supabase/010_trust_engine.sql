@@ -195,6 +195,7 @@ CREATE OR REPLACE FUNCTION apply_trust_delta(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_old_score   INTEGER;
@@ -330,6 +331,7 @@ CREATE OR REPLACE FUNCTION trg_fn_trust_on_return()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_days_late  NUMERIC;
@@ -430,6 +432,7 @@ CREATE OR REPLACE FUNCTION trg_fn_init_trust_on_signup()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   INSERT INTO trust_scores (user_id, score)
@@ -465,6 +468,7 @@ CREATE OR REPLACE FUNCTION can_user_borrow(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_score        INTEGER;
@@ -547,6 +551,7 @@ CREATE OR REPLACE FUNCTION admin_adjust_trust(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 BEGIN
   -- ── 1. Verify caller is admin ─────────────────────────────
@@ -592,6 +597,7 @@ CREATE OR REPLACE FUNCTION get_user_trust_summary(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_trust  trust_scores%ROWTYPE;

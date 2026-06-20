@@ -152,15 +152,15 @@ export default function MyRequests() {
                             </button>
                             <div className="flex flex-col">
                                 <div className="flex items-center gap-2.5">
-                                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground uppercase leading-none tracking-widest">My Activity</h1>
+                                    <h1 className="text-2xl md:text-3xl font-black tracking-tight text-foreground uppercase leading-none tracking-widest">My Requests</h1>
                                 </div>
                                 <p className="text-[9px] font-black text-muted-foreground uppercase opacity-40 mt-1.5 tracking-tight">
-                                    Laboratory Assignment History
+                                    Your borrow history
                                 </p>
                             </div>
                         </div>
                         <span className="text-[10px] font-bold text-muted-foreground bg-muted/20 px-3 py-1 rounded-full border border-border/40 uppercase tracking-widest shrink-0">
-                            {requests.length} Logs
+                            {requests.length} Records
                         </span>
                     </div>
                 </div>
@@ -189,14 +189,14 @@ export default function MyRequests() {
                 <CardHeader className="py-4 px-6 border-b border-border bg-muted/10">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-2">
-                            Request History
+                            Your Requests
                         </CardTitle>
                         <Badge variant="outline" className="text-[9px] font-black uppercase tracking-widest border-primary/10 bg-primary/5 text-primary h-5">
-                            {requests.length} Entries
+                            {requests.length} Items
                         </Badge>
                     </div>
                     <CardDescription className="text-[9px] font-bold uppercase opacity-40 mt-0.5">
-                        Chronological breakdown of your research project requests.
+                        A list of all your past and current borrow requests.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -213,7 +213,7 @@ export default function MyRequests() {
                             </p>
                             {filter !== 'all' && (
                                 <Button variant="ghost" className="mt-8 font-black uppercase tracking-widest text-xs hover:bg-muted/40 h-12 px-8 rounded-xl border border-border/60" onClick={() => setFilter('all')}>
-                                    Full History View
+                                    Show All
                                 </Button>
                             )}
                         </div>
@@ -260,7 +260,7 @@ export default function MyRequests() {
                                                             <Calendar className="h-4 w-4 text-primary/40" />
                                                             {formatDate(req.request_date)}
                                                         </div>
-                                                        <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-tighter">TIMESTAMPED</span>
+                                                        <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-tighter">Requested</span>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="px-6">
@@ -270,12 +270,12 @@ export default function MyRequests() {
                                                                 <Clock className="h-4 w-4 text-primary/20 group-hover:text-primary/40 transition-colors" />
                                                                 {formatDate(req.expected_return_date)}
                                                             </div>
-                                                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-tighter">SCHEDULED RETURN</span>
+                                                            <span className="text-[10px] font-black text-amber-500/40 uppercase tracking-tighter">Return By</span>
                                                         </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2 text-muted-foreground/20 italic text-sm font-bold px-4">
                                                             <Info className="h-4 w-4" />
-                                                            Pending Schedule
+                                                            Not Set
                                                         </div>
                                                     )}
                                                 </TableCell>
@@ -292,7 +292,7 @@ export default function MyRequests() {
                                                                     className="rounded-xl border-border hover:border-destructive/40 hover:bg-destructive/10 text-muted-foreground hover:text-destructive font-black text-xs uppercase h-10 px-5 transition-all group/cancel"
                                                                 >
                                                                     <Trash2 className="h-4 w-4 mr-2 group-hover/cancel:scale-110 transition-transform" />
-                                                                    Retract
+                                                                    Cancel
                                                                 </Button>
                                                             </AlertDialogTrigger>
                                                             <AlertDialogContent className="bg-card border border-border rounded-[2rem] shadow-xl p-10 animate-in zoom-in-95 duration-300">
@@ -300,9 +300,9 @@ export default function MyRequests() {
                                                                     <div className="p-4 w-fit rounded-2xl bg-destructive/10 text-destructive mb-4">
                                                                         <AlertTriangle className="h-8 w-8" />
                                                                     </div>
-                                                                    <AlertDialogTitle className="text-3xl font-black tracking-tight text-foreground mb-2 leading-none">Withdraw Request?</AlertDialogTitle>
+                                                                    <AlertDialogTitle className="text-3xl font-black tracking-tight text-foreground mb-2 leading-none">Cancel Request?</AlertDialogTitle>
                                                                     <AlertDialogDescription className="text-lg font-medium text-muted-foreground leading-relaxed">
-                                                                        This action will withdraw your request for <strong>"{req.hardware?.name}"</strong>. Are you sure?
+                                                                        This will cancel your request for <strong>"{req.hardware?.name}"</strong>. Are you sure?
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter className="mt-10 gap-4">
@@ -318,7 +318,7 @@ export default function MyRequests() {
                                                         </AlertDialog>
                                                     ) : (
                                                         <Button disabled variant="ghost" className="h-10 px-5 text-[10px] font-black uppercase text-muted-foreground/20 cursor-not-allowed">
-                                                            NO ACTIONS
+                                                            Done
                                                         </Button>
                                                     )}
                                                 </TableCell>
@@ -352,7 +352,7 @@ export default function MyRequests() {
 
                                     <div className="space-y-1.5 mb-3 relative z-10">
                                         <div className="flex flex-col gap-0">
-                                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 leading-none">Hardware Item</span>
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50 leading-none">Item</span>
                                             <span className="text-[11px] font-black text-foreground uppercase mt-0.5">{req.hardware?.name || 'Unknown Item'}</span>
                                         </div>
 
@@ -384,7 +384,7 @@ export default function MyRequests() {
                                                 className="flex-1 h-9 rounded-lg border-destructive/20 bg-destructive/5 text-destructive font-black uppercase text-[9px] tracking-widest hover:bg-destructive/10"
                                                 onClick={() => handleCancel(req.id)}
                                             >
-                                                Retract
+                                                Cancel
                                             </Button>
                                         )}
                                         <button 

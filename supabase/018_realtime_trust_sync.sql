@@ -97,6 +97,7 @@ CREATE OR REPLACE FUNCTION get_user_trust_summary(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
   v_trust  trust_scores%ROWTYPE;

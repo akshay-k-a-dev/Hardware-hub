@@ -172,6 +172,9 @@ export default function Profile() {
                             ) : (
                                 <Button variant="outline" size="sm" className="h-7 text-[10px] font-black uppercase tracking-widest border-dashed text-primary hover:text-primary border-primary/50 bg-primary/5 px-3" onClick={() => toast({title: "OTP Sent", description: "A mock OTP has been sent to your phone."})}>Verify Phone (OTP)</Button>
                             )}
+                            {data.is_verified_student && (
+                                <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 border-emerald-300 h-7 px-3"><CheckCircle2 className="w-3 h-3 mr-1.5" /> Verified</Badge>
+                            )}
                         </div>
                         {!isEditing && (
                             <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>Edit Profile</Button>
@@ -428,6 +431,14 @@ export default function Profile() {
                             </div>
 
                             <div className="space-y-3 pt-2">
+                                <div className="flex justify-between items-center text-sm mb-2 pb-2 border-b border-border/50">
+                                    <span className="text-muted-foreground flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-primary" /> Reliability</span>
+                                    <span className="font-bold">
+                                        {(!trust || trust.total_borrows === 0)
+                                            ? <Badge variant="secondary" className="text-[10px] uppercase">New Borrower</Badge>
+                                            : `${Math.round((trust.on_time_returns / trust.total_borrows) * 100)}%`}
+                                    </span>
+                                </div>
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-muted-foreground flex items-center gap-2"><History className="w-4 h-4" /> Total Borrows</span>
                                     <span className="font-bold">{trust?.total_borrows || 0}</span>
