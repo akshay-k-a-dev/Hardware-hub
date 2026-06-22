@@ -1,0 +1,159 @@
+datasource db {
+  provider = "postgresql"
+  url      = "postgres://36f122ade8121b2c7ec45b6f97a8b7e94325c40d924700a46ac53aca0d813e16:sk_x-VXplxb4GYZfgR_ChY9B@pooled.db.prisma.io:5432/postgres?sslmode=require"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Profile {
+  id                String            @id @default(uuid()) @db.Uuid
+  name              String
+  fullName          String?           @map("full_name")
+  email             String            @unique
+  password          String            // Password for authentication
+  role              String            // student, provider, admin
+  status            String            @default("active") // active, suspended
+  emailVerified     Boolean           @default(false) @map("email_verified")
+  phone             String?
+  phoneVerified     Boolean           @default(false) @map("phone_verified")
+  avatarUrl         String?           @map("avatar_url")
+  bio               String?
+  city              String?
+  tinkerhubId       String?           @map("tinkerhub_id")
+  academicRole      String?           @map("academic_role")
+  collegeName       String?           @map("college_name")
+  labName           String?           @map("lab_name")
+  profileCompleted  Boolean           @default(false) @map("profile_completed")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  hardwareItems     HardwareItem[]
+  requests          Request[]
+  prebookQueue      PrebookQueue[]
+  trustScore        TrustScore?
+  trustEvents       TrustEvent[]
+  notifications     Notification[]
+
+  @@map("profiles")
+}
+
+model HardwareItem {
+  id                String            @id @default(uuid()) @db.Uuid
+  ownerId           String            @db.Uuid @map("owner_id")
+  owner             Profile           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?
+  category          String
+  quantityTotal     Int               @map("quantity_total")
+  quantityAvailable Int               @map("quantity_available")
+  maxLendingDays    Int               @map("max_lending_days")
+  isHighValue       Boolean           @default(false) @map("is_high_value")
+  imageUrl          String?           @map("image_url")
+  status            String            @default("available") // available, maintenance, retired
+
+  requests          Request[]
+  prebookQueue      PrebookQueue[]
+
+  @@map("hardware_items")
+}
+
+model Request {
+  id                 String            @id @default(uuid()) @db.Uuid
+  userId             String            @db.Uuid @map("user_id")
+  user               Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hardwareId         String            @db.Uuid @map("hardware_id")
+  hardware           HardwareItem      @relation(fields: [hardwareId], references: [id], onDelete: Cascade)
+  quantity           Int
+  projectTitle       String            @map("project_title")
+  projectDescription String?           @map("project_description")
+  status             String            @default("pending") // pending, approved, rejected, issued, returned, cancelled, overdue
+  requestDate        DateTime          @default(now()) @map("request_date")
+  approvalDate       DateTime?         @map("approval_date")
+  issueDate          DateTime?         @map("issue_date")
+  expectedReturnDate DateTime?         @map("expected_return_date")
+  actualReturnDate   DateTime?         @map("actual_return_date")
+  providerNotes      String?           @map("provider_notes")
+
+  lendingHistory     LendingHistory[]
+  trustEvents        TrustEvent[]
+
+  @@map("requests")
+}
+
+model LendingHistory {
+  id                String            @id @default(uuid()) @db.Uuid
+  requestId         String            @db.Uuid @map("request_id")
+  request           Request           @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  conditionOnIssue  String            @map("condition_on_issue") // E.g., Good, Scratched
+  conditionOnReturn String?           @map("condition_on_return") // E.g., Good, Damaged
+  notes             String?
+
+  @@map("lending_history")
+}
+
+model PrebookQueue {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @db.Uuid @map("user_id")
+  user           Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hardwareId     String            @db.Uuid @map("hardware_id")
+  hardware       HardwareItem      @relation(fields: [hardwareId], references: [id], onDelete: Cascade)
+  position       Int
+  status         String            @default("waiting") // waiting, notified, claimed, expired, cancelled
+  notifiedAt     DateTime?         @map("notified_at")
+  holdExpiresAt  DateTime?         @map("hold_expires_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  @@map("prebook_queue")
+}
+
+model TrustScore {
+  userId            String            @id @db.Uuid @map("user_id")
+  user              Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score             Int               @default(100)
+  band              String            @default("trusted") // blocked (< 40), caution (40-69), trusted (>= 70)
+  totalBorrows      Int               @default(0) @map("total_borrows")
+  onTimeReturns     Int               @default(0) @map("on_time_returns")
+  lateReturns       Int               @default(0) @map("late_returns")
+  damagesReported   Int               @default(0) @map("damages_reported")
+  manualAdjustments Int               @default(0) @map("manual_adjustments")
+  lastUpdated       DateTime          @default(now()) @map("last_updated")
+
+  @@map("trust_scores")
+}
+
+model TrustEvent {
+  id             String            @id @default(uuid()) @db.Uuid
+  userId         String            @db.Uuid @map("user_id")
+  user           Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  delta          Int
+  reason         String
+  scoreAfter     Int               @map("score_after")
+  notes          String?
+  requestId      String?           @db.Uuid @map("request_id")
+  request        Request?          @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  @@map("trust_events")
+}
+
+model InstitutionalDomain {
+  domainPattern String            @id @map("domain_pattern") // e.g., %.edu, %.edu.in
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  @@map("institutional_domains")
+}
+
+model Notification {
+  id          String            @id @default(uuid()) @db.Uuid
+  userId      String            @db.Uuid @map("user_id")
+  user        Profile           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  message     String
+  isRead      Boolean           @default(false) @map("is_read")
+  type        String            // request_update, prebook, reminder, approval
+  referenceId String?           @db.Uuid @map("reference_id")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
